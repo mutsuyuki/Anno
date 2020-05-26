@@ -45,7 +45,6 @@
             AnnotationFilesStore.clear();
             AnnotationHistoryStore.clear();
             HelpStore.hide();
-            console.log("des")
         }
 
         get sizeCheckImagePath() {

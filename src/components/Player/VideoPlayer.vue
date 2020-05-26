@@ -13,7 +13,7 @@
                 @zoomend="$emit('zoomend', $event)"
         >
             <div class="image_area">
-                <img :src="imagePath">
+                <video :src="videoPath">
                 <div class="overlay-layer">
                     <slot></slot>
                 </div>
@@ -56,9 +56,9 @@
     @Component({
         components: {NormalizedScalableArea, InlineSvg, ScalableArea}
     })
-    export default class ImagePlayer extends Vue {
+    export default class VideoPlayer extends Vue {
 
-        get imagePath() {
+        get videoPath() {
             return ImageFilesStore.currentItem ? URL.createObjectURL(ImageFilesStore.currentItem) : "";
         }
 
