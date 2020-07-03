@@ -13,8 +13,8 @@
                 @zoomend="$emit('zoomend', $event)"
         >
             <div class="image_area">
-                <img :src="imagePath">
-                <div class="overlay-layer">
+                <img :src="imageUrl">
+                <div class="overlay_layer">
                     <slot></slot>
                 </div>
             </div>
@@ -58,8 +58,8 @@
     })
     export default class ImagePlayer extends Vue {
 
-        get imagePath() {
-            return ImageFilesStore.currentItem ? URL.createObjectURL(ImageFilesStore.currentItem) : "";
+        get imageUrl() {
+            return ImageFilesStore.currentItemUrl;
         }
 
         get currentPage() {
@@ -106,7 +106,7 @@
             width: 100%;
         }
 
-        .overlay-layer {
+        .overlay_layer {
             position: absolute;
             top: 0;
             left: 0;
@@ -114,39 +114,6 @@
             height: 100%;
             z-index: 1000;
             pointer-events: none;
-
-            .overlay-inner {
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
-        }
-    }
-
-    .download_panel {
-        height: 32px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 12px;
-
-        button {
-            width: 140px;
-            min-width: 140px;
-
-            span {
-                margin-left: 8px;
-                color: var(--gray);
-            }
-        }
-
-        span {
-            margin-left: 16px;
-            color: var(--gray);
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            text-align: right;
         }
     }
 

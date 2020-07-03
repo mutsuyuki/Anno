@@ -9,7 +9,7 @@
                 <!--画像サイズの計算コンポーネント todo cssだけで実現できるならこの仕組みはやめたい-->
                 <ImageSizeChecker
                         @sizeChange="fitWidth"
-                        :imagePath="sizeCheckImagePath"
+                        :url="sizeCheckImageUrl"
                         :heightPadding="40 + 40 + 40 + 40 + 8"
                 />
             </div>
@@ -47,8 +47,8 @@
             HelpStore.hide();
         }
 
-        get sizeCheckImagePath() {
-            return ImageFilesStore.currentItem ? URL.createObjectURL(ImageFilesStore.currentItem) : "";
+        get sizeCheckImageUrl() {
+            return ImageFilesStore.currentItemUrl;
         }
 
         private fitWidth(width: number) {

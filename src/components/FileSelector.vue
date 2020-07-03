@@ -50,6 +50,10 @@
 <style scoped lang="scss">
     label {
         display: block;
+
+        &.button{
+            padding:8px 16px;
+        }
     }
 
     .title {

@@ -28,6 +28,10 @@ class ImageFilesStore extends VuexModule {
         return this._items.currentItem;
     }
 
+    get currentItemUrl(): string {
+        return this.currentItem ? URL.createObjectURL(this.currentItem) : "";
+    }
+
     get numberOfItems(): number {
         return this._items.numberOfItems;
     }

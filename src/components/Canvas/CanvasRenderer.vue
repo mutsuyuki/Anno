@@ -23,7 +23,13 @@
         mounted() {
             this.initVar();
             this.fitCanvasToParent();
-            this.$watch(() => this.graphics, () => this.draw(), {deep: true})
+
+            this.$watch(
+                () => this.graphics,
+                () => this.draw(),
+                {deep: true}
+            );
+
             window.addEventListener("resize", () => this.draw());
 
             document.addEventListener("keydown", (e: KeyboardEvent) => {

@@ -1,5 +1,5 @@
 <template>
-    <img :src="url" alt="">
+    <video :src="url"></video>
 </template>
 
 <script lang="ts">
@@ -7,7 +7,7 @@
     import MediaSizeChecker from "@/components/SizeChecker/MediaSizeChecker.vue";
 
     @Component
-    export default class ImageSizeChecker extends MediaSizeChecker {
+    export default class VideoSizeChecker extends MediaSizeChecker {
     }
 </script>
 

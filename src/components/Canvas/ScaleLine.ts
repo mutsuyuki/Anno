@@ -12,6 +12,7 @@ export default class ScaleLine extends Line {
         context.beginPath();
         context.strokeStyle = ColorUtil.rgba(this.color);
         context.lineWidth = this.width * scale.x;  // 太さはキャンバスサイズの横幅を1としたサイズで指定している
+        console.log(this.start.x,this.start.y,this.end.x,this.end.y, this.width * scale.x, this.width , scale.x)
         context.moveTo(
             this.start.x * scale.x,
             this.start.y * scale.y
