@@ -10,7 +10,7 @@
                 <VideoSizeChecker
                         @sizeChange="fitWidth"
                         :url="sizeCheckVideoUrl"
-                        :heightPadding="40 + 40 + 40 + 40 + 8"
+                        :heightPadding="40 + 40 + 40 + 40 + 8 + 80"
                 />
             </div>
         </div>

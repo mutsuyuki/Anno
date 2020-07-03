@@ -69,8 +69,6 @@
         private newGraphics: Graphic[] = [];
 
         private isCtrlKeyDown: boolean = false;
-        private widthValue: number = 0.1;
-        private unWatchWidthValue!: Function;
 
         private circleColor: Color = {r: 150, g: 0, b: 0, a: 1};
         private lineColor: Color = {r: 0, g: 0, b: 150, a: 1};
@@ -107,9 +105,9 @@
 
         created() {
 
-            // 画像読み込み
+            // 動画読み込み
             this.$watch(
-                () => ImageFilesStore.items,
+                () => VideoFileStore.url,
                 () => {
                     let annotations: { [fileName: string]: AnnotationContainer<Annotation_Track[]> } = {};
                     AnnotationHistoryStore.init(annotations);
@@ -160,8 +158,6 @@
                     const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
                     line.zIndex = 0;
                     this.newGraphics.push(line);
-
-                    console.log("aaaaaaaa")
                 },
                 {deep: true}
             );
@@ -170,7 +166,6 @@
             this.$watch(
                 () => this.currentAnnotation,
                 () => {
-
                     this.graphics = [];
 
                     if (!this.currentAnnotation.annotation)
@@ -232,6 +227,7 @@
                 if (nearestDistance < 0.1) {
                     annotations[this.currentFileNameWithTime].annotation = annotations[this.currentFileNameWithTime].annotation.filter(v => v !== nearestAnnotation);
                     AnnotationHistoryStore.addHistory(annotations);
+                    console.log("bbbbba")
                 }
             }
 
@@ -242,18 +238,20 @@
         }
 
         private onDragEnd(e: Point) {
-            let annotations = this.currentHistory;
-            if (!annotations[this.currentFileNameWithTime])
-                annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
+            if (!this.isCtrlKeyDown) {
+                let annotations = this.currentHistory;
+                if (!annotations[this.currentFileNameWithTime])
+                    annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
 
-            annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
-            AnnotationHistoryStore.addHistory(annotations);
-            Vue.set(this.newAnnotation, "value", {
-                start: {x: -9999, y: -9999},
-                end: {x: -9999, y: -9999},
-                width: 0
-            });
-
+                console.log("aaaaaa")
+                annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
+                AnnotationHistoryStore.addHistory(annotations);
+                Vue.set(this.newAnnotation, "value", {
+                    start: {x: -9999, y: -9999},
+                    end: {x: -9999, y: -9999},
+                    width: 0
+                });
+            }
         }
 
         private async onDownload() {

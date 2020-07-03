@@ -19,7 +19,7 @@
                 />
 
                 <FileSelector
-                        v-show="isImageSelected"
+                        v-show="isVideoSelected"
                         :iconPath="require('@/assets/img/icons/text_multi.svg')"
                         :message="'教師データを選択'"
                         :accept="'text/*'"
@@ -43,7 +43,6 @@
 
 <script lang="ts">
     import {Component, Prop, Vue} from 'vue-property-decorator';
-    import ImageFilesStore from "@/store/ImageFilesStore";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import FileSelector from "@/components/FileSelector.vue";
     import HelpStore from "@/store/HelpStore";
@@ -56,8 +55,8 @@
     })
     export default class ControlPane_Track extends Vue {
 
-        get isImageSelected() {
-            return ImageFilesStore.numberOfItems > 0;
+        get isVideoSelected() {
+            return VideoFileStore.isSelected;
         }
 
         private onSelectVideoFile(files: File[]) {
@@ -109,7 +108,6 @@
         }
     }
 
-
     .container {
         padding: 16px;
         height: calc(100vh - 40px - 40px); // 100vh - header - copyright
@@ -119,9 +117,6 @@
                 margin-top: 8px;
             }
         }
-
-
     }
-
 
 </style>

@@ -7,7 +7,8 @@
         <input type="file" class="hidden"
                @change="$emit('change', eventToFiles($event))"
                :accept="accept"
-               :multiple="isMultiple ? 'multiple' : ''"/>
+               :multiple="isMultiple"
+        />
     </label>
 </template>
 
