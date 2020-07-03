@@ -6,7 +6,7 @@
         >
             <img :src="require('@/assets/img/icons/help.svg')"/>
         </div>
-        <div class="copy">{{message}}</div>
+        <div class="copy">{{text}}</div>
     </div>
 
 </template>
@@ -14,12 +14,9 @@
 <script lang="ts">
     import {Component, Prop, Vue} from 'vue-property-decorator';
 
-    @Component({
-        components: {
-        }
-    })
+    @Component({ })
     export default class MenuFooter extends Vue {
-        @Prop() private message!: string;
+        @Prop() private text!: string;
     }
 </script>
 

@@ -29,6 +29,7 @@ class VideoFileStore extends VuexModule {
 
     @Mutation
     public setFile(file: File) {
+        console.log(file)
         this.file = file;
     }
 

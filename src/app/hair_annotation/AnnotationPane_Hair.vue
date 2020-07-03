@@ -114,7 +114,7 @@
         }
 
         get currentHistory(): { [fileName: string]: AnnotationContainer<Annotation_Hair[]> } {
-            return AnnotationHistoryStore.current || {};
+            return AnnotationHistoryStore.current;
         }
 
         created() {

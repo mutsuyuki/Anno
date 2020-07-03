@@ -1,17 +1,17 @@
 <template>
     <div>
         <button class="button"
-                @click.prevent="">
+                @click.prevent="makeNewData">
             <span>新しいデータ</span>
         </button>
 
         <button class="button"
-                @click.prevent="">
+                @click.prevent="copyFromPrevFrame">
             <span>前のフレームをコピー</span>
         </button>
 
         <button class="button"
-                @click.prevent="">
+                @click.prevent="copyFromSelect">
             <span>選択中データをコピー</span>
         </button>
     </div>
@@ -19,10 +19,22 @@
 
 <script lang="ts">
     import {Component, Prop, Vue} from "vue-property-decorator";
+    import MenuStore_Track from "@/app/track_annotation/MenuStore_Track";
 
-    @Component({ })
+    @Component({})
     export default class MakeTargetButtons_Track extends Vue {
 
+        private makeNewData() {
+            MenuStore_Track.toggleMakeNewDataCue();
+        }
+
+        private copyFromPrevFrame() {
+            MenuStore_Track.toggleCopyFromPrevFrameCue();
+        }
+
+        private copyFromSelect() {
+            MenuStore_Track.toggleCopyFromSelectCue();
+        }
     }
 </script>
 
@@ -35,7 +47,7 @@
         color: var(--white);
         font-size: 12px;
 
-        &:nth-child(n+2){
+        &:nth-child(n+2) {
             margin-top: 8px;
         }
     }

@@ -2,10 +2,11 @@
     <div class="control_pane">
 
         <MenuHeader
-                :title="'Hair direction'"
+                :text="'Tracking'"
         />
 
         <div class="container">
+            <MenuSubTitle :text="'ファイル'"/>
             <div class="file_selectors">
                 <FileSelector
                         :iconPath="require('@/assets/img/icons/video.svg')"
@@ -25,14 +26,23 @@
                 />
             </div>
 
+            <div class="track_menu"
+                 v-show="isVideoSelected"
+            >
+                <MenuSubTitle :text="'データ作成'" class="subtitle"/>
+                <MakeTargetButtons_Track
+                        v-show="isVideoSelected"
+                />
 
-            <MakeTargetButtons_Track
-                    v-show="isVideoSelected"
-            />
+                <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
+
+                <MenuSubTitle :text="'データビュー'" class="subtitle"/>
+
+            </div>
         </div>
 
         <MenuFooter
-                :message="'Enjoy Annotation!'"
+                :text="'Enjoy Annotation!'"
                 @help="onClickHelp"
         />
 
@@ -49,9 +59,11 @@
     import MenuHeader from "@/components/Menu/MenuHeader.vue";
     import MenuFooter from "@/components/Menu/MenuFooter.vue";
     import MakeTargetButtons_Track from "@/app/track_annotation/MakeTargetButtons_Track.vue";
+    import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 
     @Component({
         components: {
+            MenuSubTitle,
             MakeTargetButtons_Track,
             MenuFooter,
             MenuHeader,
@@ -73,7 +85,7 @@
             AnnotationFilesStore.setFiles(files);
         }
 
-        private onClickHelp():void{
+        private onClickHelp(): void {
             HelpStore.toggle();
         }
     }
@@ -85,9 +97,15 @@
         padding: 16px;
         height: calc(100vh - 40px - 40px); // 100vh - header - footer
 
-        .file_selectors{
+        .file_selectors {
             *:nth-child(n + 2) {
                 margin-top: 8px;
+            }
+        }
+
+        .track_menu{
+            .subtitle{
+                margin-top: 24px;
             }
         }
     }

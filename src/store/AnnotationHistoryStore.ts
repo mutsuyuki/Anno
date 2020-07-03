@@ -19,7 +19,7 @@ class AnnotationHistoryStore extends VuexModule {
 
     // getters
     get current() {
-        return cloneDeep(this._history[this._index]);
+        return cloneDeep(this._history[this._index]) || {};
     }
 
     get enableUndo() {

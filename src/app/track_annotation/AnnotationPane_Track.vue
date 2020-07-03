@@ -100,7 +100,7 @@
         }
 
         get currentHistory(): { [fileName: string]: AnnotationContainer<Annotation_Track[]> } {
-            return AnnotationHistoryStore.current || {};
+            return AnnotationHistoryStore.current;
         }
 
         created() {

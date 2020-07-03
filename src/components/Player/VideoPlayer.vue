@@ -25,8 +25,6 @@
         <div class="video_control_area">
 
             <div class="row row1">
-                {{Math.round(this.video.currentTime / this.stepSec)}}
-
                 <div class="except_timeline">
                     <button v-if="video.paused" class="button" @click="play">
                         <img :src="require('@/assets/img/icons/play.svg')"/>
@@ -36,8 +34,13 @@
                     </button>
 
                     <div class="time" v-show="video.duration > 0">
+                        <!-- 秒表記 -->
                         {{video.currentTime.toFixed(2)}} /
                         <span style="opacity: 0.4">{{video.duration.toFixed(2)}}</span>
+
+                        <!-- フレーム数表記 -->
+                        <!-- {{Math.round(this.video.currentTime / this.stepSec) }} /-->
+                        <!-- <span style="opacity: 0.4">{{Math.round(this.video.duration / this.stepSec)}}</span>-->
                     </div>
                 </div>
 
@@ -93,12 +96,20 @@
         private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");  // dummy
 
         private timelineProgress: number = 0;
-        private stepSec: number = 0.0333667;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667
+        private stepSec: number = 0.033333;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667sec
 
         get videoUrl() {
             return VideoFileStore.url;
         }
 
+        get currentFrame() {
+            return Math.round(this.video.currentTime / this.stepSec);
+        }
+
+        get totalFrame() {
+            return 10;
+            return Math.round(this.video.duration / this.stepSec);
+        }
 
         mounted() {
             this.video = <HTMLVideoElement>document.getElementById("video_player");
@@ -112,17 +123,13 @@
             });
 
             this.video.addEventListener("timeupdate", () => {
-                console.log("tiup start")
                 this.timelineProgress = this.video.currentTime;
                 this.$forceUpdate();
                 this.$emit("timeupdate", this.getStepedSec(this.video.currentTime));
-                console.log("tiend end",)
             });
 
             this.video.addEventListener("pause", () => {
-                console.log("pause start")
                 this.applyStepedSec(this.video.currentTime);
-                console.log("pause end")
             });
         }
 
@@ -241,7 +248,7 @@
 
         .row2 {
             & > *:nth-child(n+2) {
-                margin-left: 8px;
+                margin-left: 16px;
             }
 
             margin-top: 8px;
@@ -253,7 +260,7 @@
                 font-size: 18px;
                 width: 104px;
                 height: 32px;
-                text-align: right;
+                text-align: center;
             }
         }
 

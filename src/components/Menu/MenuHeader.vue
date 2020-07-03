@@ -4,7 +4,7 @@
         <div class="icon">
             <img :src="require('@/assets/img/icons/home.svg')"/>
         </div>
-        <h1>{{title}}</h1>
+        <h1>{{text}}</h1>
     </div>
 
 
@@ -13,13 +13,10 @@
 <script lang="ts">
     import {Component, Prop, Vue} from 'vue-property-decorator';
 
-    @Component({
-        components: {
-        }
-    })
+    @Component({})
     export default class MenuHeader extends Vue {
 
-        @Prop() private title!: string;
+        @Prop() private text!: string;
 
     }
 </script>

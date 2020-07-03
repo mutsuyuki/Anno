@@ -2,7 +2,7 @@
     <div class="control_pane">
 
         <MenuHeader
-                :title="'Hair direction'"
+                :text="'Hair direction'"
         />
 
         <div class="container">
@@ -27,7 +27,7 @@
         </div>
 
         <MenuFooter
-                :message="'Enjoy Annotation!'"
+                :text="'Enjoy Annotation!'"
                 @help="onClickHelp"
         />
 

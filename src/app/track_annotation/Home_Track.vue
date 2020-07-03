@@ -72,7 +72,6 @@
             width: 200px;
             min-width: 200px;
             height: 100%;
-            overflow-y: scroll;
         }
 
         .annotation_pane_container {
