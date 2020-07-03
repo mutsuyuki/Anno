@@ -1,12 +1,9 @@
 <template>
     <div class="control_pane">
 
-        <div class="header">
-            <div class="icon">
-                <img :src="require('@/assets/img/icons/home.svg')"/>
-            </div>
-            <h1>Hair direction</h1>
-        </div>
+        <MenuHeader
+                :title="'Hair direction'"
+        />
 
         <div class="container">
             <div class="container_above">
@@ -29,14 +26,11 @@
             </div>
         </div>
 
-        <div class="footer">
-            <div class="icon"
-                 @click="onClickHelp"
-            >
-                <img :src="require('@/assets/img/icons/help.svg')"/>
-            </div>
-            <div class="copy">Enjoy Annotation!</div>
-        </div>
+        <MenuFooter
+                :message="'Enjoy Annotation!'"
+                @help="onClickHelp"
+        />
+
     </div>
 
 </template>
@@ -45,15 +39,19 @@
     import {Component, Prop, Vue} from 'vue-property-decorator';
     import ImageFilesStore from "@/store/ImageFilesStore";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-    import FileSelector from "@/components/FileSelector.vue";
+    import FileSelector from "@/components/Menu/FileSelector.vue";
     import HelpStore from "@/store/HelpStore";
+    import MenuHeader from "@/components/Menu/MenuHeader.vue";
+    import MenuFooter from "@/components/Menu/MenuFooter.vue";
 
     @Component({
         components: {
+            MenuFooter,
+            MenuHeader,
             FileSelector
         }
     })
-    export default class ControlPane_Hair extends Vue {
+    export default class MenuPane_Hair extends Vue {
 
         get isImageSelected() {
             return ImageFilesStore.numberOfItems > 0;
@@ -68,7 +66,7 @@
             AnnotationFilesStore.setFiles(files);
         }
 
-        private onClickHelp():void{
+        private onClickHelp(): void {
             HelpStore.toggle();
         }
     }
@@ -76,50 +74,15 @@
 
 <style scoped lang="scss">
 
-    .header, .footer {
-        display: flex;
-        justify-content: left;
-        align-items: center;
-        background: var(--background-dark);
-        height: 40px;
-
-        .icon {
-            padding: 12px;
-            background: var(--background-light);
-            cursor: pointer;
-
-            img {
-                width: 16px;
-                height: 16px;
-            }
-        }
-
-        h1 {
-            margin-left: 12px;
-            font-size: 16px;
-        }
-
-        .copy{
-            height: 40px;
-            line-height: 40px;
-            font-size: 12px;
-            width: 100%;
-            margin-left: 12px;
-        }
-    }
-
-
     .container {
         padding: 16px;
-        height: calc(100vh - 40px - 40px); // 100vh - header - copyright
+        height: calc(100vh - 40px - 40px); // 100vh - header - footer
 
-        .container_above{
+        .container_above {
             *:nth-child(n + 2) {
                 margin-top: 8px;
             }
         }
-
-
     }
 
 

@@ -2,7 +2,7 @@
     <div>
 
         <div class="main_container">
-            <ControlPane_Hair class="control_pane"/>
+            <MenuPane_Hair class="menu_pane"/>
             <div class="annotation_pane_container">
                 <AnnotationPane_Hair class="annotation_pane"/>
 
@@ -21,7 +21,7 @@
 
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
-    import ControlPane_Hair from "@/app/hair_annotation/ControlPane_Hair.vue";
+    import MenuPane_Hair from "@/app/hair_annotation/MenuPane_Hair.vue";
     import AnnotationPane_Hair from "@/app/hair_annotation/AnnotationPane_Hair.vue";
     import Help_Hair from "@/app/hair_annotation/Help_Hair.vue";
     import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
@@ -34,7 +34,7 @@
         components: {
             ImageSizeChecker,
             AnnotationPane_Hair,
-            ControlPane_Hair,
+            MenuPane_Hair,
             Help_Hair,
         },
     })
@@ -65,7 +65,7 @@
         height: calc(100vh);
         width: 100%;
 
-        .control_pane {
+        .menu_pane {
             width: 200px;
             min-width: 200px;
             height: 100%;

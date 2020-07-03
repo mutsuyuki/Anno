@@ -25,6 +25,7 @@
         <div class="video_control_area">
 
             <div class="row row1">
+                {{Math.round(this.video.currentTime / this.stepSec)}}
 
                 <div class="except_timeline">
                     <button v-if="video.paused" class="button" @click="play">
@@ -35,14 +36,16 @@
                     </button>
 
                     <div class="time" v-show="video.duration > 0">
-                        {{video.currentTime.toFixed(2)}} / <span style="opacity: 0.4">{{video.duration.toFixed(2)}}</span>
+                        {{video.currentTime.toFixed(2)}} /
+                        <span style="opacity: 0.4">{{video.duration.toFixed(2)}}</span>
                     </div>
                 </div>
 
                 <div class="timeline">
-                    <input type="range" min="0" :max="video.duration" step="0.033333334"
+                    <input type="range" min="0" :max="video.duration" :step="stepSec"
                            :value="timelineProgress"
                            @input="timeChange"
+                           @mouseup="timeChangeEnd"
                     />
                 </div>
             </div>
@@ -53,7 +56,10 @@
                 </button>
 
                 <div>
-                    <input type="number" v-model="stepSec" min="0.01" max="100" step="0.01">
+                    <input type="number" min="0.03" max="100" step="0.01"
+                           :value="stepSec"
+                           @change="changeStepSec"
+                    >
                     <span class="seconds-unit">sec</span>
                 </div>
 
@@ -87,10 +93,12 @@
         private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");  // dummy
 
         private timelineProgress: number = 0;
-        private stepSec: number = 0.03;    // 30fps --> 1frame 0.033333334sec
+        private stepSec: number = 0.0333667;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667
+
         get videoUrl() {
             return VideoFileStore.url;
         }
+
 
         mounted() {
             this.video = <HTMLVideoElement>document.getElementById("video_player");
@@ -104,11 +112,28 @@
             });
 
             this.video.addEventListener("timeupdate", () => {
+                console.log("tiup start")
                 this.timelineProgress = this.video.currentTime;
                 this.$forceUpdate();
-
-                this.$emit("timeupdate", this.video.currentTime);
+                this.$emit("timeupdate", this.getStepedSec(this.video.currentTime));
+                console.log("tiend end",)
             });
+
+            this.video.addEventListener("pause", () => {
+                console.log("pause start")
+                this.applyStepedSec(this.video.currentTime);
+                console.log("pause end")
+            });
+        }
+
+        private applyStepedSec(time: number): void {
+            const stepedSec = this.getStepedSec(time);
+            this.timelineProgress = stepedSec;
+            this.video.currentTime = stepedSec;
+        }
+
+        private getStepedSec(time: number): number {
+            return Math.floor(time / this.stepSec) * this.stepSec;
         }
 
         private play(): void {
@@ -131,8 +156,22 @@
             if (!e.target)
                 return;
 
-            this.video.currentTime = Number((e.target as HTMLInputElement).value);
+            this.applyStepedSec((e.target as HTMLInputElement).valueAsNumber);
         }
+
+        private timeChangeEnd(e: MouseEvent): void {
+            if (!e.target)
+                return;
+
+            this.applyStepedSec((e.target as HTMLInputElement).valueAsNumber);
+        }
+
+        private changeStepSec(e: InputEvent): void {
+            const newStepSec = (e.target as HTMLInputElement).valueAsNumber;
+            this.stepSec = Math.ceil(newStepSec * 10000000) / 10000000;
+            this.applyStepedSec(this.video.currentTime);
+        }
+
     }
 </script>
 
@@ -183,7 +222,7 @@
                 justify-items: center;
                 width: 250px;
 
-                .time{
+                .time {
                     width: 100%;
                     text-align: center;
                     line-height: 32px;
@@ -212,7 +251,7 @@
 
             input[type="number"] {
                 font-size: 18px;
-                width: 96px;
+                width: 104px;
                 height: 32px;
                 text-align: right;
             }

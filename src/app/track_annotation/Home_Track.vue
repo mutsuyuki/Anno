@@ -2,7 +2,7 @@
     <div>
 
         <div class="main_container">
-            <ControlPane_Track class="control_pane"/>
+            <MenuPane_Track class="menu_pane"/>
             <div class="annotation_pane_container">
                 <AnnotationPane_Track class="annotation_pane"/>
 
@@ -21,7 +21,7 @@
 
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
-    import ControlPane_Track from "@/app/track_annotation/ControlPane_Track.vue";
+    import MenuPane_Track from "@/app/track_annotation/MenuPane_Track.vue";
     import AnnotationPane_Track from "@/app/track_annotation/AnnotationPane_Track.vue";
     import Help_Track from "@/app/track_annotation/Help_Track.vue";
     import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
@@ -37,7 +37,7 @@
             VideoSizeChecker,
             ImageSizeChecker,
             AnnotationPane_Track,
-            ControlPane_Track,
+            MenuPane_Track,
             Help_Track,
         },
     })
@@ -68,7 +68,7 @@
         height: calc(100vh);
         width: 100%;
 
-        .control_pane {
+        .menu_pane {
             width: 200px;
             min-width: 200px;
             height: 100%;
