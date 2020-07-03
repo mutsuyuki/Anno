@@ -11,7 +11,7 @@ export default class ScaleLine extends Line {
 
         context.beginPath();
         context.strokeStyle = ColorUtil.rgba(this.color);
-        context.lineWidth = this.width * scale.x;  // 髪の太さはキャンバスサイズの横幅を1としたサイズで指定している
+        context.lineWidth = this.width * scale.x;  // 太さはキャンバスサイズの横幅を1としたサイズで指定している
         context.moveTo(
             this.start.x * scale.x,
             this.start.y * scale.y

@@ -41,7 +41,7 @@
     import ImagePlayer from "@/components/Player/ImagePlayer.vue";
     import CanvasRenderer from "@/components/Canvas/CanvasRenderer.vue";
     import Circle from "@/components/Canvas/Circle";
-    import ScaleLine from "@/app/hair_annotation/ScaleLine";
+    import ScaleLine from "@/components/Canvas/ScaleLine";
     import {Graphic} from "@/components/Canvas/Graphic";
     import {Point, PointUtil} from "@/common/interface/Point";
     import {Color} from "@/common/interface/Color";
