@@ -1,0 +1,104 @@
+<template>
+    <div class="class_selector" :style="{'max-height':maxHeight + 'px'}">
+
+        <div class="row"
+             v-for="row in rows"
+        >
+            <div class="col"
+                 v-for="col in cols"
+            >
+                <button class="button"
+                        v-if="isExist(row, col)"
+                        :title="getId(row,col) + ':' + getText(row,col)"
+                        :class="{'is_select' : getId(row,col) === selectId}"
+                        :style="{'font-size': fontSize + 'px'}"
+                        @click.prevent="$emit('select', getId(row,col))"
+                >
+                    {{getText(row,col)}}
+                </button>
+            </div>
+        </div>
+
+    </div>
+</template>
+
+<script lang="ts">
+    import {Component, Prop, Vue} from "vue-property-decorator";
+
+    @Component({})
+    export default class ButtonGrid extends Vue {
+
+        @Prop({default: []}) private data!: { id: number, text: string }[];
+        @Prop({default: 0}) private selectId!: number;
+        @Prop({default: 2}) private cols!: number;
+        @Prop({default: 200}) private maxHeight!: number;
+        @Prop({default: 11}) private fontSize!: number;
+
+        get rows() {
+            return Math.ceil(this.data.length / this.cols)
+        }
+
+        private getId(row: number, col: number){
+            return this.data[this.index(row,col)].id;
+        }
+
+        private getText(row: number, col: number){
+            return this.data[this.index(row,col)].text;
+        }
+
+        private index(row: number, col: number) {
+            return (row - 1) * this.cols + (col - 1);
+        }
+
+        private isExist(row: number, col: number) {
+            return this.index(row, col) < this.data.length;
+        }
+
+    }
+</script>
+
+<style lang="scss" scoped>
+    @import "../../assets/scss/parts/button";
+    @import "../../assets/scss/parts/input_text";
+
+    .class_selector{
+        overflow-y: scroll;
+    }
+
+    .row{
+        display: flex;
+        justify-content: center;
+        justify-items: center;
+
+        &:nth-child(n+2){
+            margin-top: 8px;
+        }
+
+        .col{
+            flex-grow: 1;
+            min-width: 0;
+            width: 100%;
+
+            &:nth-child(n+2){
+                margin-left: 8px;
+            }
+        }
+    }
+
+    button {
+        display: block;
+        width: 100%;
+        color: var(--white);
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &.is_select{
+            background-color: var(--active);
+        }
+    }
+
+</style>
+
+

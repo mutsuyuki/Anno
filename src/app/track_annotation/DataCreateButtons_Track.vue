@@ -2,17 +2,17 @@
     <div>
         <button class="button"
                 @click.prevent="makeNewData">
-            <span>新しいデータ</span>
-        </button>
-
-        <button class="button"
-                @click.prevent="copyFromPrevFrame">
-            <span>前のフレームをコピー</span>
+            <span>新しいデータを作る</span>
         </button>
 
         <button class="button"
                 @click.prevent="copyFromSelect">
             <span>選択中データをコピー</span>
+        </button>
+
+        <button class="button"
+                @click.prevent="copyFromPrevFrame">
+            <span>前のフレームをコピー</span>
         </button>
     </div>
 </template>
@@ -28,12 +28,12 @@
             MenuStore_Track.toggleMakeNewDataCue();
         }
 
-        private copyFromPrevFrame() {
-            MenuStore_Track.toggleCopyFromPrevFrameCue();
-        }
-
         private copyFromSelect() {
             MenuStore_Track.toggleCopyFromSelectCue();
+        }
+
+        private copyFromPrevFrame() {
+            MenuStore_Track.toggleCopyFromPrevFrameCue();
         }
     }
 </script>

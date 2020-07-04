@@ -30,11 +30,17 @@
                  v-show="isVideoSelected"
             >
                 <MenuSubTitle :text="'データ作成'" class="subtitle"/>
-                <MakeTargetButtons_Track
+                <DataCreateButtons_Track
                         v-show="isVideoSelected"
                 />
 
                 <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
+                <ButtonGrid
+                    :data="[{id:0, text:'test1asdlkfjasldjalkdjfalkaslkdjlaksdjlasjdlakdjd'}, {id:1, text:'歩'}, {id:2, text:'test2'}, {id:3, text:'test3'}, {id:4, text:'test4'}]"
+                    :selectId="selectedClass"
+                    :cols="5"
+                    :max-height="100"
+                />
 
                 <MenuSubTitle :text="'データビュー'" class="subtitle"/>
 
@@ -58,13 +64,15 @@
     import VideoFileStore from "@/store/VideoFileStore";
     import MenuHeader from "@/components/Menu/MenuHeader.vue";
     import MenuFooter from "@/components/Menu/MenuFooter.vue";
-    import MakeTargetButtons_Track from "@/app/track_annotation/MakeTargetButtons_Track.vue";
+    import DataCreateButtons_Track from "@/app/track_annotation/DataCreateButtons_Track.vue";
     import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
+    import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
 
     @Component({
         components: {
+            ButtonGrid,
             MenuSubTitle,
-            MakeTargetButtons_Track,
+            DataCreateButtons_Track,
             MenuFooter,
             MenuHeader,
             FileSelector

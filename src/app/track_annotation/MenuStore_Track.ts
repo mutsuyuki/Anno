@@ -16,8 +16,8 @@ class MenuStore_Track extends VuexModule {
     private _operatingTarget: string = "";
 
     private _makeNewDataCue: boolean = false;
-    private _copyFromPrevFrameCue: boolean = false;
     private _copyFromSelectCue: boolean = false;
+    private _copyFromPrevFrameCue: boolean = false;
 
     // getters
     get id() {
@@ -56,14 +56,15 @@ class MenuStore_Track extends VuexModule {
     }
 
     @Mutation
+    public toggleCopyFromSelectCue() {
+        this._copyFromSelectCue = !this._copyFromSelectCue;
+    }
+
+    @Mutation
     public toggleCopyFromPrevFrameCue() {
         this._copyFromPrevFrameCue = !this._copyFromPrevFrameCue;
     }
 
-    @Mutation
-    public toggleCopyFromSelectCue() {
-        this._copyFromSelectCue = !this._copyFromSelectCue;
-    }
 }
 
 export default getModule(MenuStore_Track);

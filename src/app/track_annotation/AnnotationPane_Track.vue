@@ -51,6 +51,7 @@
     import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
     import VideoFileStore from "@/store/VideoFileStore";
     import VideoPlayer from "@/components/Player/VideoPlayer.vue";
+    import MenuStore_Track from "@/app/track_annotation/MenuStore_Track";
 
     @Component({
         components: {
@@ -104,99 +105,127 @@
         }
 
         created() {
-            //
-            // // 動画読み込み
-            // this.$watch(
-            //     () => VideoFileStore.url,
-            //     () => {
-            //         let annotations: { [fileName: string]: AnnotationContainer<Annotation_Track[]> } = {};
-            //         AnnotationHistoryStore.init(annotations);
-            //     },
-            //     {deep: true}
-            // );
-            //
-            // // 教師データ読み込み
-            // this.$watch(
-            //     () => AnnotationFilesStore.items,
-            //     async () => {
-            //         let annotations = this.currentHistory;
-            //         for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
-            //             const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
-            //             if (!annotations[fileName])
-            //                 continue;
-            //
-            //             annotations[fileName].isSetByFile = true;
-            //
-            //             const fileText = await new Promise(resolve => {
-            //                 const reader = new FileReader();
-            //                 reader.onload = () => {
-            //                     resolve(reader.result);
-            //                 };
-            //                 reader.readAsText(AnnotationFilesStore.items[i]);
-            //             });
-            //             const models = Annotation_TrackUtil.fileToModels(fileText as string);
-            //             annotations[fileName].annotation = models;
-            //         }
-            //
-            //         if (AnnotationFilesStore.items.length > 0)
-            //             AnnotationHistoryStore.addHistory(annotations);
-            //     },
-            //     {deep: true}
-            // );
-            //
-            // // 新規編集中のアノテーションの状態が変わった
-            // this.$watch(
-            //     () => this.newAnnotation,
-            //     () => {
-            //         this.newGraphics = [];
-            //         const annotation = this.newAnnotation.value;
-            //
-            //         const circle = new Circle(annotation.start, 2, this.circleColor);
-            //         circle.zIndex = 1;
-            //         this.newGraphics.push(circle);
-            //
-            //         const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
-            //         line.zIndex = 0;
-            //         this.newGraphics.push(line);
-            //     },
-            //     {deep: true}
-            // );
-            //
-            // // 表示対象のアノテーションたちの状態が変わった
-            // this.$watch(
-            //     () => this.currentAnnotation,
-            //     () => {
-            //         this.graphics = [];
-            //
-            //         if (!this.currentAnnotation.annotation)
-            //             return;
-            //
-            //         for (let i = 0; i < this.currentAnnotation.annotation.length; i++) {
-            //             const annotation = this.currentAnnotation.annotation[i];
-            //
-            //             const circle = new Circle(annotation.start, 2, this.circleColor);
-            //             circle.zIndex = 1;
-            //             this.graphics.push(circle);
-            //
-            //             const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
-            //             line.zIndex = 0;
-            //             this.graphics.push(line);
-            //         }
-            //     },
-            //     {deep: true}
-            // );
-            //
-            // // 削除用のCtrlキー検出
-            // document.addEventListener("keydown", (e) => {
-            //     if (e.key == "Control") {
-            //         this.isCtrlKeyDown = true;
-            //     }
-            // });
-            // document.addEventListener("keyup", (e) => {
-            //     if (e.key == "Control") {
-            //         this.isCtrlKeyDown = false;
-            //     }
-            // })
+
+            // 動画読み込み
+            this.$watch(
+                () => VideoFileStore.url,
+                () => {
+                    let annotations: { [fileName: string]: AnnotationContainer<Annotation_Track[]> } = {};
+                    AnnotationHistoryStore.init(annotations);
+                },
+                {deep: true}
+            );
+
+            // 教師データ読み込み
+            this.$watch(
+                () => AnnotationFilesStore.items,
+                async () => {
+                    // let annotations = this.currentHistory;
+                    // for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
+                    //     const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
+                    //     if (!annotations[fileName])
+                    //         continue;
+                    //
+                    //     annotations[fileName].isSetByFile = true;
+                    //
+                    //     const fileText = await new Promise(resolve => {
+                    //         const reader = new FileReader();
+                    //         reader.onload = () => {
+                    //             resolve(reader.result);
+                    //         };
+                    //         reader.readAsText(AnnotationFilesStore.items[i]);
+                    //     });
+                    //     const models = Annotation_TrackUtil.fileToModels(fileText as string);
+                    //     annotations[fileName].annotation = models;
+                    // }
+                    //
+                    // if (AnnotationFilesStore.items.length > 0)
+                    //     AnnotationHistoryStore.addHistory(annotations);
+                },
+                {deep: true}
+            );
+
+            // 新規編集中のアノテーションの状態が変わった
+            this.$watch(
+                () => this.newAnnotation,
+                () => {
+                    // this.newGraphics = [];
+                    // const annotation = this.newAnnotation.value;
+                    //
+                    // const circle = new Circle(annotation.start, 2, this.circleColor);
+                    // circle.zIndex = 1;
+                    // this.newGraphics.push(circle);
+                    //
+                    // const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
+                    // line.zIndex = 0;
+                    // this.newGraphics.push(line);
+                },
+                {deep: true}
+            );
+
+            // 表示対象のアノテーションたちの状態が変わった
+            this.$watch(
+                () => this.currentAnnotation,
+                () => {
+                    this.graphics = [];
+
+                    if (!this.currentAnnotation.annotation)
+                        return;
+
+                    for (let i = 0; i < this.currentAnnotation.annotation.length; i++) {
+                        const annotation = this.currentAnnotation.annotation[i];
+
+                        const circle = new Circle(annotation.start, 2, this.circleColor);
+                        circle.zIndex = 1;
+                        this.graphics.push(circle);
+
+                        const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
+                        line.zIndex = 0;
+                        this.graphics.push(line);
+                    }
+                },
+                {deep: true}
+            );
+
+
+            // データ新規作成
+            this.$watch(
+                () => MenuStore_Track.makeNewDataCue,
+                () =>{
+                    console.log("new")
+                }
+            );
+
+
+            // データを前フレームからコピー
+            this.$watch(
+                () => MenuStore_Track.copyFromSelectCue,
+                () =>{
+                    console.log("copy1")
+
+                }
+            );
+
+            // データ新規作成
+            this.$watch(
+                () => MenuStore_Track.copyFromPrevFrameCue,
+                () =>{
+                    console.log("copy2")
+
+                }
+            );
+
+            // 削除用のCtrlキー検出
+            document.addEventListener("keydown", (e) => {
+                if (e.key == "Control") {
+                    this.isCtrlKeyDown = true;
+                }
+            });
+            document.addEventListener("keyup", (e) => {
+                if (e.key == "Control") {
+                    this.isCtrlKeyDown = false;
+                }
+            })
         }
 
         private onDragStart(e: Point) {
@@ -230,7 +259,6 @@
             //         console.log("bbbbba")
             //     }
             // }
-
         }
 
         private onDrag(e: Point) {

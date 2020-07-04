@@ -142,7 +142,7 @@
                 height: 32px;
                 display: flex;
                 align-items: center;
-                margin-left: 0px;
+                margin-left: 0;
             }
         }
     }

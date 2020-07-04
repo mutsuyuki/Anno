@@ -53,7 +53,7 @@
             margin-left: 8px;
 
             &.active {
-                background-color: forestgreen;
+                background-color: var(--active);
                 color: white;
                 opacity: 1;
             }
