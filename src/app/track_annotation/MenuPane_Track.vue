@@ -31,29 +31,42 @@
             >
                 <MenuSubTitle :text="'データ作成'" class="subtitle"/>
                 <ButtonGrid
-                        :data="[{id:0,text:'新しいデータを作る'},{id:1,text:'選択中データをコピー'},{id:2,text:'前のフレームをコピー'}]"
+                        :data="[{id:0,text:'新しいデータを作る'}]"
                         :selectId="-1"
                         :cols="1"
-                        @select="onSelectDataMenu"
+                        @select="onSelectCreateData"
                 />
 
-                <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
-                <ButtonGrid
-                        :data="[{id:0,text:'食'},{id:1,text:'歩'},{id:2,text:'立'},{id:3,text:'休'},{id:4,text:'飲'}]"
-                        :selectId="selectedClass"
-                        :cols="5"
-                        :font-size="11"
-                />
+                <div
+                        v-show="selectingObject"
+                >
+                    <MenuSubTitle :text="'データの複製'" class="subtitle"/>
+                    <ButtonGrid
+                            :data="[{id:0,text:'選択中データを複製'},{id:1,text:'前フレーム全て複製'}]"
+                            :selectId="-1"
+                            :cols="1"
+                            @select="onSelectCopyData"
+                    />
 
-                <MenuSubTitle :text="'モード選択'" class="subtitle"/>
-                <ButtonGrid
-                        :data="[{id:0,text:'領域'}, {id:1,text:'ボーン'}]"
-                        :selectId="selectedMode"
-                        :cols="2"
-                />
+                    <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
+                    <ButtonGrid
+                            :data="[{id:0,text:'食'},{id:1,text:'歩'},{id:2,text:'立'},{id:3,text:'休'},{id:4,text:'飲'}]"
+                            :selectId="selectedClass"
+                            :cols="5"
+                            :font-size="11"
+                            @select="onSelectClass"
+                    />
 
-                <MenuSubTitle :text="'データビュー'" class="subtitle"/>
+                    <MenuSubTitle :text="'モード選択'" class="subtitle"/>
+                    <ButtonGrid
+                            :data="[{id:0,text:'領域'}, {id:1,text:'ボーン'}]"
+                            :selectId="selectedMode"
+                            :cols="2"
+                            @select="onSelectMode"
+                    />
 
+                    <MenuSubTitle :text="'データビュー'" class="subtitle"/>
+                </div>
             </div>
         </div>
 
@@ -95,11 +108,20 @@
         }
 
         get selectedClass() {
-            return 1;
+            return this.selectingObject ? this.selectingObject.class : -1;
         }
 
         get selectedMode() {
-            return 0;
+            return OperationStore_Track.annotationMode;
+        }
+
+        get selectingObject() {
+            const frame = OperationStore_Track.frame;
+            if (!AnnotationsStore_Track.annotations[frame])
+                return null;
+
+            const objectId = OperationStore_Track.selectingObjectId;
+            return AnnotationsStore_Track.annotations[frame][objectId];
         }
 
         private onSelectVideoFile(files: File[]) {
@@ -112,10 +134,27 @@
         }
 
 
-        private onSelectDataMenu(dataMenuId: number) {
-            switch (dataMenuId) {
+        private onSelectCreateData(_: number) {
+            AnnotationsStore_Track.create(OperationStore_Track.frame);
+            OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
+        }
+
+        private onSelectCopyData(dataMenuId: number) {
+        }
+
+        private onSelectClass(classNo: number) {
+            const frame = OperationStore_Track.frame;
+            const objectId = OperationStore_Track.selectingObjectId;
+            AnnotationsStore_Track.setClass({frame: frame, objectId: objectId, class: classNo});
+        }
+
+        private onSelectMode(modeNo: number) {
+            switch (modeNo) {
                 case 0:
-                    AnnotationsStore_Track.create(OperationStore_Track.frame);
+                    OperationStore_Track.setModeToBounding();
+                    break;
+                case 1:
+                    OperationStore_Track.setModeToBone();
                     break;
             }
         }

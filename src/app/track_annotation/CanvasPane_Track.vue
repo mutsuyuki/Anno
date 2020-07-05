@@ -99,11 +99,24 @@
             return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
         }
 
-        //
-        // get currentHistory(): { [fileName: string]: AnnotationContainer<Annotation_Track[]> } {
-        //     return AnnotationHistoryStore.current;
-        // }
-        //
+        get selectingObject() {
+            const frame = OperationStore_Track.frame;
+            if (!AnnotationsStore_Track.annotations[frame])
+                return null;
+
+            const objectId = OperationStore_Track.selectingObjectId;
+            return AnnotationsStore_Track.annotations[frame][objectId];
+        }
+
+        get selectingJoint() {
+            const selectingObject = this.selectingObject;
+            if (!selectingObject)
+                return null;
+
+            const jointName = OperationStore_Track.selectingJointName;
+            return (<any>selectingObject.bone)[jointName];
+        }
+
         created() {
 
             // // 動画読み込み
@@ -141,24 +154,6 @@
             //         //
             //         // if (AnnotationFilesStore.items.length > 0)
             //         //     AnnotationHistoryStore.addHistory(annotations);
-            //     },
-            //     {deep: true}
-            // );
-
-            // // 新規編集中のアノテーションの状態が変わった
-            // this.$watch(
-            //     () => this.newAnnotation,
-            //     () => {
-            //         // this.newGraphics = [];
-            //         // const annotation = this.newAnnotation.value;
-            //         //
-            //         // const circle = new Circle(annotation.start, 2, this.circleColor);
-            //         // circle.zIndex = 1;
-            //         // this.newGraphics.push(circle);
-            //         //
-            //         // const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
-            //         // line.zIndex = 0;
-            //         // this.newGraphics.push(line);
             //     },
             //     {deep: true}
             // );
@@ -201,15 +196,7 @@
                         boneLines.zIndex = 0;
                         this.graphics.push(boneLines);
 
-                        const boneJoints = new MultiCircles(
-                            Object.values(bone).map(v => {
-                                return {
-                                    center: v,
-                                    radius: 4,
-                                    color: this.circleColor
-                                }
-                            })
-                        );
+                        const boneJoints = new MultiCircles(Object.values(bone), 4, this.circleColor);
                         boneJoints.zIndex = 1;
                         this.graphics.push(boneJoints);
 
@@ -233,41 +220,26 @@
         }
 
         private onDragStart(e: Point) {
-            //     // // ドラッグ開始
-            //     // if (!this.isCtrlKeyDown) {
-            //     //     Vue.set(this.newAnnotation, "value", {
-            //     //         start: {x: e.x, y: e.y},
-            //     //         end: {x: e.x, y: e.y},
-            //     //         width: 0.001
-            //     //     });
-            //     //
-            //     //     return;
-            //     // }
-            //     //
-            //     // // 削除
-            //     // if (this.isCtrlKeyDown) {
-            //     //     let nearestDistance = Number.MAX_VALUE;
-            //     //     let nearestAnnotation: Annotation_Track;
-            //     //     let annotations = this.currentHistory;
-            //     //     for (const annotation of annotations[this.currentFileNameWithTime].annotation) {
-            //     //         const distance = PointUtil.distance(annotation.start, e);
-            //     //         if (distance < nearestDistance) {
-            //     //             nearestDistance = distance;
-            //     //             nearestAnnotation = annotation;
-            //     //         }
-            //     //     }
-            //     //
-            //     //     if (nearestDistance < 0.1) {
-            //     //         annotations[this.currentFileNameWithTime].annotation = annotations[this.currentFileNameWithTime].annotation.filter(v => v !== nearestAnnotation);
-            //     //         AnnotationHistoryStore.addHistory(annotations);
-            //     //         console.log("bbbbba")
-            //     //     }
-            //     // }
+            if (OperationStore_Track.isBoneMode) {
+                if (!OperationStore_Track.isDeleteMode) {
+                    const clickedJoint = this.getClickedJoint(e);
+                    OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
+                    OperationStore_Track.setSelectingJointName(clickedJoint.jointName);
+                }
+            }
         }
 
-        //
         private onDrag(e: Point) {
-            //     // this.newAnnotation.value.end = e;
+            if (OperationStore_Track.isBoneMode) {
+                if (this.selectingJoint) {
+                    AnnotationsStore_Track.setJointPosition({
+                        frame: OperationStore_Track.frame,
+                        objectId: OperationStore_Track.selectingObjectId,
+                        jointName: OperationStore_Track.selectingJointName,
+                        position: e
+                    })
+                }
+            }
         }
 
         //
@@ -286,6 +258,24 @@
             //     //         width: 0
             //     //     });
             //     // }
+        }
+
+        private getClickedJoint(clickedPosition: Point) {
+            let nearestDistance = Number.MAX_VALUE;
+            let nearestJoint: { objectId: string, jointName: string } = {objectId: "", jointName: ""};
+
+            for (const objectId in this.annotationsOfCurrentFrame) {
+                for (const jointName in this.annotationsOfCurrentFrame[objectId].bone) {
+                    const bonePosition = (<any>this.annotationsOfCurrentFrame[objectId].bone)[jointName];
+                    const distance = PointUtil.distance(bonePosition, clickedPosition);
+                    if (distance < 0.1 && distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestJoint = {objectId: objectId, jointName: jointName};
+                    }
+                }
+            }
+
+            return nearestJoint;
         }
 
         //

@@ -1,12 +1,12 @@
 import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import {Frame_Track} from "./FramesStore_Track";
+import {Point} from "@/common/interface/Point";
 import DeepCloner from "@/common/utils/DeepCloner";
 
 export interface Annotation_Track {
-    frame: number;
-    objectId: number;
+    frame: string;
+    objectId: string;
     class: number;
     bounding: {
         left: number,
@@ -15,35 +15,93 @@ export interface Annotation_Track {
         height: number
     };
     bone: {
-        head: { x: number, y: number };
-        neck: { x: number, y: number };
-        chest: { x: number, y: number };
-        left_shoulder: { x: number, y: number };
-        left_elbow: { x: number, y: number };
-        left_wrist1: { x: number, y: number };
-        left_wrist2: { x: number, y: number };
-        right_shoulder: { x: number, y: number };
-        right_elbow: { x: number, y: number };
-        right_wrist1: { x: number, y: number };
-        right_wrist2: { x: number, y: number };
-        pelvis: { x: number, y: number };
-        left_hip: { x: number, y: number };
-        left_knee: { x: number, y: number };
-        left_ankle1: { x: number, y: number };
-        left_ankle2: { x: number, y: number };
-        right_hip: { x: number, y: number };
-        right_knee: { x: number, y: number };
-        right_ankle1: { x: number, y: number };
-        right_ankle2: { x: number, y: number };
+        head: Point;
+        neck: Point;
+        chest: Point;
+        left_shoulder: Point;
+        left_elbow: Point;
+        left_wrist1: Point;
+        left_wrist2: Point;
+        right_shoulder: Point;
+        right_elbow: Point;
+        right_wrist1: Point;
+        right_wrist2: Point;
+        pelvis: Point;
+        left_hip: Point;
+        left_knee: Point;
+        left_ankle1: Point;
+        left_ankle2: Point;
+        right_hip: Point;
+        right_knee: Point;
+        right_ankle1: Point;
+        right_ankle2: Point;
     };
 }
 
 
-function makeAnnotationInstance(frame: number, objectId: number): Annotation_Track {
+@Module({
+    name: "AnnotationsStore_Track",
+    dynamic: true,
+    store: store,
+    namespaced: true
+})
+
+class AnnotationsStore_Track extends VuexModule {
+
+    // states
+    private _annotations: { [frame: string]: { [objectId: string]: Annotation_Track } } = {};
+
+    // getters
+    get annotations() {
+        return this._annotations;
+    }
+
+    get newestObjectId() {
+        return getNewestObjectId(this._annotations);
+    }
+
+    @Mutation
+    public create(frame: string) {
+        if (!this._annotations[frame])
+            Vue.set(this._annotations, frame, {});
+
+        const newObjectIdAsNumber = Number(getNewestObjectId(this._annotations)) + 1;
+        const newObjectId = newObjectIdAsNumber.toString();
+
+        Vue.set(
+            this._annotations[frame],
+            newObjectIdAsNumber,
+            makeAnnotationInstance(frame, newObjectId)
+        );
+    }
+
+    @Mutation
+    public setClass(value: { frame: string, objectId: string, class: number }) {
+        Vue.set(
+            this._annotations[value.frame][value.objectId],
+            "class",
+            value.class
+        );
+    }
+
+    @Mutation
+    public setJointPosition(value: { frame: string, objectId: string, jointName: string, position: Point }) {
+        Vue.set(
+            this._annotations[value.frame][value.objectId].bone,
+            value.jointName,
+            DeepCloner.copy(value.position)
+        );
+    }
+}
+
+export default getModule(AnnotationsStore_Track);
+
+
+function makeAnnotationInstance(frame: string, objectId: string): Annotation_Track {
     return {
         frame: frame,
         objectId: objectId,
-        class: -9999,
+        class: 0,
         bounding: {
             left: 0.2,
             top: 0.2,
@@ -75,41 +133,10 @@ function makeAnnotationInstance(frame: number, objectId: number): Annotation_Tra
     }
 }
 
-@Module({
-    name: "AnnotationsStore_Track",
-    dynamic: true,
-    store: store,
-    namespaced: true
-})
+function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation_Track } }): string {
+    const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
+    const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
+    const newObjectIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
 
-class AnnotationsStore_Track extends VuexModule {
-
-    // states
-    private _annotations: { [frame: number]: { [objectId: number]: Annotation_Track } } = {};
-
-    // getters
-    get annotations() {
-        return this._annotations;
-    }
-
-    // get operatingTarget() {
-    //     return this._operatingTarget;
-    // }
-
-
-    @Mutation
-    public create(frame: number) {
-        if (!this._annotations[frame])
-            Vue.set(this._annotations, frame, {});
-
-        console.log("anno", DeepCloner.copy(this._annotations));
-        const objectIds = Object.values(this._annotations).map(v => Object.keys(v)).flat();
-        const numberObjectIds = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
-        const newId = numberObjectIds.length == 0 ? 0 : numberObjectIds.reduce((a, b) => Math.max(a, b)) + 1;
-
-        Vue.set(this._annotations[frame], newId, makeAnnotationInstance(frame, newId));
-    }
-
+    return newObjectIdAsNumber.toString();
 }
-
-export default getModule(AnnotationsStore_Track);

@@ -19,7 +19,6 @@ export default class MultiLines implements Graphic {
             );
             this.lines.push(line)
         }
-
     }
 
     public draw(context: CanvasRenderingContext2D) {
