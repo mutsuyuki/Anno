@@ -234,12 +234,12 @@
         }
 
         private onDragStart(e: MovingPoint) {
-            console.log("start", e)
             // バウンディング選択
             if (OperationStore_Track.isBoundingMode) {
                 if (!OperationStore_Track.isDeleteMode) {
-                    const objectId = this.getClickedBounding(e);
-                    OperationStore_Track.setSelectingObjectId(objectId);
+                    const clickedBounding = this.getClickedBounding(e);
+                    OperationStore_Track.setSelectingObjectId(clickedBounding.objectId);
+                    OperationStore_Track.setSelectingEdge(clickedBounding.selectingEdge);
                     OperationStore_Track.setSelectingJointName("");
                 }
             }
@@ -249,6 +249,7 @@
                 if (!OperationStore_Track.isDeleteMode) {
                     const clickedJoint = this.getClickedJoint(e);
                     OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
+                    OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
                     OperationStore_Track.setSelectingJointName(clickedJoint.jointName);
                 }
             }
@@ -256,28 +257,50 @@
         }
 
         private onDrag(e: MovingPoint) {
-            console.log("drag", e)
             // バウンディング選択
             if (OperationStore_Track.isBoundingMode) {
                 if (this.selectingObject) {
-                    let bounding = DeepCloner.copy(this.selectingObject.bounding);
-                    bounding.top += e.deltaY;
-                    bounding.left += e.deltaX;
-
                     const frame = OperationStore_Track.frame;
                     const objectId = OperationStore_Track.selectingObjectId;
+
+                    let bounding = DeepCloner.copy(this.selectingObject.bounding);
+
+                    const isEdgeSelect = Object.values(OperationStore_Track.selectingEdge).filter(v => v).length >= 1;
+                    if (isEdgeSelect) {
+                        // 端のドラッグは矩形の拡大縮小
+                        if (OperationStore_Track.selectingEdge.left) {
+                            bounding.left += e.deltaX;
+                            bounding.width -= e.deltaX;
+                        }
+                        if (OperationStore_Track.selectingEdge.right) {
+                            bounding.width += e.deltaX;
+                        }
+                        if (OperationStore_Track.selectingEdge.top) {
+                            bounding.top += e.deltaY;
+                            bounding.height -= e.deltaY;
+                        }
+                        if (OperationStore_Track.selectingEdge.bottom) {
+                            bounding.height += e.deltaY;
+                        }
+                    } else {
+                        // 中心部ドラッグは移動
+                        bounding.top += e.deltaY;
+                        bounding.left += e.deltaX;
+                    }
+
                     AnnotationsStore_Track.setBounding({
                         frame: frame,
                         objectId: objectId,
                         bounding: bounding
                     });
 
-                    const bone = AnnotationsStore_Track.annotations[frame][objectId].bone;
-                    AnnotationsStore_Track.addJointPositions({
-                        frame: frame,
-                        objectId: objectId,
-                        moveAmount: {x: e.deltaX, y: e.deltaY}
-                    })
+                    if (!isEdgeSelect) {
+                        AnnotationsStore_Track.addJointPositions({
+                            frame: frame,
+                            objectId: objectId,
+                            moveAmount: {x: e.deltaX, y: e.deltaY}
+                        })
+                    }
                 }
             }
 
@@ -315,20 +338,31 @@
         private getClickedBounding(clickedPosition: Point) {
             let smallestArea = Number.MAX_VALUE;
             let smallestObjectId: string = "";
+            let selectingEdge = {top: false, right: false, bottom: false, left: false};
+            const edgeWidth = 0.01;
 
             for (const objectId in this.annotationsOfCurrentFrame) {
                 const bounding = this.annotationsOfCurrentFrame[objectId].bounding;
                 const x = clickedPosition.x;
                 const y = clickedPosition.y;
-                const insideHorizontal = (bounding.left < x) && (x < bounding.left + bounding.width);
-                const insideVertical = (bounding.top < y) && (y < bounding.top + bounding.height);
+                const insideHorizontal = (bounding.left - edgeWidth < x) && (x < bounding.left + bounding.width + edgeWidth);
+                const insideVertical = (bounding.top - edgeWidth < y) && (y < bounding.top + bounding.height + edgeWidth);
                 const area = bounding.width * bounding.height;
                 if (insideHorizontal && insideVertical && area < smallestArea) {
-                    smallestObjectId = objectId
+                    smallestObjectId = objectId;
+
+                    if (Math.abs(bounding.left - x) <= edgeWidth)
+                        selectingEdge.left = true;
+                    if (Math.abs(bounding.left + bounding.width - x) <= edgeWidth)
+                        selectingEdge.right = true;
+                    if (Math.abs(bounding.top - y) <= edgeWidth)
+                        selectingEdge.top = true;
+                    if (Math.abs(bounding.top + bounding.height - y) <= edgeWidth)
+                        selectingEdge.bottom = true;
                 }
             }
 
-            return smallestObjectId;
+            return {objectId: smallestObjectId, selectingEdge: selectingEdge};
         }
 
         private getClickedJoint(clickedPosition: Point) {

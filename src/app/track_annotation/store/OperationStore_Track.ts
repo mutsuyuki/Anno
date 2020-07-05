@@ -11,12 +11,12 @@ import store from "@/store";
 
 class OperationStore_Track extends VuexModule {
 
+
     // states
     private _frame: string = "0";
     private _selectingObjectId: string = "";
-    private _hoveringObjectId: string = "";
+    private _selectingEdge = { top: false, right: false, bottom: false, left: false };
     private _selectingJointName: string = "";
-    private _hoveringJointName: string = "";
     private _annotationMode: number = 0;    // 0:Bounding  1:Bone
     private _isDeleteMode: boolean = false;
 
@@ -29,16 +29,12 @@ class OperationStore_Track extends VuexModule {
         return this._selectingObjectId;
     }
 
-    get hoveringObjectId(): string {
-        return this._hoveringObjectId;
+    get selectingEdge(): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
+        return this._selectingEdge;
     }
 
     get selectingJointName(): string {
         return this._selectingJointName;
-    }
-
-    get hoveringJointName(): string {
-        return this._hoveringJointName;
     }
 
     get isBoundingMode(): boolean {
@@ -52,6 +48,7 @@ class OperationStore_Track extends VuexModule {
     get annotationMode(): number {
         return this._annotationMode;
     }
+
     get isDeleteMode(): boolean {
         return this._isDeleteMode;
     }
@@ -68,18 +65,13 @@ class OperationStore_Track extends VuexModule {
     }
 
     @Mutation
-    public setHoveringObjectId(value: string) {
-        this._hoveringObjectId = value;
+    public setSelectingEdge(value: { top: boolean; right: boolean; bottom: boolean; left: boolean }) {
+        this._selectingEdge = value;
     }
 
     @Mutation
     public setSelectingJointName(value: string) {
         this._selectingJointName = value;
-    }
-
-    @Mutation
-    public setHoveringJointName(value: string) {
-        this._hoveringJointName = value;
     }
 
     @Mutation
