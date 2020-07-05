@@ -37,7 +37,7 @@ export interface Annotation_Track {
     }
 }
 
-export module Annotation_TrackUtil {
+export module AnnotationUtil_Track {
     export function makeInstance(id:number, frame:number): Annotation_Track {
         return {
             id: id,

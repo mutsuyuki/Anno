@@ -39,7 +39,7 @@
     import {Graphic} from "@/components/Canvas/Graphic";
     import {Point, PointUtil} from "@/common/interface/Point";
     import {Color} from "@/common/interface/Color";
-    import {Annotation_Track, Annotation_TrackUtil} from "@/app/track_annotation/Annotation_Track";
+    import {Annotation_Track, AnnotationUtil_Track} from "@/app/track_annotation/store/Annotation_Track";
     import ImageFilesStore from "@/store/ImageFilesStore";
     import FileUtil from "@/common/utils/FileUtil";
     import AnnotationContainer from "@/common/model/AnnotationContainer";
@@ -51,7 +51,7 @@
     import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
     import VideoFileStore from "@/store/VideoFileStore";
     import VideoPlayer from "@/components/Player/VideoPlayer.vue";
-    import MenuStore_Track from "@/app/track_annotation/MenuStore_Track";
+    import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
 
     @Component({
         components: {
@@ -135,7 +135,7 @@
                     //         };
                     //         reader.readAsText(AnnotationFilesStore.items[i]);
                     //     });
-                    //     const models = Annotation_TrackUtil.fileToModels(fileText as string);
+                    //     const models = AnnotationUtil_Track.fileToModels(fileText as string);
                     //     annotations[fileName].annotation = models;
                     // }
                     //
@@ -188,32 +188,6 @@
             );
 
 
-            // データ新規作成
-            this.$watch(
-                () => MenuStore_Track.makeNewDataCue,
-                () =>{
-                    console.log("new")
-                }
-            );
-
-
-            // データを前フレームからコピー
-            this.$watch(
-                () => MenuStore_Track.copyFromSelectCue,
-                () =>{
-                    console.log("copy1")
-
-                }
-            );
-
-            // データ新規作成
-            this.$watch(
-                () => MenuStore_Track.copyFromPrevFrameCue,
-                () =>{
-                    console.log("copy2")
-
-                }
-            );
 
             // 削除用のCtrlキー検出
             document.addEventListener("keydown", (e) => {
@@ -266,19 +240,20 @@
         }
 
         private onDragEnd(e: Point) {
-            if (!this.isCtrlKeyDown) {
-                let annotations = this.currentHistory;
-                if (!annotations[this.currentFileNameWithTime])
-                    annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
-
-                annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
-                AnnotationHistoryStore.addHistory(annotations);
-                Vue.set(this.newAnnotation, "value", {
-                    start: {x: -9999, y: -9999},
-                    end: {x: -9999, y: -9999},
-                    width: 0
-                });
-            }
+            //
+            // if (!this.isCtrlKeyDown) {
+            //     let annotations = this.currentHistory;
+            //     if (!annotations[this.currentFileNameWithTime])
+            //         annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
+            //
+            //     annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
+            //     AnnotationHistoryStore.addHistory(annotations);
+            //     Vue.set(this.newAnnotation, "value", {
+            //         start: {x: -9999, y: -9999},
+            //         end: {x: -9999, y: -9999},
+            //         width: 0
+            //     });
+            // }
         }
 
         private async onDownload() {
@@ -288,7 +263,7 @@
             //
             // FileDownloader.downloadTextFile(
             //     this.currentFileNameWithTime + ".txt",
-            //     Annotation_TrackUtil.modelsToFile(this.currentAnnotation.annotation)
+            //     AnnotationUtil_Track.modelsToFile(this.currentAnnotation.annotation)
             // );
             //
             // FileDownloader.downloadBlob(

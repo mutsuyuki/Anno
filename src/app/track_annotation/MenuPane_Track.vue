@@ -30,25 +30,25 @@
                  v-show="isVideoSelected"
             >
                 <MenuSubTitle :text="'データ作成'" class="subtitle"/>
-                <DataCreateButtons_Track
-                        v-show="isVideoSelected"
+                <ButtonGrid
+                        :data="[{id:0,text:'新しいデータを作る'},{id:1,text:'選択中データをコピー'},{id:2,text:'前のフレームをコピー'}]"
+                        :selectId="-1"
+                        :cols="1"
                 />
 
                 <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
                 <ButtonGrid
                         :data="[{id:0,text:'食'},{id:1,text:'歩'},{id:2,text:'立'},{id:3,text:'休'},{id:4,text:'飲'}]"
-                        :selectId="1"
+                        :selectId="selectedClass"
                         :cols="5"
                         :font-size="11"
-                        :max-height="100"
                 />
 
                 <MenuSubTitle :text="'モード選択'" class="subtitle"/>
                 <ButtonGrid
                         :data="[{id:0,text:'領域'}, {id:1,text:'ボーン'}]"
-                        :selectId="0"
+                        :selectId="selectedMode"
                         :cols="2"
-                        :max-height="100"
                 />
 
                 <MenuSubTitle :text="'データビュー'" class="subtitle"/>
@@ -73,7 +73,6 @@
     import VideoFileStore from "@/store/VideoFileStore";
     import MenuHeader from "@/components/Menu/MenuHeader.vue";
     import MenuFooter from "@/components/Menu/MenuFooter.vue";
-    import DataCreateButtons_Track from "@/app/track_annotation/DataCreateButtons_Track.vue";
     import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
     import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
 
@@ -81,7 +80,6 @@
         components: {
             ButtonGrid,
             MenuSubTitle,
-            DataCreateButtons_Track,
             MenuFooter,
             MenuHeader,
             FileSelector
@@ -91,6 +89,14 @@
 
         get isVideoSelected() {
             return VideoFileStore.isSelected;
+        }
+
+        get selectedClass() {
+            return 1;
+        }
+
+        get selectedMode() {
+            return 0;
         }
 
         private onSelectVideoFile(files: File[]) {
