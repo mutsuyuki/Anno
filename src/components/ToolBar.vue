@@ -42,19 +42,19 @@
     })
     export default class ToolBar extends Vue {
 
-        private onClickUndo(){
+        private onClickUndo() {
             AnnotationHistoryStore.undo();
         }
 
-        private onClickRedo(){
+        private onClickRedo() {
             AnnotationHistoryStore.redo();
         }
 
-        get enableUndo(){
+        get enableUndo() {
             return AnnotationHistoryStore.enableUndo;
         }
 
-        get enableRedo(){
+        get enableRedo() {
             return AnnotationHistoryStore.enableRedo;
         }
 
@@ -76,6 +76,10 @@
         display: flex;
         justify-content: space-evenly;
         align-items: center;
+
+        * {
+            user-select: none;
+        }
     }
 
     .ui-unit {
@@ -92,7 +96,7 @@
             margin-left: 8px;
         }
 
-        input{
+        input {
             cursor: pointer;
         }
 
@@ -104,9 +108,10 @@
         }
 
 
-        &.is-disable{
+        &.is-disable {
             opacity: 0.4;
             cursor: default;
+
             &:hover {
                 opacity: 0.4;
             }
