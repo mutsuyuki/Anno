@@ -67,13 +67,41 @@ class AnnotationsStore_Track extends VuexModule {
         if (!this._annotations[frame])
             Vue.set(this._annotations, frame, {});
 
-        const newObjectIdAsNumber = Number(getNewestObjectId(this._annotations)) + 1;
-        const newObjectId = newObjectIdAsNumber.toString();
+        const newObjectId = (Number(getNewestObjectId(this._annotations)) + 1).toString();
 
         Vue.set(
             this._annotations[frame],
-            newObjectIdAsNumber,
+            newObjectId,
             makeAnnotationInstance(frame, newObjectId)
+        );
+    }
+
+    @Mutation
+    public copyObject(value: { frame: string, objectId: string }) {
+        if (!this._annotations[value.frame]) {
+            alert("現在のフレームにはアノテーションがありません");
+            return;
+        }
+        if (!this._annotations[value.frame][value.objectId]) {
+            alert("アノテーションが選択されていません。");
+            return;
+        }
+
+        const newObjectId = (Number(getNewestObjectId(this._annotations)) + 1).toString();
+        let copyedAnnotation = DeepCloner.copy(this._annotations[value.frame][value.objectId]);
+        copyedAnnotation.objectId = newObjectId;
+        copyedAnnotation.bounding.left += 0.005;
+        copyedAnnotation.bounding.top += 0.01;
+        copyedAnnotation.bounding.width -= 0.0001;   // 小さいものが優先して選ばれるため、コピーしたやつを選ばれやすくする
+        for (const jointName in copyedAnnotation.bone) {
+            (<any>copyedAnnotation.bone)[jointName].x += 0.005;
+            (<any>copyedAnnotation.bone)[jointName].y += 0.01;
+        }
+
+        Vue.set(
+            this._annotations[value.frame],
+            newObjectId,
+            copyedAnnotation
         );
     }
 

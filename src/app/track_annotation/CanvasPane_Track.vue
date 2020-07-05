@@ -16,7 +16,7 @@
                 @dragarea="onDrag"
                 @dragareaend="onDragEnd"
                 @download="onDownload"
-                @timeupdate="videoCurrentTime = $event"
+                @timeupdate="onTimeUpdate"
         >
             <CanvasRenderer class="canvas_renderer" :graphics="graphics"/>
         </VideoPlayer>
@@ -38,7 +38,6 @@
     import {Graphic} from "@/components/Canvas/Graphic";
     import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
     import {Color} from "@/common/interface/Color";
-    import ImageFilesStore from "@/store/ImageFilesStore";
     import FileUtil from "@/common/utils/FileUtil";
     import AnnotationContainer from "@/common/model/AnnotationContainer";
     import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
@@ -339,7 +338,7 @@
             let smallestArea = Number.MAX_VALUE;
             let smallestObjectId: string = "";
             let selectingEdge = {top: false, right: false, bottom: false, left: false};
-            const edgeWidth = 0.01;
+            const edgeWidth = 0.02;
 
             for (const objectId in this.annotationsOfCurrentFrame) {
                 const bounding = this.annotationsOfCurrentFrame[objectId].bounding;
@@ -381,6 +380,10 @@
             }
 
             return nearestJoint;
+        }
+
+        private onTimeUpdate(frame: number): void {
+            OperationStore_Track.setFrame(frame.toString());
         }
 
         //

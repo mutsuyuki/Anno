@@ -137,9 +137,22 @@
         private onSelectCreateData(_: number) {
             AnnotationsStore_Track.create(OperationStore_Track.frame);
             OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
+            OperationStore_Track.setModeToBounding();
         }
 
-        private onSelectCopyData(dataMenuId: number) {
+        private onSelectCopyData(copyMenuId: number) {
+            switch (copyMenuId) {
+                case 0:
+                    const frame = OperationStore_Track.frame;
+                    const objectId = OperationStore_Track.selectingObjectId;
+                    AnnotationsStore_Track.copyObject({frame: frame, objectId: objectId});
+                    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
+                    OperationStore_Track.setModeToBounding();
+                    break;
+                case 1:
+                    OperationStore_Track.setModeToBone();
+                    break;
+            }
         }
 
         private onSelectClass(classNo: number) {
