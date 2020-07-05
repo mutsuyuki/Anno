@@ -18,57 +18,68 @@
 <script lang="ts">
     import {Component, Prop, Vue} from 'vue-property-decorator';
     import ScalableArea from "@/components/ScalableArea/ScalableArea.vue";
-    import {Point, PointAndScale} from "@/common/interface/Point";
+    import {MovingPoint, Point, PointAndScale} from "@/common/interface/Point";
 
     @Component({
         components: {ScalableArea}
     })
     export default class NormalizedScalableArea extends Vue {
-        private normalize(point: Point): Point {
+        private normalizePoint(point: Point): Point {
             return {
                 x: point.x / this.$el.clientWidth,
                 y: point.y / this.$el.clientHeight
             }
         }
-
-        private onDragStart(e: Point) {
-            this.$emit("dragareastart", this.normalize(e));
+        
+        private normalizeMovingPoint(point: MovingPoint): MovingPoint {
+            return {
+                x: point.x / this.$el.clientWidth,
+                y: point.y / this.$el.clientHeight,
+                startX: point.startX / this.$el.clientWidth,
+                startY: point.startY / this.$el.clientHeight,
+                deltaX: point.deltaX / this.$el.clientWidth,
+                deltaY: point.deltaY / this.$el.clientHeight
+            }
         }
 
-        private onDrag(e: Point) {
-            this.$emit("dragarea", this.normalize(e));
+        private onDragStart(e: MovingPoint) {
+            this.$emit("dragareastart", this.normalizeMovingPoint(e));
         }
 
-        private onDragEnd(e: Point) {
-            this.$emit("dragareaend", this.normalize(e));
+        private onDrag(e: MovingPoint) {
+            this.$emit("dragarea", this.normalizeMovingPoint(e));
+        }
+
+        private onDragEnd(e: MovingPoint) {
+            this.$emit("dragareaend", this.normalizeMovingPoint(e));
         }
 
         private onHover(e: Point) {
-            this.$emit("hover", this.normalize(e));
+            this.$emit("hover", this.normalizePoint(e));
         }
 
-        private onMoveStart(e: Point) {
-            this.$emit("movestart", this.normalize(e));
+        private onMoveStart(e: MovingPoint) {
+            this.$emit("movestart", this.normalizeMovingPoint(e));
         }
 
-        private onMove(e: Point) {
-            this.$emit("move", this.normalize(e));
+        private onMove(e: MovingPoint) {
+            this.$emit("move", this.normalizeMovingPoint(e));
         }
 
-        private onMoveEnd(e: Point) {
-            this.$emit("move", this.normalize(e));
+        private onMoveEnd(e: MovingPoint) {
+            this.$emit("move", this.normalizeMovingPoint(e));
         }
 
         private onZoomStart(e: PointAndScale) {
-            this.$emit("zoomstart", Object.assign(this.normalize(e), {scale: e.scale}));
+            this.$emit("zoomstart", Object.assign(this.normalizePoint(e), {scale: e.scale}));
         }
 
         private onZoom(e: PointAndScale) {
-            this.$emit("zoom", Object.assign(this.normalize(e), {scale: e.scale}));
+            this.$emit("zoom", Object.assign(this.normalizePoint(e), {scale: e.scale}));
         }
 
         private onZoomEnd(e: PointAndScale) {
-            this.$emit("zoomend", Object.assign(this.normalize(e), {scale: e.scale}));
+            this.$emit("zoomend", Object.assign(this.normalizePoint(e), {scale: e.scale}));
         }
     }
 </script>

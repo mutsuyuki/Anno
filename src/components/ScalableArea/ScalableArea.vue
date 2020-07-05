@@ -27,6 +27,7 @@
 
 <script lang="ts">
     import {Component, Prop, Vue} from 'vue-property-decorator';
+    import {Point, PointUtil} from "@/common/interface/Point";
 
     @Component
     export default class ScalableArea extends Vue {
@@ -50,6 +51,7 @@
         private startTouchY: number = -1000;
         private lastPinchDistance: number = -1000;
 
+
         created() {
             document.addEventListener("keydown", (e: KeyboardEvent) => {
                 if (e.key == " ") {
@@ -66,20 +68,48 @@
         // ---------------------------------
         //  ドラッグ（上にイベント通知するだけ）
         // ---------------------------------
+        private dragStartPoint: Point = {x: 0, y: 0};
+        private dragPrevPoint: Point = {x: 0, y: 0};
+
         private startDrag(x: number, y: number): void {
             this.isDragging = true;
-            this.$emit("dragareastart", {x: x, y: y});
-
+            this.$emit("dragareastart", {
+                x: x,
+                y: y,
+                startX: x,
+                startY: y,
+                deltaX: 0,
+                deltaY: 0
+            });
+            this.dragStartPoint = {x: x, y: y};
+            this.dragPrevPoint = {x: x, y: y};
             document.oncontextmenu = () => false;  // 右クリックメニュー表示の禁止
         }
 
         private drag(x: number, y: number) {
-            this.$emit("dragarea", {x: x, y: y});
+            const delta = PointUtil.minus({x: x, y: y}, this.dragPrevPoint);
+            this.$emit("dragarea", {
+                x: x,
+                y: y,
+                startX: this.dragStartPoint.x,
+                startY: this.dragStartPoint.y,
+                deltaX: delta.x,
+                deltaY: delta.y
+            });
+            this.dragPrevPoint = {x: x, y: y};
         }
 
         private endDrag(x: number, y: number) {
             this.isDragging = false;
-            this.$emit("dragareaend", {x: x, y: y});
+            const delta = PointUtil.minus({x: x, y: y}, this.dragPrevPoint);
+            this.$emit("dragareaend", {
+                x: x,
+                y: y,
+                startX: this.dragStartPoint.x,
+                startY: this.dragStartPoint.y,
+                deltaX: delta.x,
+                deltaY: delta.y
+            });
 
             setTimeout(() => {
                 document.oncontextmenu = () => true; // 右クリックメニュー表示の回復
@@ -89,6 +119,9 @@
         // -------------------
         //  移動
         // -------------------
+        private moveStartPoint: Point = {x: 0, y: 0};
+        private movePrevPoint: Point = {x: 0, y: 0};
+
         private startMove(x: number, y: number): void {
             this.isMoving = true;
 
@@ -96,7 +129,16 @@
             this.startTouchY = y;
             this.startTranslateX = this.translateX_;
             this.startTranslateY = this.translateY_;
-            this.$emit("movestart", {x: x, y: y});
+            this.$emit("movestart", {
+                x: x,
+                y: y,
+                startX: x,
+                startY: y,
+                deltaX: 0,
+                deltaY: 0
+            });
+            this.moveStartPoint = {x: x, y: y};
+            this.movePrevPoint = {x: x, y: y};
 
             document.oncontextmenu = () => false;  // 右クリックメニュー表示の禁止
 
@@ -105,7 +147,16 @@
         private move(x: number, y: number): void {
             this.translateX_ = this.startTranslateX + (x - this.startTouchX) / this.scale_;
             this.translateY_ = this.startTranslateY + (y - this.startTouchY) / this.scale_;
-            this.$emit("move", {x: x, y: y});
+            const delta = PointUtil.minus({x: x, y: y}, this.movePrevPoint);
+            this.$emit("move", {
+                x: x,
+                y: y,
+                startX: this.moveStartPoint.x,
+                startY: this.moveStartPoint.y,
+                deltaX: delta.x,
+                deltaY: delta.y
+            });
+            this.movePrevPoint = {x: x, y: y};
         }
 
 
@@ -113,12 +164,19 @@
             this.fitInside();
 
             this.isMoving = false;
-            this.$emit("endmove", {x: x, y: y});
+            const delta = PointUtil.minus({x: x, y: y}, this.movePrevPoint);
+            this.$emit("endmove", {
+                x: x,
+                y: y,
+                startX: this.moveStartPoint.x,
+                startY: this.moveStartPoint.y,
+                deltaX: delta.x,
+                deltaY: delta.y
+            });
 
             setTimeout(() => {
                 document.oncontextmenu = () => true; // 右クリックメニュー表示の回復
             }, 100);
-
         }
 
         private fitInside() {

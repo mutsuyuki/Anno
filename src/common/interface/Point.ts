@@ -7,6 +7,15 @@ export interface PointAndScale extends Point {
     scale: number;
 }
 
+export interface MovingPoint {
+    x: number;
+    y: number;
+    startX:number;
+    startY:number;
+    deltaX:number;
+    deltaY:number;
+}
+
 export module PointUtil {
     export function normalize(point: Point) {
         const length = PointUtil.length(point);
@@ -29,8 +38,8 @@ export module PointUtil {
 
     export function minus(point1: Point, point2: Point) {
         return {
-            x: point2.x - point1.x,
-            y: point2.y - point1.y
+            x: point1.x - point2.x,
+            y: point1.y - point2.y
         }
     }
 
@@ -43,8 +52,6 @@ export module PointUtil {
 
     export function distance(point1: Point, point2: Point) {
         return ((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2) ** 0.5;
-
-
     }
 
 

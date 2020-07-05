@@ -36,7 +36,7 @@
     import Circle from "@/components/Canvas/Circle";
     import ScaleLine from "@/components/Canvas/ScaleLine";
     import {Graphic} from "@/components/Canvas/Graphic";
-    import {Point, PointUtil} from "@/common/interface/Point";
+    import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
     import {Color} from "@/common/interface/Color";
     import ImageFilesStore from "@/store/ImageFilesStore";
     import FileUtil from "@/common/utils/FileUtil";
@@ -53,6 +53,8 @@
     import AnnotationsStore_Track, {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Track";
     import MultiLines from "@/components/Canvas/MultiLines";
     import MultiCircles from "@/components/Canvas/MultiCircles";
+    import RectangleLine from "@/components/Canvas/RectangleLine";
+    import DeepCloner from "@/common/utils/DeepCloner";
 
     @Component({
         components: {
@@ -161,47 +163,7 @@
             // 表示対象のアノテーションたちの状態が変わった
             this.$watch(
                 () => this.annotationsOfCurrentFrame,
-                () => {
-                    this.graphics = [];
-
-                    for (const objectId in this.annotationsOfCurrentFrame) {
-                        const annotation = this.annotationsOfCurrentFrame[objectId];
-                        const bone = annotation.bone;
-
-                        const boneLines = new MultiLines(
-                            [
-                                {start: bone.head, end: bone.neck},
-                                {start: bone.neck, end: bone.chest},
-                                {start: bone.chest, end: bone.left_shoulder},
-                                {start: bone.left_shoulder, end: bone.left_elbow},
-                                {start: bone.left_elbow, end: bone.left_wrist1},
-                                {start: bone.left_wrist1, end: bone.left_wrist2},
-                                {start: bone.chest, end: bone.right_shoulder},
-                                {start: bone.right_shoulder, end: bone.right_elbow},
-                                {start: bone.right_elbow, end: bone.right_wrist1},
-                                {start: bone.right_wrist1, end: bone.right_wrist2},
-                                {start: bone.chest, end: bone.pelvis},
-                                {start: bone.pelvis, end: bone.left_hip},
-                                {start: bone.left_hip, end: bone.left_knee},
-                                {start: bone.left_knee, end: bone.left_ankle1},
-                                {start: bone.left_ankle1, end: bone.left_ankle2},
-                                {start: bone.pelvis, end: bone.right_hip},
-                                {start: bone.right_hip, end: bone.right_knee},
-                                {start: bone.right_knee, end: bone.right_ankle1},
-                                {start: bone.right_ankle1, end: bone.right_ankle2},
-                            ],
-                            2,  // width
-                            this.lineColor
-                        );
-                        boneLines.zIndex = 0;
-                        this.graphics.push(boneLines);
-
-                        const boneJoints = new MultiCircles(Object.values(bone), 4, this.circleColor);
-                        boneJoints.zIndex = 1;
-                        this.graphics.push(boneJoints);
-
-                    }
-                },
+                () => this.draw(),
                 {deep: true}
             );
 
@@ -219,7 +181,70 @@
             // })
         }
 
-        private onDragStart(e: Point) {
+        private draw() {
+            this.graphics = [];
+
+            for (const objectId in this.annotationsOfCurrentFrame) {
+                const annotation = this.annotationsOfCurrentFrame[objectId];
+                const bone = annotation.bone;
+
+                const boneLines = new MultiLines(
+                    [
+                        {start: bone.head, end: bone.neck},
+                        {start: bone.neck, end: bone.chest},
+                        {start: bone.chest, end: bone.left_shoulder},
+                        {start: bone.left_shoulder, end: bone.left_elbow},
+                        {start: bone.left_elbow, end: bone.left_wrist1},
+                        {start: bone.left_wrist1, end: bone.left_wrist2},
+                        {start: bone.chest, end: bone.right_shoulder},
+                        {start: bone.right_shoulder, end: bone.right_elbow},
+                        {start: bone.right_elbow, end: bone.right_wrist1},
+                        {start: bone.right_wrist1, end: bone.right_wrist2},
+                        {start: bone.chest, end: bone.pelvis},
+                        {start: bone.pelvis, end: bone.left_hip},
+                        {start: bone.left_hip, end: bone.left_knee},
+                        {start: bone.left_knee, end: bone.left_ankle1},
+                        {start: bone.left_ankle1, end: bone.left_ankle2},
+                        {start: bone.pelvis, end: bone.right_hip},
+                        {start: bone.right_hip, end: bone.right_knee},
+                        {start: bone.right_knee, end: bone.right_ankle1},
+                        {start: bone.right_ankle1, end: bone.right_ankle2},
+                    ],
+                    2,  // width
+                    this.lineColor
+                );
+                boneLines.zIndex = 0;
+                this.graphics.push(boneLines);
+
+                const boneJoints = new MultiCircles(Object.values(bone), 4, this.circleColor);
+                boneJoints.zIndex = 1;
+                this.graphics.push(boneJoints);
+
+                const boundingBox = new RectangleLine(
+                    annotation.bounding.left,
+                    annotation.bounding.top,
+                    annotation.bounding.width,
+                    annotation.bounding.height,
+                    2,
+                    this.lineColor
+                );
+                boneJoints.zIndex = 2;
+                this.graphics.push(boundingBox);
+            }
+        }
+
+        private onDragStart(e: MovingPoint) {
+            console.log("start", e)
+            // バウンディング選択
+            if (OperationStore_Track.isBoundingMode) {
+                if (!OperationStore_Track.isDeleteMode) {
+                    const objectId = this.getClickedBounding(e);
+                    OperationStore_Track.setSelectingObjectId(objectId);
+                    OperationStore_Track.setSelectingJointName("");
+                }
+            }
+
+            // ボーン選択
             if (OperationStore_Track.isBoneMode) {
                 if (!OperationStore_Track.isDeleteMode) {
                     const clickedJoint = this.getClickedJoint(e);
@@ -227,9 +252,36 @@
                     OperationStore_Track.setSelectingJointName(clickedJoint.jointName);
                 }
             }
+
         }
 
-        private onDrag(e: Point) {
+        private onDrag(e: MovingPoint) {
+            console.log("drag", e)
+            // バウンディング選択
+            if (OperationStore_Track.isBoundingMode) {
+                if (this.selectingObject) {
+                    let bounding = DeepCloner.copy(this.selectingObject.bounding);
+                    bounding.top += e.deltaY;
+                    bounding.left += e.deltaX;
+
+                    const frame = OperationStore_Track.frame;
+                    const objectId = OperationStore_Track.selectingObjectId;
+                    AnnotationsStore_Track.setBounding({
+                        frame: frame,
+                        objectId: objectId,
+                        bounding: bounding
+                    });
+
+                    const bone = AnnotationsStore_Track.annotations[frame][objectId].bone;
+                    AnnotationsStore_Track.addJointPositions({
+                        frame: frame,
+                        objectId: objectId,
+                        moveAmount: {x: e.deltaX, y: e.deltaY}
+                    })
+                }
+            }
+
+            // ボーン選択
             if (OperationStore_Track.isBoneMode) {
                 if (this.selectingJoint) {
                     AnnotationsStore_Track.setJointPosition({
@@ -243,21 +295,40 @@
         }
 
         //
-        private onDragEnd(e: Point) {
-            //     //
-            //     // if (!this.isCtrlKeyDown) {
-            //     //     let annotations = this.currentHistory;
-            //     //     if (!annotations[this.currentFileNameWithTime])
-            //     //         annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
-            //     //
-            //     //     annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
-            //     //     AnnotationHistoryStore.addHistory(annotations);
-            //     //     Vue.set(this.newAnnotation, "value", {
-            //     //         start: {x: -9999, y: -9999},
-            //     //         end: {x: -9999, y: -9999},
-            //     //         width: 0
-            //     //     });
-            //     // }
+        private onDragEnd(e: MovingPoint) {
+            //
+            // if (!this.isCtrlKeyDown) {
+            //     let annotations = this.currentHistory;
+            //     if (!annotations[this.currentFileNameWithTime])
+            //         annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
+            //
+            //     annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
+            //     AnnotationHistoryStore.addHistory(annotations);
+            //     Vue.set(this.newAnnotation, "value", {
+            //         start: {x: -9999, y: -9999},
+            //         end: {x: -9999, y: -9999},
+            //         width: 0
+            //     });
+            // }
+        }
+
+        private getClickedBounding(clickedPosition: Point) {
+            let smallestArea = Number.MAX_VALUE;
+            let smallestObjectId: string = "";
+
+            for (const objectId in this.annotationsOfCurrentFrame) {
+                const bounding = this.annotationsOfCurrentFrame[objectId].bounding;
+                const x = clickedPosition.x;
+                const y = clickedPosition.y;
+                const insideHorizontal = (bounding.left < x) && (x < bounding.left + bounding.width);
+                const insideVertical = (bounding.top < y) && (y < bounding.top + bounding.height);
+                const area = bounding.width * bounding.height;
+                if (insideHorizontal && insideVertical && area < smallestArea) {
+                    smallestObjectId = objectId
+                }
+            }
+
+            return smallestObjectId;
         }
 
         private getClickedJoint(clickedPosition: Point) {

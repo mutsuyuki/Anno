@@ -17,30 +17,6 @@ export default class Circle implements Graphic {
         this._color = DeepCloner.copy(color);
     }
 
-    get center(): Point {
-        return DeepCloner.copy(this._center);
-    }
-
-    set center(value: Point) {
-        this._center = DeepCloner.copy(value);
-    }
-
-    get radius(): number {
-        return DeepCloner.copy(this._radius);
-    }
-
-    set radius(value: number) {
-        this._radius = DeepCloner.copy(value);
-    }
-
-    get color(): Color {
-        return DeepCloner.copy(this._color);
-    }
-
-    set color(value: Color) {
-        this._color = DeepCloner.copy(value);
-    }
-
     public draw(context: CanvasRenderingContext2D) {
         const scale = {x: context.canvas.clientWidth, y: context.canvas.clientHeight};
 

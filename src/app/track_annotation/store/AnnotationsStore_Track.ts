@@ -1,19 +1,21 @@
 import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import {Point} from "@/common/interface/Point";
+import {Point, PointUtil} from "@/common/interface/Point";
 import DeepCloner from "@/common/utils/DeepCloner";
+
+export interface Bounding_Track {
+    left: number,
+    top: number
+    width: number,
+    height: number
+}
 
 export interface Annotation_Track {
     frame: string;
     objectId: string;
     class: number;
-    bounding: {
-        left: number,
-        top: number
-        width: number,
-        height: number
-    };
+    bounding: Bounding_Track;
     bone: {
         head: Point;
         neck: Point;
@@ -85,6 +87,15 @@ class AnnotationsStore_Track extends VuexModule {
     }
 
     @Mutation
+    public setBounding(value: { frame: string, objectId: string, bounding: Bounding_Track }) {
+        Vue.set(
+            this._annotations[value.frame][value.objectId],
+            "bounding",
+            DeepCloner.copy(value.bounding)
+        );
+    }
+
+    @Mutation
     public setJointPosition(value: { frame: string, objectId: string, jointName: string, position: Point }) {
         Vue.set(
             this._annotations[value.frame][value.objectId].bone,
@@ -92,6 +103,19 @@ class AnnotationsStore_Track extends VuexModule {
             DeepCloner.copy(value.position)
         );
     }
+
+    @Mutation
+    public addJointPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
+        for (const jointName in this._annotations[value.frame][value.objectId].bone) {
+            const currentPosition = (<any>this._annotations[value.frame][value.objectId].bone)[jointName];
+            Vue.set(
+                this._annotations[value.frame][value.objectId].bone,
+                jointName,
+                PointUtil.add(DeepCloner.copy(currentPosition), DeepCloner.copy(value.moveAmount))
+            );
+        }
+    }
+
 }
 
 export default getModule(AnnotationsStore_Track);
@@ -103,32 +127,32 @@ function makeAnnotationInstance(frame: string, objectId: string): Annotation_Tra
         objectId: objectId,
         class: 0,
         bounding: {
-            left: 0.2,
-            top: 0.2,
-            width: 0.,
-            height: 0.6
+            left: 0.38,
+            top: 0.38,
+            width: 0.24,
+            height: 0.24
         },
         bone: {
-            head: {x: 0.4, y: 0.5},
-            neck: {x: 0.45, y: 0.5},
-            chest: {x: 0.5, y: 0.5},
-            left_shoulder: {x: 0.5, y: 0.55},
-            left_elbow: {x: 0.5, y: 0.6},
-            left_wrist1: {x: 0.5, y: 0.65},
-            left_wrist2: {x: 0.5, y: 0.7},
-            right_shoulder: {x: 0.5, y: 0.45},
-            right_elbow: {x: 0.5, y: 0.4},
-            right_wrist1: {x: 0.5, y: 0.35},
-            right_wrist2: {x: 0.5, y: 0.3},
-            pelvis: {x: 0.6, y: 0.5},
-            left_hip: {x: 0.6, y: 0.55},
-            left_knee: {x: 0.6, y: 0.6},
-            left_ankle1: {x: 0.6, y: 0.65},
-            left_ankle2: {x: 0.6, y: 0.7},
-            right_hip: {x: 0.6, y: 0.45},
-            right_knee: {x: 0.6, y: 0.4},
-            right_ankle1: {x: 0.6, y: 0.35},
-            right_ankle2: {x: 0.6, y: 0.3},
+            head: {x: 0.4, y: 0.4},
+            neck: {x: 0.45, y: 0.4},
+            chest: {x: 0.5, y: 0.4},
+            left_shoulder: {x: 0.5, y: 0.45},
+            left_elbow: {x: 0.5, y: 0.5},
+            left_wrist1: {x: 0.5, y: 0.55},
+            left_wrist2: {x: 0.5, y: 0.6},
+            right_shoulder: {x: 0.475, y: 0.45 * 0.95},
+            right_elbow: {x: 0.475, y: 0.5 * 0.95},
+            right_wrist1: {x: 0.475, y: 0.55 * 0.95},
+            right_wrist2: {x: 0.475, y: 0.6 * 0.95},
+            pelvis: {x: 0.6, y: 0.4},
+            left_hip: {x: 0.6, y: 0.45},
+            left_knee: {x: 0.6, y: 0.5},
+            left_ankle1: {x: 0.6, y: 0.55},
+            left_ankle2: {x: 0.6, y: 0.6},
+            right_hip: {x: 0.575, y: 0.45 * 0.95},
+            right_knee: {x: 0.575, y: 0.5 * 0.95},
+            right_ankle1: {x: 0.575, y: 0.55 * 0.95},
+            right_ankle2: {x: 0.575, y: 0.6 * 0.95},
         }
     }
 }

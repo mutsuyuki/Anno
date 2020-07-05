@@ -10,15 +10,15 @@ export default class ScaleLine extends Line {
         const scale = {x: context.canvas.clientWidth, y: context.canvas.clientHeight};
 
         context.beginPath();
-        context.strokeStyle = ColorUtil.rgba(this.color);
-        context.lineWidth = this.width * scale.x;  // 太さはキャンバスサイズの横幅を1としたサイズで指定している
+        context.strokeStyle = ColorUtil.rgba(this._color);
+        context.lineWidth = this._width * scale.x;  // 太さはキャンバスサイズの横幅を1としたサイズで指定している
         context.moveTo(
-            this.start.x * scale.x,
-            this.start.y * scale.y
+            this._start.x * scale.x,
+            this._start.y * scale.y
         );
         context.lineTo(
-            this.end.x * scale.x,
-            this.end.y * scale.y
+            this._end.x * scale.x,
+            this._end.y * scale.y
         );
         context.stroke();
         context.closePath();

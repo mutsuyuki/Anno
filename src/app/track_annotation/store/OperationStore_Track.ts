@@ -12,7 +12,7 @@ import store from "@/store";
 class OperationStore_Track extends VuexModule {
 
     // states
-    private _frame: string = "";
+    private _frame: string = "0";
     private _selectingObjectId: string = "";
     private _hoveringObjectId: string = "";
     private _selectingJointName: string = "";
