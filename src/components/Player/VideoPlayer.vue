@@ -183,8 +183,6 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/scss/parts/button";
-    @import "../../assets/scss/parts/input_text";
 
     .video_area {
         display: flex;

@@ -1,5 +1,5 @@
 <template>
-    <div class="annotation-pane"
+    <div class="canvas-pane"
          v-show="isImageSelected"
     >
         <ToolBar/>
@@ -71,7 +71,7 @@
             ImagePlayer,
         }
     })
-    export default class AnnotationPane_Hair extends Vue {
+    export default class CanvasPane_Hair extends Vue {
 
         private graphics: Graphic[] = [];
         private newAnnotation: { value: Annotation_Hair } = {value: <any>{}};
@@ -309,8 +309,6 @@
 </script>
 
 <style scoped lang="scss">
-
-    @import "../../assets/scss/parts/button";
 
     .annotation-pane {
         padding: 0 16px;

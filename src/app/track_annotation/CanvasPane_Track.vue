@@ -1,5 +1,5 @@
 <template>
-    <div class="annotation-pane"
+    <div class="canvas-pane"
          v-show="isVideoSelected"
     >
         <ToolBar/>
@@ -63,7 +63,7 @@
             ImagePlayer,
         }
     })
-    export default class AnnotationPane_Track extends Vue {
+    export default class CanvasPane_Track extends Vue {
 
         private graphics: Graphic[] = [];
         private newAnnotation: { value: Annotation_Track } = {value: <any>{}};
@@ -167,22 +167,22 @@
             this.$watch(
                 () => this.currentAnnotation,
                 () => {
-                    this.graphics = [];
-
-                    if (!this.currentAnnotation.annotation)
-                        return;
-
-                    for (let i = 0; i < this.currentAnnotation.annotation.length; i++) {
-                        const annotation = this.currentAnnotation.annotation[i];
-
-                        const circle = new Circle(annotation.start, 2, this.circleColor);
-                        circle.zIndex = 1;
-                        this.graphics.push(circle);
-
-                        const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
-                        line.zIndex = 0;
-                        this.graphics.push(line);
-                    }
+                    // this.graphics = [];
+                    //
+                    // if (!this.currentAnnotation.annotation)
+                    //     return;
+                    //
+                    // for (let i = 0; i < this.currentAnnotation.annotation.length; i++) {
+                    //     const annotation = this.currentAnnotation.annotation[i];
+                    //
+                    //     const circle = new Circle(annotation.start, 2, this.circleColor);
+                    //     circle.zIndex = 1;
+                    //     this.graphics.push(circle);
+                    //
+                    //     const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
+                    //     line.zIndex = 0;
+                    //     this.graphics.push(line);
+                    // }
                 },
                 {deep: true}
             );
@@ -301,8 +301,6 @@
 </script>
 
 <style scoped lang="scss">
-
-    @import "../../assets/scss/parts/button";
 
     .annotation-pane {
         padding: 0 16px;

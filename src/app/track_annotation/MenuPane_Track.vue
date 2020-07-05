@@ -36,10 +36,19 @@
 
                 <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
                 <ButtonGrid
-                    :data="[{id:0, text:'test1asdlkfjasldjalkdjfalkaslkdjlaksdjlasjdlakdjd'}, {id:1, text:'歩'}, {id:2, text:'test2'}, {id:3, text:'test3'}, {id:4, text:'test4'}]"
-                    :selectId="selectedClass"
-                    :cols="5"
-                    :max-height="100"
+                        :data="[{id:0,text:'食'},{id:1,text:'歩'},{id:2,text:'立'},{id:3,text:'休'},{id:4,text:'飲'}]"
+                        :selectId="1"
+                        :cols="5"
+                        :font-size="11"
+                        :max-height="100"
+                />
+
+                <MenuSubTitle :text="'モード選択'" class="subtitle"/>
+                <ButtonGrid
+                        :data="[{id:0,text:'領域'}, {id:1,text:'ボーン'}]"
+                        :selectId="0"
+                        :cols="2"
+                        :max-height="100"
                 />
 
                 <MenuSubTitle :text="'データビュー'" class="subtitle"/>
@@ -111,8 +120,8 @@
             }
         }
 
-        .track_menu{
-            .subtitle{
+        .track_menu {
+            .subtitle {
                 margin-top: 24px;
             }
         }

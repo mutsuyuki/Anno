@@ -32,7 +32,7 @@
         @Prop({default: 0}) private selectId!: number;
         @Prop({default: 2}) private cols!: number;
         @Prop({default: 200}) private maxHeight!: number;
-        @Prop({default: 11}) private fontSize!: number;
+        @Prop({default: 12}) private fontSize!: number;
 
         get rows() {
             return Math.ceil(this.data.length / this.cols)
@@ -58,8 +58,6 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../assets/scss/parts/button";
-    @import "../../assets/scss/parts/input_text";
 
     .class_selector{
         overflow-y: scroll;

@@ -31,7 +31,11 @@
         .file-name{
             color: var(--gray);
             font-size: 12px;
+            max-width: 60%;
 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .statuses{

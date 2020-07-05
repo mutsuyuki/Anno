@@ -74,8 +74,6 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../../assets/scss/parts/button";
-    @import "../../assets/scss/parts/input_text";
 
     .image_area {
         display: flex;

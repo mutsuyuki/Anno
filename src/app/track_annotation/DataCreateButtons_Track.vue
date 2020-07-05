@@ -39,8 +39,6 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../assets/scss/parts/button";
-    @import "../../assets/scss/parts/input_text";
 
     button {
         width: 100%;

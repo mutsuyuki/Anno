@@ -3,14 +3,14 @@
 
         <div class="main_container">
             <MenuPane_Track class="menu_pane"/>
-            <div class="annotation_pane_container">
-                <AnnotationPane_Track class="annotation_pane"/>
+            <div class="canvas_pane_container">
+                <CanvasPane_Track class="canvas_pane"/>
 
                 <!--画像サイズの計算コンポーネント todo cssだけで実現できるならこの仕組みはやめたい-->
                 <VideoSizeChecker
                         @sizeChange="fitWidth"
                         :url="sizeCheckVideoUrl"
-                        :heightPadding="40 + 40 + 40 + 40 + 8 + 80"
+                        :heightPadding="40 + 40 + 80 + 40"
                 />
             </div>
         </div>
@@ -22,7 +22,7 @@
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
     import MenuPane_Track from "@/app/track_annotation/MenuPane_Track.vue";
-    import AnnotationPane_Track from "@/app/track_annotation/AnnotationPane_Track.vue";
+    import CanvasPane_Track from "@/app/track_annotation/CanvasPane_Track.vue";
     import Help_Track from "@/app/track_annotation/Help_Track.vue";
     import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
     import ImageFilesStore from "@/store/ImageFilesStore";
@@ -34,9 +34,9 @@
 
     @Component({
         components: {
+            CanvasPane_Track,
             VideoSizeChecker,
             ImageSizeChecker,
-            AnnotationPane_Track,
             MenuPane_Track,
             Help_Track,
         },
@@ -55,8 +55,8 @@
         }
 
         private fitWidth(width: number) {
-            const annotationPaneElement = this.$el.getElementsByClassName("annotation_pane")[0] as HTMLElement;
-            annotationPaneElement.style.width = width + "px";
+            const canvasPaneElement = this.$el.getElementsByClassName("canvas_pane")[0] as HTMLElement;
+            canvasPaneElement.style.width = width + "px";
         }
     }
 </script>
@@ -65,25 +65,28 @@
 
     .main_container {
         display: flex;
-        height: calc(100vh);
+        height: 100vh;
         width: 100%;
 
         .menu_pane {
             width: 200px;
             min-width: 200px;
             height: 100%;
+            overflow-y: scroll;
         }
 
-        .annotation_pane_container {
+        .canvas_pane_container {
             margin: 0 auto;
             width: calc(100% - 200px);
             height: 100%;
             overflow-y: scroll;
             background-color: var(--background-canvas);
 
-            .annotation_pane {
+            .canvas_pane {
+                height: 100%;
                 min-width: 500px;
                 margin: 0 auto;
+                padding: 0 16px;
             }
         }
     }

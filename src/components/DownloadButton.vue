@@ -17,9 +17,6 @@
 </script>
 
 <style scoped lang="scss">
-    @import "../assets/scss/parts/button";
-    @import "../assets/scss/parts/input_text";
-
 
     .download_panel {
         height: 32px;
