@@ -12,7 +12,7 @@ import store from "@/store";
 class OperationStore_Track extends VuexModule {
 
     // states
-    private _time: number = 0;
+    private _frame: number = 0;
     private _selectingObjectId: number = -1;
     private _hoveringObjectId: number = -1;
     private _selectingPoint: number = -1;
@@ -20,8 +20,8 @@ class OperationStore_Track extends VuexModule {
     private _annotationMode: number = 0;    // 0:Bounding  1:Bone
 
     // // getters
-    get time(): number {
-        return this._time;
+    get frame(): number {
+        return this._frame;
     }
 
     get selectingObjectId(): number {
@@ -45,8 +45,8 @@ class OperationStore_Track extends VuexModule {
     }
 
     @Mutation
-    public setTime(value: number) {
-        this._time = value;
+    public setFrame(value: number) {
+        this._frame = value;
     }
 
     @Mutation

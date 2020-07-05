@@ -34,6 +34,7 @@
                         :data="[{id:0,text:'新しいデータを作る'},{id:1,text:'選択中データをコピー'},{id:2,text:'前のフレームをコピー'}]"
                         :selectId="-1"
                         :cols="1"
+                        @select="onSelectDataMenu"
                 />
 
                 <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
@@ -75,6 +76,8 @@
     import MenuFooter from "@/components/Menu/MenuFooter.vue";
     import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
     import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
+    import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
+    import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
 
     @Component({
         components: {
@@ -106,6 +109,15 @@
 
         private onSelectAnnotationFiles(files: File[]) {
             AnnotationFilesStore.setFiles(files);
+        }
+
+
+        private onSelectDataMenu(dataMenuId: number) {
+            switch (dataMenuId) {
+                case 0:
+                    AnnotationsStore_Track.create(OperationStore_Track.frame);
+                    break;
+            }
         }
 
         private onClickHelp(): void {

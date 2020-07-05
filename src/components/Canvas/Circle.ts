@@ -7,22 +7,22 @@ export default class Circle implements Graphic {
 
     public zIndex: number = 0;
 
-    private _position: Point;
+    private _center: Point;
     private _radius: number;
     private _color: Color;
 
-    constructor(position: Point, radius: number, color: Color) {
-        this._position = DeepCloner.copy(position);
+    constructor(center: Point, radius: number, color: Color) {
+        this._center = DeepCloner.copy(center);
         this._radius = radius;
         this._color = DeepCloner.copy(color);
     }
 
-    get position(): Point {
-        return DeepCloner.copy(this._position);
+    get center(): Point {
+        return DeepCloner.copy(this._center);
     }
 
-    set position(value: Point) {
-        this._position = DeepCloner.copy(value);
+    set center(value: Point) {
+        this._center = DeepCloner.copy(value);
     }
 
     get radius(): number {
@@ -47,8 +47,8 @@ export default class Circle implements Graphic {
         context.beginPath();
         context.fillStyle = ColorUtil.rgba(this._color);
         context.arc(
-            this._position.x * scale.x,
-            this._position.y * scale.y,
+            this._center.x * scale.x,
+            this._center.y * scale.y,
             this._radius,     // radius
             0,                // start angle
             Math.PI * 2,      // end angle

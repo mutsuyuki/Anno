@@ -19,7 +19,7 @@ class FramesStore_Track extends VuexModule {
 
     // states
     private frames:{[frameId:string] : Frame_Track} = {};
-   
+
     // // getters
     // get id() {
     //     return this._id;
