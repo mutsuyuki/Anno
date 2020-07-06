@@ -19,6 +19,7 @@
                 @timeupdate="onTimeUpdate"
         >
             <CanvasRenderer class="canvas_renderer" :graphics="graphics"/>
+            <MultiLabels :labels="labelData"/>
         </VideoPlayer>
 
         <DownloadButton
@@ -54,9 +55,11 @@
     import MultiCircles from "@/components/Canvas/MultiCircles";
     import RectangleLine from "@/components/Canvas/RectangleLine";
     import DeepCloner from "@/common/utils/DeepCloner";
+    import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
 
     @Component({
         components: {
+            MultiLabels,
             VideoPlayer,
             DownloadButton,
             ToolBar,
@@ -71,10 +74,10 @@
         //
         // private isCtrlKeyDown: boolean = false;
         //
-        private circleActiveColor: Color = {r: 150, g: 80, b: 0, a: 1};
-        private lineActiveColor: Color = {r: 0, g: 80, b: 150, a: 1};
-        private circleInactiveColor: Color = {r: 150, g: 80, b: 0, a: 0.25};
-        private lineInactiveColor: Color = {r: 0, g: 80, b: 150, a: 0.25};
+        private circleActiveColor: Color = {r: 150, g: 40, b: 0, a: 1};
+        private lineActiveColor: Color = {r: 0, g: 40, b: 150, a: 1};
+        private circleInactiveColor: Color = {r: 150, g: 40, b: 0, a: 0.4};
+        private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.4};
 
         private videoCurrentTime: number = 0;
 
@@ -100,6 +103,23 @@
 
         get annotationsOfCurrentFrame(): { [objectId: number]: Annotation_Track } {
             return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
+        }
+
+        get labelData(): { text: string, position: Point, isActive: boolean }[] {
+            let result = []
+            const annotations = this.annotationsOfCurrentFrame;
+            for (const objectId in annotations) {
+                result.push({
+                    text: "ID:" + objectId,
+                    position: {
+                        x: annotations[objectId].bounding.left * 100,
+                        y: annotations[objectId].bounding.top * 100
+                    },
+                    isActive: objectId == OperationStore_Track.selectingObjectId
+                })
+            }
+
+            return result;
         }
 
         get selectingObject() {
