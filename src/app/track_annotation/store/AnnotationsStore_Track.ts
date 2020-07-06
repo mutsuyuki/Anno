@@ -140,6 +140,7 @@ class AnnotationsStore_Track extends VuexModule {
         console.log(this._annotations, prevFrame);
         for (const objectId in this._annotations[prevFrame]) {
             let copiedAnnotation = DeepCloner.copy(this._annotations[prevFrame][objectId]);
+            copiedAnnotation.frame = currentFrame;
             Vue.set(
                 this._annotations[currentFrame],
                 objectId,

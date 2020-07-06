@@ -82,6 +82,7 @@
     import InlineSvg from "@/components/InlineSvg";
     import NormalizedScalableArea from "@/components/ScalableArea/NormalizedScalableArea.vue";
     import VideoFileStore from "@/store/VideoFileStore";
+    import FileDownloader from "@/common/utils/FileDownloader";
 
     @Component({
         components: {
@@ -91,6 +92,8 @@
         }
     })
     export default class VideoPlayer extends Vue {
+
+        @Prop() private createBlobSignal!: boolean;
 
         private video: HTMLVideoElement = document.createElement("video");   // dummy
         private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");  // dummy
@@ -131,6 +134,11 @@
             this.video.addEventListener("pause", () => {
                 this.applyStepedSec(this.video.currentTime);
             });
+
+            this.$watch(
+                () => this.createBlobSignal,
+                () => this.makeBlob()
+            );
         }
 
         private applyStepedSec(time: number): void {
@@ -179,6 +187,20 @@
             this.applyStepedSec(this.video.currentTime);
         }
 
+        private makeBlob() {
+            // ビデオの画像
+            this.videoTextureCanvas.setAttribute("width", this.video.videoWidth.toString());
+            this.videoTextureCanvas.setAttribute("height", this.video.videoHeight.toString());
+            const context = this.videoTextureCanvas.getContext("2d");
+            if (!context) {
+                alert("動画のテクスチャ取得に失敗しました")
+                return;
+            }
+
+            context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight);
+            const blob = FileDownloader.editImageBlobFromCanvas(this.videoTextureCanvas);
+            this.$emit("prepareBlob", blob);
+        }
     }
 </script>
 

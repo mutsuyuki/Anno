@@ -17,6 +17,8 @@
                 @dragareaend="onDragEnd"
                 @download="onDownload"
                 @timeupdate="onTimeUpdate"
+                :createBlobSignal="createBlobSignal"
+                @prepareBlob="onPrepareBlob"
         >
             <CanvasRenderer class="canvas_renderer" :graphics="graphics"/>
             <MultiLabels :labels="labelData"/>
@@ -76,15 +78,12 @@
         private circleInactiveColor: Color = {r: 150, g: 40, b: 0, a: 0.5};
         private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.5};
 
-        private videoCurrentTime: number = 0;
+        private createBlobSignal: boolean = false;
 
         get currentFileNameFull() {
             return VideoFileStore.name;
         }
 
-        get currentFileNameWithTime() {
-            return FileUtil.removeExtension(this.currentFileNameFull) + "___" + this.videoCurrentTime + "___";
-        }
 
         get isVideoSelected() {
             return VideoFileStore.isSelected;
@@ -445,19 +444,16 @@
 
         //
         private async onDownload() {
-            //     // let annotations = this.currentHistory;
-            //     // annotations[this.currentFileNameWithTime].isDownloaded = true;
-            //     // HistoryStore.updateCurrent(annotations);
-            //     //
-            //     // FileDownloader.downloadTextFile(
-            //     //     this.currentFileNameWithTime + ".txt",
-            //     //     AnnotationUtil_Track.modelsToFile(this.currentAnnotation.value)
-            //     // );
-            //     //
-            //     // FileDownloader.downloadBlob(
-            //     //     ImageFilesStore.currentItem.name,
-            //     //     ImageFilesStore.currentItem
-            //     // );
+            this.createBlobSignal = !this.createBlobSignal;
+        }
+
+        private onPrepareBlob(videoImageBlob: Blob) {
+            const fileName = FileUtil.removeExtension(this.currentFileNameFull) + "___" + OperationStore_Track.frame + "___";
+            FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
+
+            console.log(Object.values(this.annotationsOfCurrentFrame))
+            const json = JSON.stringify(Object.values(this.annotationsOfCurrentFrame));
+            FileDownloader.downloadJsonFile(fileName + ".json", json);
         }
     }
 

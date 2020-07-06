@@ -2,16 +2,29 @@ export default class FileDownloader {
 
     // テキストダウンロード
     static downloadTextFile(fileName: string, content: string) {
-        let mimeType = 'text/plain';
-        let bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // 文字化け対策
-        let blob = new Blob([bom, content], {type: mimeType});
-
+        const blob = FileDownloader.editTextBlob(fileName, content, 'text/plain')
         FileDownloader.downloadBlob(fileName, blob);
     }
 
 
+    // テキストダウンロード
+    static downloadJsonFile(fileName: string, content: string) {
+        const blob = FileDownloader.editTextBlob(fileName, content, 'application/json')
+        FileDownloader.downloadBlob(fileName, blob);
+    }
+
+    static editTextBlob(fileName: string, content: string, mimeType: string) {
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // 文字化け対策
+        return new Blob([bom, content], {type: mimeType});
+    }
+
     // Canavsダウンロード
     static downloadCanvasImage(fileName: string, canvas: HTMLCanvasElement) {
+        const blob = FileDownloader.editImageBlobFromCanvas(canvas);
+        FileDownloader.downloadBlob(fileName, blob);
+    }
+
+    static editImageBlobFromCanvas(canvas: HTMLCanvasElement): Blob {
         let imageType = "image/png";
         let base64 = canvas.toDataURL(imageType);
         let tmp = base64.split(',');
@@ -22,8 +35,7 @@ export default class FileDownloader {
         for (let i = 0; i < data.length; i++) {
             buf[i] = data.charCodeAt(i);
         }
-        let blob = new Blob([buf], {type: mime});
-        FileDownloader.downloadBlob(fileName, blob);
+        return new Blob([buf], {type: mime});
     }
 
     // Blobダウンロード
