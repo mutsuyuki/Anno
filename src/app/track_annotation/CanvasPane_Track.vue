@@ -71,9 +71,11 @@
         //
         // private isCtrlKeyDown: boolean = false;
         //
-        private circleColor: Color = {r: 150, g: 0, b: 0, a: 1};
-        private lineColor: Color = {r: 0, g: 0, b: 150, a: 1};
-        //
+        private circleActiveColor: Color = {r: 150, g: 80, b: 0, a: 1};
+        private lineActiveColor: Color = {r: 0, g: 80, b: 150, a: 1};
+        private circleInactiveColor: Color = {r: 150, g: 80, b: 0, a: 0.25};
+        private lineInactiveColor: Color = {r: 0, g: 80, b: 150, a: 0.25};
+
         private videoCurrentTime: number = 0;
 
         get currentFileNameFull() {
@@ -166,6 +168,12 @@
                 {deep: true}
             );
 
+            this.$watch(
+                () => OperationStore_Track.watchTargets,
+                () => this.draw(),
+                {deep: true}
+            );
+
             //
             // // 削除用のCtrlキー検出
             // document.addEventListener("keydown", (e) => {
@@ -186,7 +194,9 @@
             for (const objectId in this.annotationsOfCurrentFrame) {
                 const annotation = this.annotationsOfCurrentFrame[objectId];
                 const bone = annotation.bone;
+                const isSelecting = OperationStore_Track.selectingObjectId == objectId;
 
+                const boneColor = isSelecting && OperationStore_Track.isBoneMode ? this.lineActiveColor : this.lineInactiveColor;
                 const boneLines = new MultiLines(
                     [
                         {start: bone.head, end: bone.neck},
@@ -210,22 +220,25 @@
                         {start: bone.right_ankle1, end: bone.right_ankle2},
                     ],
                     2,  // width
-                    this.lineColor
+                    boneColor
                 );
                 boneLines.zIndex = 0;
                 this.graphics.push(boneLines);
 
-                const boneJoints = new MultiCircles(Object.values(bone), 4, this.circleColor);
+
+                const jointColor = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveColor : this.circleInactiveColor;
+                const boneJoints = new MultiCircles(Object.values(bone), 4, jointColor);
                 boneJoints.zIndex = 1;
                 this.graphics.push(boneJoints);
 
+                const boundingColor = isSelecting && OperationStore_Track.isBoundingMode ? this.lineActiveColor : this.lineInactiveColor;
                 const boundingBox = new RectangleLine(
                     annotation.bounding.left,
                     annotation.bounding.top,
                     annotation.bounding.width,
                     annotation.bounding.height,
                     2,
-                    this.lineColor
+                    boundingColor
                 );
                 boneJoints.zIndex = 2;
                 this.graphics.push(boundingBox);

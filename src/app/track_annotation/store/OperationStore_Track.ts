@@ -11,16 +11,24 @@ import store from "@/store";
 
 class OperationStore_Track extends VuexModule {
 
-
     // states
     private _frame: string = "0";
     private _selectingObjectId: string = "";
-    private _selectingEdge = { top: false, right: false, bottom: false, left: false };
+    private _selectingEdge = {top: false, right: false, bottom: false, left: false};
     private _selectingJointName: string = "";
     private _annotationMode: number = 0;    // 0:Bounding  1:Bone
     private _isDeleteMode: boolean = false;
 
     // // getters
+    get watchTargets() {
+        return [
+            this._selectingObjectId,
+            this._selectingEdge,
+            this._selectingJointName,
+            this._annotationMode
+        ];
+    }
+
     get frame(): string {
         return this._frame;
     }
