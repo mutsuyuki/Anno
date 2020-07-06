@@ -88,21 +88,58 @@ class AnnotationsStore_Track extends VuexModule {
         }
 
         const newObjectId = (Number(getNewestObjectId(this._annotations)) + 1).toString();
-        let copyedAnnotation = DeepCloner.copy(this._annotations[value.frame][value.objectId]);
-        copyedAnnotation.objectId = newObjectId;
-        copyedAnnotation.bounding.left += 0.005;
-        copyedAnnotation.bounding.top += 0.01;
-        copyedAnnotation.bounding.width -= 0.0001;   // 小さいものが優先して選ばれるため、コピーしたやつを選ばれやすくする
-        for (const jointName in copyedAnnotation.bone) {
-            (<any>copyedAnnotation.bone)[jointName].x += 0.005;
-            (<any>copyedAnnotation.bone)[jointName].y += 0.01;
+        let copiedAnnotation = DeepCloner.copy(this._annotations[value.frame][value.objectId]);
+        copiedAnnotation.objectId = newObjectId;
+        copiedAnnotation.bounding.left += 0.005;
+        copiedAnnotation.bounding.top += 0.01;
+        copiedAnnotation.bounding.width -= 0.0001;   // 小さいものが優先して選ばれるため、コピーしたやつを選ばれやすくする
+        for (const jointName in copiedAnnotation.bone) {
+            (<any>copiedAnnotation.bone)[jointName].x += 0.005;
+            (<any>copiedAnnotation.bone)[jointName].y += 0.01;
         }
 
         Vue.set(
             this._annotations[value.frame],
             newObjectId,
-            copyedAnnotation
+            copiedAnnotation
         );
+    }
+
+    @Mutation
+    public copyPrevFrameObjects(currentFrame: string) {
+        const currentFrameAsNumber = Number(currentFrame);
+        const allFrames = Object.keys(this._annotations);
+        const prevFrames = allFrames.filter(v => {
+            const frameAsNumber = Number(v)
+            const objectNumInFrame = Object.keys(this._annotations[v]).length;
+            return frameAsNumber < currentFrameAsNumber && objectNumInFrame > 0;
+        });
+        if (prevFrames.length <= 0) {
+            alert("現在フレームより前にアノテーションがありません。");
+            return;
+        }
+
+        prevFrames.sort((a, b) => {
+            const aa = Number(a);
+            const bb = Number(b);
+            if (aa > bb) return 1;
+            if (aa < bb) return -1;
+            return 0;
+        });
+
+        const prevFrame = prevFrames[prevFrames.length - 1];
+        if (!this._annotations[currentFrame])
+            Vue.set(this._annotations, currentFrame, {});
+
+        console.log(this._annotations, prevFrame);
+        for (const objectId in this._annotations[prevFrame]) {
+            let copiedAnnotation = DeepCloner.copy(this._annotations[prevFrame][objectId]);
+            Vue.set(
+                this._annotations[currentFrame],
+                objectId,
+                copiedAnnotation
+            );
+        }
     }
 
     @Mutation

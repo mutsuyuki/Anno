@@ -37,16 +37,27 @@
                         @select="onSelectCreateData"
                 />
 
+                <ButtonGrid
+                        class="copy_button"
+                        :class="{'disable': !selectingObject}"
+                        :data="[{id:0,text:'選択中データを複製'}]"
+                        :selectId="-1"
+                        :cols="1"
+                        @select="onSelectCopyData"
+                />
+
+                <ButtonGrid
+                        class="copy_button"
+                        :class="{'disable': isFirstFrame}"
+                        :data="[{id:1,text:'前フレーム全て複製'}]"
+                        :selectId="-1"
+                        :cols="1"
+                        @select="onSelectCopyData"
+                />
+
                 <div
                         v-show="selectingObject"
                 >
-                    <MenuSubTitle :text="'データの複製'" class="subtitle"/>
-                    <ButtonGrid
-                            :data="[{id:0,text:'選択中データを複製'},{id:1,text:'前フレーム全て複製'}]"
-                            :selectId="-1"
-                            :cols="1"
-                            @select="onSelectCopyData"
-                    />
 
                     <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
                     <ButtonGrid
@@ -124,6 +135,10 @@
             return AnnotationsStore_Track.annotations[frame][objectId];
         }
 
+        get isFirstFrame() {
+            return Number(OperationStore_Track.frame) <= 0;
+        }
+
         private onSelectVideoFile(files: File[]) {
             VideoFileStore.setFile(files[0]);
             AnnotationFilesStore.setFiles([]);
@@ -141,16 +156,19 @@
         }
 
         private onSelectCopyData(copyMenuId: number) {
+            const frame = OperationStore_Track.frame;
+            const objectId = OperationStore_Track.selectingObjectId;
+
             switch (copyMenuId) {
                 case 0:
-                    const frame = OperationStore_Track.frame;
-                    const objectId = OperationStore_Track.selectingObjectId;
                     AnnotationsStore_Track.copyObject({frame: frame, objectId: objectId});
                     OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
                     OperationStore_Track.setModeToBounding();
                     break;
                 case 1:
-                    OperationStore_Track.setModeToBone();
+                    AnnotationsStore_Track.copyPrevFrameObjects(frame);
+                    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
+                    OperationStore_Track.setModeToBounding();
                     break;
             }
         }
@@ -190,11 +208,23 @@
             }
         }
 
+        .copy_button{
+            margin-top: 8px;
+        }
+
         .track_menu {
             .subtitle {
                 margin-top: 24px;
             }
         }
+
+
+    }
+
+
+    .disable{
+        opacity: 0.2;
+        pointer-events: none;
     }
 
 </style>
