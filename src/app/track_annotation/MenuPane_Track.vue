@@ -76,7 +76,7 @@
                             @select="onSelectMode"
                     />
 
-                    <MenuSubTitle :text="'データビュー'" class="subtitle"/>
+<!--                    <MenuSubTitle :text="'データビュー'" class="subtitle"/>-->
                 </div>
             </div>
         </div>

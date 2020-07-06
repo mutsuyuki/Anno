@@ -79,6 +79,7 @@
         private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.5};
 
         private createBlobSignal: boolean = false;
+        private isDeleteMode:boolean = false;
 
         get currentFileNameFull() {
             return VideoFileStore.name;
@@ -197,13 +198,13 @@
             // 削除用のCtrlキー検出
             document.addEventListener("keydown", (e) => {
                 if (e.key == "Control") {
-                    OperationStore_Track.setIsDeleteMode(true)
+                    this.isDeleteMode = true;
                 }
             });
 
             document.addEventListener("keyup", (e) => {
                 if (e.key == "Control") {
-                    OperationStore_Track.setIsDeleteMode(false)
+                    this.isDeleteMode = false;
                 }
             })
         }
@@ -238,7 +239,7 @@
                         {start: bone.right_hip, end: bone.right_knee},
                         {start: bone.right_knee, end: bone.right_ankle1},
                         {start: bone.right_ankle1, end: bone.right_ankle2},
-                    ],
+                    ].filter(v => v.start.x != -9999 && v.end.x != -9999),
                     2,  // width
                     boneColor
                 );
@@ -269,7 +270,7 @@
             // バウンディング
             if (OperationStore_Track.isBoundingMode) {
                 const clickedBounding = this.getClickedBounding(e);
-                if (OperationStore_Track.isDeleteMode) {
+                if (this.isDeleteMode) {
                     // 削除
                     if (clickedBounding.objectId) {
 
@@ -295,7 +296,7 @@
             // ボーン
             if (OperationStore_Track.isBoneMode) {
                 const clickedJoint = this.getClickedJoint(e);
-                if (OperationStore_Track.isDeleteMode) {
+                if (this.isDeleteMode) {
                     // 削除
                     AnnotationsStore_Track.deleteJoint({
                         frame: OperationStore_Track.frame,
@@ -381,7 +382,7 @@
 
         //
         private onDragEnd(e: MovingPoint) {
-            if (this.selectingObject && !OperationStore_Track.isDeleteMode) {
+            if (this.selectingObject && !this.isDeleteMode) {
                 this.addHistory();
             }
         }

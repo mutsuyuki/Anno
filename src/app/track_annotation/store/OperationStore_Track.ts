@@ -7,7 +7,6 @@ export interface Operation_Track {
     selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
     selectingJointName: string;
     annotationMode: number;
-    isDeleteMode: boolean;
 }
 
 @Module({
@@ -26,7 +25,6 @@ class OperationStore_Track extends VuexModule {
         selectingEdge: {top: false, right: false, bottom: false, left: false},
         selectingJointName: "",
         annotationMode: 0,    // 0:Bounding  1:Bone
-        isDeleteMode: false,
     };
 
     // getters
@@ -60,10 +58,6 @@ class OperationStore_Track extends VuexModule {
 
     get annotationMode(): number {
         return this._operation.annotationMode;
-    }
-
-    get isDeleteMode(): boolean {
-        return this._operation.isDeleteMode;
     }
 
 
@@ -102,10 +96,6 @@ class OperationStore_Track extends VuexModule {
         this._operation.annotationMode = 1;
     }
 
-    @Mutation
-    public setIsDeleteMode(value: boolean) {
-        this._operation.isDeleteMode = value;
-    }
 }
 
 export default getModule(OperationStore_Track);
