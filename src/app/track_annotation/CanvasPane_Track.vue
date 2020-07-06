@@ -76,8 +76,8 @@
         //
         private circleActiveColor: Color = {r: 150, g: 40, b: 0, a: 1};
         private lineActiveColor: Color = {r: 0, g: 40, b: 150, a: 1};
-        private circleInactiveColor: Color = {r: 150, g: 40, b: 0, a: 0.4};
-        private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.4};
+        private circleInactiveColor: Color = {r: 150, g: 40, b: 0, a: 0.5};
+        private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.5};
 
         private videoCurrentTime: number = 0;
 
@@ -110,7 +110,7 @@
             const annotations = this.annotationsOfCurrentFrame;
             for (const objectId in annotations) {
                 result.push({
-                    text: "ID:" + objectId,
+                    text: "ID : " + objectId,
                     position: {
                         x: annotations[objectId].bounding.left * 100,
                         y: annotations[objectId].bounding.top * 100

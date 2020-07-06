@@ -38,13 +38,14 @@
             height: 24px;
             line-height: 24px;
             font-size: 12px;
-            background-color: var(--background-canvas);
+            font-weight: bold;
             color: var(--white);
             text-align: center;
             padding: 0 8px;
             pointer-events: none;
-            transform: translateY(calc(-100% - 3px));
+            transform: translateY(calc(-100%));
             overflow: hidden;
+            text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
 
             opacity: 0.1;
             &.active {
