@@ -87,6 +87,7 @@
 
         private addHistory() {
             HistoryStore.addHistory(this.makeHistoryRecord());
+            OperationOfFramesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: true});
         }
 
         private fitWidth(width: number) {

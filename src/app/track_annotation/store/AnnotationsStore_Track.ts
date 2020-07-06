@@ -69,6 +69,18 @@ class AnnotationsStore_Track extends VuexModule {
     }
 
     @Mutation
+    public setAnnotationsOfFrame(value: { frame: string, data: { [objectId: string]: Annotation_Track } }) {
+        if (!this._annotations[value.frame])
+            Vue.set(this._annotations, value.frame, {});
+
+        Vue.set(
+            this._annotations,
+            value.frame,
+            value.data
+        );
+    }
+
+    @Mutation
     public create(frame: string) {
         if (!this._annotations[frame])
             Vue.set(this._annotations, frame, {});

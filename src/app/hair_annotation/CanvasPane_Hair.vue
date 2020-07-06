@@ -37,6 +37,8 @@
 </template>
 
 <script lang="ts">
+    /*
+
     import {Component, Vue} from 'vue-property-decorator';
     import ImagePlayer from "@/components/Player/ImagePlayer.vue";
     import CanvasRenderer from "@/components/Canvas/CanvasRenderer.vue";
@@ -48,7 +50,6 @@
     import {Annotation_Hair, Annotation_HairUtil} from "@/app/hair_annotation/Annotation_Hair";
     import ImageFilesStore from "@/store/ImageFilesStore";
     import FileUtil from "@/common/utils/FileUtil";
-    import AnnotationContainer from "@/common/model/HistoryRecord";
     import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import FileDownloader from "@/common/utils/FileDownloader";
@@ -305,6 +306,7 @@
             );
         }
     }
+     */
 
 </script>
 

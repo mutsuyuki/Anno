@@ -36,8 +36,6 @@
     import {Component, Vue} from 'vue-property-decorator';
     import ImagePlayer from "@/components/Player/ImagePlayer.vue";
     import CanvasRenderer from "@/components/Canvas/CanvasRenderer.vue";
-    import Circle from "@/components/Canvas/Circle";
-    import ScaleLine from "@/components/Canvas/ScaleLine";
     import {Graphic} from "@/components/Canvas/Graphic";
     import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
     import {Color} from "@/common/interface/Color";
@@ -47,7 +45,6 @@
     import FileDownloader from "@/common/utils/FileDownloader";
     import ToolBar from "@/components/ToolBar.vue";
     import DownloadButton from "@/components/DownloadButton.vue";
-    import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
     import VideoFileStore from "@/store/VideoFileStore";
     import VideoPlayer from "@/components/Player/VideoPlayer.vue";
     import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
@@ -79,7 +76,7 @@
         private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.5};
 
         private createBlobSignal: boolean = false;
-        private isDeleteMode:boolean = false;
+        private isDeleteMode: boolean = false;
 
         get currentFileNameFull() {
             return VideoFileStore.name;
@@ -143,36 +140,6 @@
 
         created() {
 
-            // // 教師データ読み込み
-            // this.$watch(
-            //     () => AnnotationFilesStore.items,
-            //     async () => {
-            //         // let annotations = this.currentHistory;
-            //         // for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
-            //         //     const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
-            //         //     if (!annotations[fileName])
-            //         //         continue;
-            //         //
-            //         //     annotations[fileName].isSetByFile = true;
-            //         //
-            //         //     const fileText = await new Promise(resolve => {
-            //         //         const reader = new FileReader();
-            //         //         reader.onload = () => {
-            //         //             resolve(reader.result);
-            //         //         };
-            //         //         reader.readAsText(AnnotationFilesStore.items[i]);
-            //         //     });
-            //         //     const models = AnnotationUtil_Track.fileToModels(fileText as string);
-            //         //     annotations[fileName].value = models;
-            //         // }
-            //         //
-            //         // if (AnnotationFilesStore.items.length > 0)
-            //         //     HistoryStore.addHistory(annotations);
-            //     },
-            //     {deep: true}
-            // );
-
-
             // 表示対象のアノテーションたちの状態が変わった
             this.$watch(
                 () => this.annotationsOfCurrentFrame,
@@ -194,6 +161,13 @@
                 {deep: true, immediate: true}
             );
 
+
+            // 教師データ読み込み
+            this.$watch(
+                () => AnnotationFilesStore.items,
+                () => this.restoreAnnotation(),
+                {deep: true}
+            );
 
             // 削除用のCtrlキー検出
             document.addEventListener("keydown", (e) => {
@@ -264,6 +238,42 @@
                 boneJoints.zIndex = 2;
                 this.graphics.push(boundingBox);
             }
+        }
+
+        private async restoreAnnotation() {
+            AnnotationsStore_Track.clear();
+
+            for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
+                const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
+                const fileNameParts = fileName.split("___");
+                const frame = fileNameParts[fileNameParts.length - 2];
+
+                const fileText = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result || "");
+                    };
+                    reader.readAsText(AnnotationFilesStore.items[i]);
+                });
+
+                console.log(JSON.parse(fileText as string))
+
+                AnnotationsStore_Track.setAnnotationsOfFrame({
+                    frame: frame,
+                    data: JSON.parse(fileText as string)
+                });
+
+                OperationOfFramesStore.setIsUseAnnotationFile({
+                    frame: frame,
+                    isUseAnnotationFile: true
+                });
+            }
+
+            if (AnnotationFilesStore.items.length > 0) {
+                this.addHistory();
+            }
+
+            console.log("bbb", AnnotationsStore_Track.annotations)
         }
 
         private onDragStart(e: MovingPoint) {
@@ -453,8 +463,11 @@
             FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
             console.log(Object.values(this.annotationsOfCurrentFrame))
-            const json = JSON.stringify(Object.values(this.annotationsOfCurrentFrame));
+            const json = JSON.stringify(this.annotationsOfCurrentFrame);
             FileDownloader.downloadJsonFile(fileName + ".json", json);
+
+            OperationOfFramesStore.setIsDownloaded({frame: OperationStore_Track.frame, isDownloaded: true});
+            OperationOfFramesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: false});
         }
     }
 

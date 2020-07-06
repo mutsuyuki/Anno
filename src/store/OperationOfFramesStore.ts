@@ -49,29 +49,26 @@ class OperationOfFramesStore extends VuexModule {
 
     @Mutation
     public setIsDirty(value: { frame: string, isDirty: boolean }) {
-        Vue.set(
-            this._operations[value.frame],
-            "isDirty",
-            value.isDirty
-        )
+        if (!this._operations[value.frame])
+            Vue.set(this._operations, value.frame, {});
+
+        Vue.set(this._operations[value.frame], "isDirty", value.isDirty)
     }
 
     @Mutation
     public setIsUseAnnotationFile(value: { frame: string, isUseAnnotationFile: boolean }) {
-        Vue.set(
-            this._operations[value.frame],
-            "isUseAnnotationFile",
-            value.isUseAnnotationFile
-        )
+        if (!this._operations[value.frame])
+            Vue.set(this._operations, value.frame, {});
+
+        Vue.set(this._operations[value.frame], "isUseAnnotationFile", value.isUseAnnotationFile);
     }
 
     @Mutation
     public setIsDownloaded(value: { frame: string, isDownloaded: boolean }) {
-        Vue.set(
-            this._operations[value.frame],
-            "isDownloaded",
-            value.isDownloaded
-        );
+        if (!this._operations[value.frame])
+            Vue.set(this._operations, value.frame, {});
+
+        Vue.set(this._operations[value.frame], "isDownloaded", value.isDownloaded);
     }
 
 }

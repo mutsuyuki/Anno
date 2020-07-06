@@ -20,7 +20,7 @@
                         v-show="isVideoSelected"
                         :iconPath="require('@/assets/img/icons/text_multi.svg')"
                         :message="'教師データを選択'"
-                        :accept="'text/*'"
+                        :accept="'application/json'"
                         :isMultiple="true"
                         @change="onSelectAnnotationFiles"
                 />
@@ -76,7 +76,7 @@
                             @select="onSelectMode"
                     />
 
-<!--                    <MenuSubTitle :text="'データビュー'" class="subtitle"/>-->
+                    <!--                    <MenuSubTitle :text="'データビュー'" class="subtitle"/>-->
                 </div>
             </div>
         </div>
@@ -145,6 +145,9 @@
         }
 
         private onSelectAnnotationFiles(files: File[]) {
+            if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
+                return;
+
             AnnotationFilesStore.setFiles(files);
         }
 
@@ -154,6 +157,8 @@
             OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
             OperationStore_Track.setModeToBounding();
             this.addHistory();
+
+            console.log("aaa", AnnotationsStore_Track.annotations)
         }
 
         private onSelectCopyData(copyMenuId: number) {
@@ -217,7 +222,7 @@
             }
         }
 
-        .copy_button{
+        .copy_button {
             margin-top: 8px;
         }
 
@@ -231,7 +236,7 @@
     }
 
 
-    .disable{
+    .disable {
         opacity: 0.2;
         pointer-events: none;
     }

@@ -4,7 +4,7 @@
         <div class="main_container">
             <MenuPane_Hair class="menu_pane"/>
             <div class="canvas_pane_container">
-                <CanvasPane_Hair class="canvas_pane"/>
+<!--                <CanvasPane_Hair class="canvas_pane"/>-->
 
                 <!--画像サイズの計算コンポーネント todo cssだけで実現できるならこの仕組みはやめたい-->
                 <ImageSizeChecker
@@ -22,7 +22,7 @@
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
     import MenuPane_Hair from "@/app/hair_annotation/MenuPane_Hair.vue";
-    import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane_Hair.vue";
+    // import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane_Hair.vue";
     import Help_Hair from "@/app/hair_annotation/Help_Hair.vue";
     import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
     import ImageFilesStore from "@/store/ImageFilesStore";
@@ -33,7 +33,7 @@
     @Component({
         components: {
             ImageSizeChecker,
-            CanvasPane_Hair,
+            // CanvasPane_Hair,
             MenuPane_Hair,
             Help_Hair,
         },
