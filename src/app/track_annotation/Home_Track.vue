@@ -2,9 +2,13 @@
     <div>
 
         <div class="main_container">
-            <MenuPane_Track class="menu_pane"/>
+            <MenuPane_Track class="menu_pane"
+                            @addHistory="addHistory"
+            />
             <div class="canvas_pane_container">
-                <CanvasPane_Track class="canvas_pane"/>
+                <CanvasPane_Track class="canvas_pane"
+                                  @addHistory="addHistory"
+                />
 
                 <!--画像サイズの計算コンポーネント todo cssだけで実現できるならこの仕組みはやめたい-->
                 <VideoSizeChecker
@@ -26,11 +30,14 @@
     import Help_Track from "@/app/track_annotation/Help_Track.vue";
     import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
     import ImageFilesStore from "@/store/ImageFilesStore";
-    import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
+    import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import HelpStore from "@/store/HelpStore";
     import VideoFileStore from "@/store/VideoFileStore";
     import VideoSizeChecker from "@/components/SizeChecker/VideoSizeChecker.vue";
+    import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
+    import OperationOfFramesStore from "@/store/OperationOfFramesStore";
+    import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
 
     @Component({
         components: {
@@ -43,15 +50,43 @@
     })
     export default class Home_Track extends Vue {
 
+        get sizeCheckVideoUrl() {
+            return VideoFileStore.url;
+        }
+
+        mounted() {
+            HistoryStore.init(this.makeHistoryRecord());
+
+            // ヒストリが変わった
+            this.$watch(
+                () => HistoryStore.index,
+                () => {
+                    const current = HistoryStore.current;
+                    OperationStore_Track.setOperation(current.value.operation);
+                    OperationOfFramesStore.setOperations(current.value.operationOfFrame);
+                    AnnotationsStore_Track.setAnnotation(current.value.annotation);
+                },
+                {deep: true}
+            );
+        }
+
         destroyed() {
             ImageFilesStore.clear();
             AnnotationFilesStore.clear();
-            AnnotationHistoryStore.clear();
+            HistoryStore.clear();
             HelpStore.hide();
         }
 
-        get sizeCheckVideoUrl() {
-            return VideoFileStore.url;
+        private makeHistoryRecord() {
+            return new HistoryRecord({
+                operation: OperationStore_Track.operation,
+                operationOfFrame: OperationOfFramesStore.operations,
+                annotation: AnnotationsStore_Track.annotations,
+            });
+        }
+
+        private addHistory() {
+            HistoryStore.addHistory(this.makeHistoryRecord());
         }
 
         private fitWidth(width: number) {

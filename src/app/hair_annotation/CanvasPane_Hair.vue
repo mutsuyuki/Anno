@@ -48,13 +48,13 @@
     import {Annotation_Hair, Annotation_HairUtil} from "@/app/hair_annotation/Annotation_Hair";
     import ImageFilesStore from "@/store/ImageFilesStore";
     import FileUtil from "@/common/utils/FileUtil";
-    import AnnotationContainer from "@/common/model/AnnotationContainer";
+    import AnnotationContainer from "@/common/model/HistoryRecord";
     import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import FileDownloader from "@/common/utils/FileDownloader";
     import ToolBar from "@/components/ToolBar.vue";
     import DownloadButton from "@/components/DownloadButton.vue";
-    import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
+    import HistoryStore from "@/store/HistoryStore";
 
     enum MODE {
         LINE_DIRECTION,
@@ -114,7 +114,7 @@
         }
 
         get currentHistory(): { [fileName: string]: AnnotationContainer<Annotation_Hair[]> } {
-            return AnnotationHistoryStore.current;
+            return HistoryStore.current;
         }
 
         created() {
@@ -129,7 +129,7 @@
                         annotations[fileName] = new AnnotationContainer<Annotation_Hair[]>([]);
                     }
 
-                    AnnotationHistoryStore.init(annotations);
+                    HistoryStore.init(annotations);
                 },
                 {deep: true}
             );
@@ -158,7 +158,7 @@
                     }
 
                     if (AnnotationFilesStore.items.length > 0)
-                        AnnotationHistoryStore.addHistory(annotations);
+                        HistoryStore.addHistory(annotations);
                 },
                 {deep: true}
             );
@@ -244,7 +244,7 @@
 
                 if (nearestDistance < 0.1) {
                     annotations[this.currentFileName].annotation = annotations[this.currentFileName].annotation.filter(v => v !== nearestAnnotation);
-                    AnnotationHistoryStore.addHistory(annotations);
+                    HistoryStore.addHistory(annotations);
                 }
             }
 
@@ -261,7 +261,7 @@
             if (this.mode == MODE.LINE_DIRECTION) {
                 let annotations = this.currentHistory;
                 annotations[this.currentFileName].annotation.push(this.newAnnotation.value);
-                AnnotationHistoryStore.addHistory(annotations);
+                HistoryStore.addHistory(annotations);
                 Vue.set(this.newAnnotation, "value", {
                     start: {x: -9999, y: -9999},
                     end: {x: -9999, y: -9999},
@@ -292,7 +292,7 @@
         private async onDownload() {
             let annotations = this.currentHistory;
             annotations[this.currentFileName].isDownloaded = true;
-            AnnotationHistoryStore.updateCurrent(annotations);
+            HistoryStore.updateCurrent(annotations);
 
             FileDownloader.downloadTextFile(
                 this.currentFileName + ".txt",

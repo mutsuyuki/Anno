@@ -1,25 +1,37 @@
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import AnnotationContainer from "@/common/model/AnnotationContainer";
 import {cloneDeep} from 'lodash'
+import DeepCloner from "@/common/utils/DeepCloner";
+
+export class HistoryRecord<T> {
+    public value: T;
+
+    constructor(value: T) {
+        this.value = DeepCloner.copy(value);
+    }
+}
 
 
 @Module({
-    name: "AnnotationHistoryStore",
+    name: "HistoryStore",
     dynamic: true,
     store: store,
     namespaced: true
 })
 
-class AnnotationHistoryStore extends VuexModule {
+class HistoryStore extends VuexModule {
 
     // states
-    private _history: { [key: string]: AnnotationContainer<any> }[] = [];
+    private _history: HistoryRecord<any>[] = [];
     private _index: number = 0;
 
     // getters
     get current() {
         return cloneDeep(this._history[this._index]) || {};
+    }
+
+    get index(): number {
+        return this._index;
     }
 
     get enableUndo() {
@@ -31,21 +43,16 @@ class AnnotationHistoryStore extends VuexModule {
     }
 
     @Mutation
-    public init(annotations: { [key: string]: AnnotationContainer<any> }) {
-        this._history = [cloneDeep(annotations)];
+    public init(record: HistoryRecord<any>) {
+        this._history = [record];
         this._index = 0;
     }
 
     @Mutation
-    public addHistory(annotations: { [key: string]: AnnotationContainer<any> }) {
+    public addHistory(record: HistoryRecord<any>) {
         this._history = this._history.filter((v, i) => i <= this._index);
-        this._history.push(cloneDeep(annotations));
+        this._history.push(record);
         this._index = this._history.length - 1;
-    }
-
-    @Mutation
-    public updateCurrent(annotations: { [key: string]: AnnotationContainer<any> }) {
-        this._history = this._history.map((v, i) => i == this._index ? cloneDeep(annotations) : v);
     }
 
     @Mutation
@@ -67,4 +74,4 @@ class AnnotationHistoryStore extends VuexModule {
     }
 }
 
-export default getModule(AnnotationHistoryStore);
+export default getModule(HistoryStore);

@@ -153,6 +153,7 @@
             AnnotationsStore_Track.create(OperationStore_Track.frame);
             OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
             OperationStore_Track.setModeToBounding();
+            this.addHistory();
         }
 
         private onSelectCopyData(copyMenuId: number) {
@@ -171,12 +172,16 @@
                     OperationStore_Track.setModeToBounding();
                     break;
             }
+
+            this.addHistory();
         }
 
         private onSelectClass(classNo: number) {
             const frame = OperationStore_Track.frame;
             const objectId = OperationStore_Track.selectingObjectId;
             AnnotationsStore_Track.setClass({frame: frame, objectId: objectId, class: classNo});
+
+            this.addHistory();
         }
 
         private onSelectMode(modeNo: number) {
@@ -188,6 +193,10 @@
                     OperationStore_Track.setModeToBone();
                     break;
             }
+        }
+
+        private addHistory() {
+            this.$emit("addHistory")
         }
 
         private onClickHelp(): void {

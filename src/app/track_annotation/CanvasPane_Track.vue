@@ -7,7 +7,7 @@
         <AnnotationStatusBar
                 class="annotation-status-bar"
                 :fileName="currentFileNameFull"
-                :isSetByFile="isSetByFile"
+                :isUseAnnotationFile="isUseAnnotationFile"
                 :isDownloaded="isDownloaded"
         />
 
@@ -40,13 +40,12 @@
     import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
     import {Color} from "@/common/interface/Color";
     import FileUtil from "@/common/utils/FileUtil";
-    import AnnotationContainer from "@/common/model/AnnotationContainer";
     import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import FileDownloader from "@/common/utils/FileDownloader";
     import ToolBar from "@/components/ToolBar.vue";
     import DownloadButton from "@/components/DownloadButton.vue";
-    import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
+    import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
     import VideoFileStore from "@/store/VideoFileStore";
     import VideoPlayer from "@/components/Player/VideoPlayer.vue";
     import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
@@ -56,6 +55,7 @@
     import RectangleLine from "@/components/Canvas/RectangleLine";
     import DeepCloner from "@/common/utils/DeepCloner";
     import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
+    import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
 
     @Component({
         components: {
@@ -69,11 +69,8 @@
         }
     })
     export default class CanvasPane_Track extends Vue {
-        //
         private graphics: Graphic[] = [];
-        //
-        // private isCtrlKeyDown: boolean = false;
-        //
+
         private circleActiveColor: Color = {r: 150, g: 40, b: 0, a: 1};
         private lineActiveColor: Color = {r: 0, g: 40, b: 150, a: 1};
         private circleInactiveColor: Color = {r: 150, g: 40, b: 0, a: 0.5};
@@ -93,12 +90,16 @@
             return VideoFileStore.isSelected;
         }
 
-        get isSetByFile() {
-            return false;
+        get operationOfCurrentFrame(): OperationOfFrame {
+            return OperationOfFramesStore.operations[OperationStore_Track.frame] || {};
+        }
+
+        get isUseAnnotationFile() {
+            return this.operationOfCurrentFrame.isUseAnnotationFile;
         }
 
         get isDownloaded() {
-            return false;
+            return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
         }
 
         get annotationsOfCurrentFrame(): { [objectId: number]: Annotation_Track } {
@@ -142,16 +143,6 @@
 
         created() {
 
-            // // 動画読み込み
-            // this.$watch(
-            //     () => VideoFileStore.url,
-            //     () => {
-            //         let annotations: { [fileName: string]: AnnotationContainer<Annotation_Track[]> } = {};
-            //         AnnotationHistoryStore.init(annotations);
-            //     },
-            //     {deep: true}
-            // );
-            //
             // // 教師データ読み込み
             // this.$watch(
             //     () => AnnotationFilesStore.items,
@@ -172,14 +163,15 @@
             //         //         reader.readAsText(AnnotationFilesStore.items[i]);
             //         //     });
             //         //     const models = AnnotationUtil_Track.fileToModels(fileText as string);
-            //         //     annotations[fileName].annotation = models;
+            //         //     annotations[fileName].value = models;
             //         // }
             //         //
             //         // if (AnnotationFilesStore.items.length > 0)
-            //         //     AnnotationHistoryStore.addHistory(annotations);
+            //         //     HistoryStore.addHistory(annotations);
             //     },
             //     {deep: true}
             // );
+
 
             // 表示対象のアノテーションたちの状態が変わった
             this.$watch(
@@ -188,24 +180,33 @@
                 {deep: true}
             );
 
+            // 選択対象やモードが変わった
             this.$watch(
-                () => OperationStore_Track.watchTargets,
+                () => OperationStore_Track.operation,
                 () => this.draw(),
                 {deep: true}
             );
 
-            //
-            // // 削除用のCtrlキー検出
-            // document.addEventListener("keydown", (e) => {
-            //     if (e.key == "Control") {
-            //         this.isCtrlKeyDown = true;
-            //     }
-            // });
-            // document.addEventListener("keyup", (e) => {
-            //     if (e.key == "Control") {
-            //         this.isCtrlKeyDown = false;
-            //     }
-            // })
+            // フレームが変わった
+            this.$watch(
+                () => OperationStore_Track.frame,
+                () => OperationOfFramesStore.createIfNothing(OperationStore_Track.frame),
+                {deep: true, immediate: true}
+            );
+
+
+            // 削除用のCtrlキー検出
+            document.addEventListener("keydown", (e) => {
+                if (e.key == "Control") {
+                    OperationStore_Track.setIsDeleteMode(true)
+                }
+            });
+
+            document.addEventListener("keyup", (e) => {
+                if (e.key == "Control") {
+                    OperationStore_Track.setIsDeleteMode(false)
+                }
+            })
         }
 
         private draw() {
@@ -266,20 +267,50 @@
         }
 
         private onDragStart(e: MovingPoint) {
-            // バウンディング選択
+            // バウンディング
             if (OperationStore_Track.isBoundingMode) {
-                if (!OperationStore_Track.isDeleteMode) {
-                    const clickedBounding = this.getClickedBounding(e);
+                const clickedBounding = this.getClickedBounding(e);
+                if (OperationStore_Track.isDeleteMode) {
+                    // 削除
+                    if (clickedBounding.objectId) {
+
+                        AnnotationsStore_Track.deleteObject({
+                            frame: OperationStore_Track.frame,
+                            objectId: clickedBounding.objectId
+                        });
+
+                        OperationStore_Track.setSelectingObjectId("");
+                        OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
+                        OperationStore_Track.setSelectingJointName("");
+
+                        this.addHistory();
+                    }
+                } else {
+                    // 選択
                     OperationStore_Track.setSelectingObjectId(clickedBounding.objectId);
                     OperationStore_Track.setSelectingEdge(clickedBounding.selectingEdge);
                     OperationStore_Track.setSelectingJointName("");
                 }
             }
 
-            // ボーン選択
+            // ボーン
             if (OperationStore_Track.isBoneMode) {
-                if (!OperationStore_Track.isDeleteMode) {
-                    const clickedJoint = this.getClickedJoint(e);
+                const clickedJoint = this.getClickedJoint(e);
+                if (OperationStore_Track.isDeleteMode) {
+                    // 削除
+                    AnnotationsStore_Track.deleteJoint({
+                        frame: OperationStore_Track.frame,
+                        objectId: clickedJoint.objectId,
+                        jointName: clickedJoint.jointName
+                    });
+
+                    OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
+                    OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
+                    OperationStore_Track.setSelectingJointName("");
+
+                    this.addHistory();
+                } else {
+                    // 選択
                     OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
                     OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
                     OperationStore_Track.setSelectingJointName(clickedJoint.jointName);
@@ -351,20 +382,9 @@
 
         //
         private onDragEnd(e: MovingPoint) {
-            //
-            // if (!this.isCtrlKeyDown) {
-            //     let annotations = this.currentHistory;
-            //     if (!annotations[this.currentFileNameWithTime])
-            //         annotations[this.currentFileNameWithTime] = new AnnotationContainer<Annotation_Track[]>([]);
-            //
-            //     annotations[this.currentFileNameWithTime].annotation.push(this.newAnnotation.value);
-            //     AnnotationHistoryStore.addHistory(annotations);
-            //     Vue.set(this.newAnnotation, "value", {
-            //         start: {x: -9999, y: -9999},
-            //         end: {x: -9999, y: -9999},
-            //         width: 0
-            //     });
-            // }
+            if (this.selectingObject && !OperationStore_Track.isDeleteMode) {
+                this.addHistory();
+            }
         }
 
         private getClickedBounding(clickedPosition: Point) {
@@ -415,6 +435,10 @@
             return nearestJoint;
         }
 
+        private addHistory() {
+            this.$emit("addHistory")
+        }
+
         private onTimeUpdate(frame: number): void {
             OperationStore_Track.setFrame(frame.toString());
         }
@@ -423,11 +447,11 @@
         private async onDownload() {
             //     // let annotations = this.currentHistory;
             //     // annotations[this.currentFileNameWithTime].isDownloaded = true;
-            //     // AnnotationHistoryStore.updateCurrent(annotations);
+            //     // HistoryStore.updateCurrent(annotations);
             //     //
             //     // FileDownloader.downloadTextFile(
             //     //     this.currentFileNameWithTime + ".txt",
-            //     //     AnnotationUtil_Track.modelsToFile(this.currentAnnotation.annotation)
+            //     //     AnnotationUtil_Track.modelsToFile(this.currentAnnotation.value)
             //     // );
             //     //
             //     // FileDownloader.downloadBlob(

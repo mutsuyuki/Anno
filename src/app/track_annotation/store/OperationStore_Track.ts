@@ -1,6 +1,14 @@
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
 
+export interface Operation_Track {
+    frame: string;
+    selectingObjectId: string;
+    selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
+    selectingJointName: string;
+    annotationMode: number;
+    isDeleteMode: boolean;
+}
 
 @Module({
     name: "OperationStore_Track",
@@ -12,89 +20,91 @@ import store from "@/store";
 class OperationStore_Track extends VuexModule {
 
     // states
-    private _frame: string = "0";
-    private _selectingObjectId: string = "";
-    private _selectingEdge = {top: false, right: false, bottom: false, left: false};
-    private _selectingJointName: string = "";
-    private _annotationMode: number = 0;    // 0:Bounding  1:Bone
-    private _isDeleteMode: boolean = false;
+    private _operation: Operation_Track = {
+        frame: "0",
+        selectingObjectId: "",
+        selectingEdge: {top: false, right: false, bottom: false, left: false},
+        selectingJointName: "",
+        annotationMode: 0,    // 0:Bounding  1:Bone
+        isDeleteMode: false,
+    };
 
-    // // getters
-    get watchTargets() {
-        return [
-            this._selectingObjectId,
-            this._selectingEdge,
-            this._selectingJointName,
-            this._annotationMode
-        ];
+    // getters
+    get operation(): Operation_Track {
+        return this._operation;
     }
 
     get frame(): string {
-        return this._frame;
+        return this._operation.frame;
     }
 
     get selectingObjectId(): string {
-        return this._selectingObjectId;
+        return this._operation.selectingObjectId;
     }
 
     get selectingEdge(): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
-        return this._selectingEdge;
+        return this._operation.selectingEdge;
     }
 
     get selectingJointName(): string {
-        return this._selectingJointName;
+        return this._operation.selectingJointName;
     }
 
     get isBoundingMode(): boolean {
-        return this._annotationMode == 0;
+        return this._operation.annotationMode == 0;
     }
 
     get isBoneMode(): boolean {
-        return this._annotationMode == 1;
+        return this._operation.annotationMode == 1;
     }
 
     get annotationMode(): number {
-        return this._annotationMode;
+        return this._operation.annotationMode;
     }
 
     get isDeleteMode(): boolean {
-        return this._isDeleteMode;
+        return this._operation.isDeleteMode;
     }
 
 
     @Mutation
+    public setOperation(value: Operation_Track) {
+        this._operation = value;
+    }
+
+    @Mutation
     public setFrame(value: string) {
-        this._frame = value;
+        this._operation.frame = value;
     }
 
     @Mutation
     public setSelectingObjectId(value: string) {
-        this._selectingObjectId = value;
+        this._operation.selectingObjectId = value;
     }
 
     @Mutation
     public setSelectingEdge(value: { top: boolean; right: boolean; bottom: boolean; left: boolean }) {
-        this._selectingEdge = value;
+        this._operation.selectingEdge = value;
     }
 
     @Mutation
     public setSelectingJointName(value: string) {
-        this._selectingJointName = value;
+        this._operation.selectingJointName = value;
     }
 
     @Mutation
     public setModeToBounding() {
-        this._annotationMode = 0;
+        this._operation.annotationMode = 0;
     }
 
     @Mutation
     public setModeToBone() {
-        this._annotationMode = 1;
+        this._operation.annotationMode = 1;
     }
 
     @Mutation
     public setIsDeleteMode(value: boolean) {
-        this._isDeleteMode = value;
+        this._operation.isDeleteMode = value;
     }
 }
 

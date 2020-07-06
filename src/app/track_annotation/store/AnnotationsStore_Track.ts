@@ -62,6 +62,12 @@ class AnnotationsStore_Track extends VuexModule {
         return getNewestObjectId(this._annotations);
     }
 
+
+    @Mutation
+    public setAnnotation(value: { [frame: string]: { [objectId: string]: Annotation_Track } }) {
+        this._annotations = value;
+    }
+
     @Mutation
     public create(frame: string) {
         if (!this._annotations[frame])
@@ -181,6 +187,29 @@ class AnnotationsStore_Track extends VuexModule {
         }
     }
 
+
+    @Mutation
+    public deleteObject(value: { frame: string, objectId: string }) {
+        Vue.delete(
+            this._annotations[value.frame],
+            value.objectId
+        );
+    }
+
+
+    @Mutation
+    public deleteJoint(value: { frame: string, objectId: string, jointName: string }) {
+        Vue.set(
+            this._annotations[value.frame][value.objectId].bone,
+            value.jointName,
+            {x: -9999, y: -9999}
+        );
+    }
+
+    @Mutation
+    public clear() {
+        this._annotations = {};
+    }
 }
 
 export default getModule(AnnotationsStore_Track);

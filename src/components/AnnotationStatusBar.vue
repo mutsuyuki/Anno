@@ -2,7 +2,7 @@
     <div class="annotation-status-bar">
         <div class="file-name"> {{fileName}}</div>
         <div class="statuses">
-            <div class="status" :class="{'active':isSetByFile}">教師データ読込</div>
+            <div class="status" :class="{'active':isUseAnnotationFile}">教師データ読込</div>
             <div class="status" :class="{'active':isDownloaded}">ダウンロード済</div>
         </div>
     </div>
@@ -16,7 +16,7 @@
     })
     export default class AnnotationStatusBar extends Vue {
         @Prop() fileName!: string;
-        @Prop() isSetByFile!: boolean;
+        @Prop() isUseAnnotationFile!: boolean;
         @Prop() isDownloaded!: boolean;
     }
 </script>

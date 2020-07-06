@@ -26,7 +26,7 @@
     import Help_Hair from "@/app/hair_annotation/Help_Hair.vue";
     import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
     import ImageFilesStore from "@/store/ImageFilesStore";
-    import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
+    import HistoryStore from "@/store/HistoryStore";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import HelpStore from "@/store/HelpStore";
 
@@ -43,7 +43,7 @@
         destroyed() {
             ImageFilesStore.clear();
             AnnotationFilesStore.clear();
-            AnnotationHistoryStore.clear();
+            HistoryStore.clear();
             HelpStore.hide();
         }
 

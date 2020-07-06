@@ -35,7 +35,7 @@
     import InlineSvg from "@/components/InlineSvg";
     import NormalizedScalableArea from "@/components/ScalableArea/NormalizedScalableArea.vue";
     import CanvasSettingsStore from "@/store/CanvasSettingsStore";
-    import AnnotationHistoryStore from "@/store/AnnotationHistoryStore";
+    import HistoryStore from "@/store/HistoryStore";
 
     @Component({
         components: {NormalizedScalableArea, InlineSvg, ScalableArea}
@@ -43,19 +43,19 @@
     export default class ToolBar extends Vue {
 
         private onClickUndo() {
-            AnnotationHistoryStore.undo();
+            HistoryStore.undo();
         }
 
         private onClickRedo() {
-            AnnotationHistoryStore.redo();
+            HistoryStore.redo();
         }
 
         get enableUndo() {
-            return AnnotationHistoryStore.enableUndo;
+            return HistoryStore.enableUndo;
         }
 
         get enableRedo() {
-            return AnnotationHistoryStore.enableRedo;
+            return HistoryStore.enableRedo;
         }
 
         get opacity() {
