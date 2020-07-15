@@ -76,7 +76,13 @@
                             @select="onSelectMode"
                     />
 
-                    <!--                    <MenuSubTitle :text="'データビュー'" class="subtitle"/>-->
+                    <MenuSubTitle :text="'関節の復活'" class="subtitle"/>
+                    <ButtonGrid
+                            :data="[{id:0,text:'削除した関節を戻す'}]"
+                            :selectId="-1"
+                            :cols="1"
+                            @select="onClickRebirthJoint"
+                    />
                 </div>
             </div>
         </div>
@@ -151,7 +157,6 @@
             AnnotationFilesStore.setFiles(files);
         }
 
-
         private onSelectCreateData(_: number) {
             AnnotationsStore_Track.create(OperationStore_Track.frame);
             OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
@@ -198,6 +203,12 @@
                     OperationStore_Track.setModeToBone();
                     break;
             }
+        }
+
+        private onClickRebirthJoint(_: number) {
+            const frame = OperationStore_Track.frame;
+            const objectId = OperationStore_Track.selectingObjectId;
+            AnnotationsStore_Track.rebirthJoint({frame: frame, objectId: objectId});
         }
 
         private addHistory() {

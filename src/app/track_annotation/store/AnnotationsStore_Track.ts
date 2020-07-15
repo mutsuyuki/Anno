@@ -112,7 +112,7 @@ class AnnotationsStore_Track extends VuexModule {
         copiedAnnotation.bounding.top += 0.01;
         copiedAnnotation.bounding.width -= 0.0001;   // 小さいものが優先して選ばれるため、コピーしたやつを選ばれやすくする
         for (const jointName in copiedAnnotation.bone) {
-            if((<any>copiedAnnotation.bone)[jointName].x != -9999){
+            if ((<any>copiedAnnotation.bone)[jointName].x != -9999) {
                 (<any>copiedAnnotation.bone)[jointName].x += 0.005;
                 (<any>copiedAnnotation.bone)[jointName].y += 0.01;
             }
@@ -122,6 +122,35 @@ class AnnotationsStore_Track extends VuexModule {
             this._annotations[value.frame],
             newObjectId,
             copiedAnnotation
+        );
+    }
+
+
+    @Mutation
+    public rebirthJoint(value: { frame: string, objectId: string }) {
+        if (!this._annotations[value.frame]) {
+            alert("現在のフレームにはアノテーションがありません");
+            return;
+        }
+        if (!this._annotations[value.frame][value.objectId]) {
+            alert("アノテーションが選択されていません。");
+            return;
+        }
+
+        const defaultBone = makeAnnotationInstance("", "").bone;
+        let targetAnnotation = this._annotations[value.frame][value.objectId];
+        for (const jointName in targetAnnotation.bone) {
+            const joint = (<any>targetAnnotation.bone)[jointName];
+            if (joint.x == -9999) {
+                const position = PointUtil.add((<any>targetAnnotation.bone)["mouse"], PointUtil.minus((<any>defaultBone)[jointName], defaultBone["mouse"]));
+                (<any>targetAnnotation.bone)[jointName] = position;
+            }
+        }
+
+        Vue.set(
+            this._annotations[value.frame],
+            value.objectId,
+            targetAnnotation
         );
     }
 
