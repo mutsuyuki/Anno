@@ -26,11 +26,13 @@
 <style scoped lang="scss">
 
     .multi_label_container {
-        width: 100%;
-        height: 100%;
+        position: absolute;
+        top:0;
+        left:0;
         padding: 0;
         margin: 0;
-        position: relative;
+        width: 100%;
+        height: 100%;
 
         .label {
             position: absolute;

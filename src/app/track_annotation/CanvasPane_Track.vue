@@ -12,16 +12,19 @@
         />
 
         <VideoPlayer
+                :frameForSeek="frameForSeek"
+                :createBlobSignal="createBlobSignal"
                 @dragareastart="onDragStart"
                 @dragarea="onDrag"
                 @dragareaend="onDragEnd"
+                @hover="onHover"
                 @download="onDownload"
                 @timeupdate="onTimeUpdate"
-                :createBlobSignal="createBlobSignal"
                 @prepareBlob="onPrepareBlob"
         >
             <CanvasRenderer class="canvas_renderer" :graphics="graphics"/>
-            <MultiLabels :labels="labelData"/>
+            <MultiLabels :labels="objectLabels"/>
+            <MultiLabels :labels="pointingJointLabel"/>
         </VideoPlayer>
 
         <DownloadButton
@@ -70,21 +73,28 @@
     export default class CanvasPane_Track extends Vue {
         private graphics: Graphic[] = [];
 
-        private circleActiveColor: Color = {r: 150, g: 40, b: 0, a: 1};
+        private circleActiveColor: Color = {r: 0, g: 150, b: 40, a: 1};
+        private circleInactiveColor: Color = {r: 0, g: 150, b: 40, a: 0.5};
+        private circleActiveRightColor: Color = {r: 150, g: 40, b: 0, a: 1};
+        private circleInactiveRightColor: Color = {r: 150, g: 40, b: 0, a: 0.5};
         private lineActiveColor: Color = {r: 0, g: 40, b: 150, a: 1};
-        private circleInactiveColor: Color = {r: 150, g: 40, b: 0, a: 0.5};
         private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.5};
 
         private createBlobSignal: boolean = false;
         private isDeleteMode: boolean = false;
 
+        private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
+
         get currentFileNameFull() {
             return VideoFileStore.name;
         }
 
-
         get isVideoSelected() {
             return VideoFileStore.isSelected;
+        }
+
+        get frameForSeek(): number {
+            return Number(this.frame == OperationStore_Track.frame ? -1 : OperationStore_Track.frame);
         }
 
         get operationOfCurrentFrame(): OperationOfFrame {
@@ -99,12 +109,12 @@
             return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
         }
 
-        get annotationsOfCurrentFrame(): { [objectId: number]: Annotation_Track } {
+        get annotationsOfCurrentFrame(): { [objectId: string]: Annotation_Track } {
             return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
         }
 
-        get labelData(): { text: string, position: Point, isActive: boolean }[] {
-            let result = []
+        get objectLabels(): { text: string, position: Point, isActive: boolean }[] {
+            let result = [];
             const annotations = this.annotationsOfCurrentFrame;
             for (const objectId in annotations) {
                 result.push({
@@ -118,6 +128,29 @@
             }
 
             return result;
+        }
+
+        get pointingJointLabel(): { text: string, position: Point, isActive: boolean }[] {
+            const hoveringObjectId = OperationStore_Track.hoveringObjectId;
+            const targetAnnotation = this.annotationsOfCurrentFrame[hoveringObjectId];
+            if (!targetAnnotation) {
+                return [];
+            }
+
+            const hoveringJointName = OperationStore_Track.hoveringJointName;
+            const targetJoint = (<any>targetAnnotation).bone[hoveringJointName];
+            if (!targetJoint) {
+                return [];
+            }
+
+            return [{
+                text: hoveringJointName,
+                position: {
+                    x: (<any>targetJoint).x * 100,
+                    y: (<any>targetJoint).y * 100
+                },
+                isActive: true
+            }]
         }
 
         get selectingObject() {
@@ -139,7 +172,6 @@
         }
 
         created() {
-
             // 表示対象のアノテーションたちの状態が変わった
             this.$watch(
                 () => this.annotationsOfCurrentFrame,
@@ -160,7 +192,6 @@
                 () => OperationOfFramesStore.createIfNothing(OperationStore_Track.frame),
                 {deep: true, immediate: true}
             );
-
 
             // 教師データ読み込み
             this.$watch(
@@ -194,25 +225,25 @@
                 const boneColor = isSelecting && OperationStore_Track.isBoneMode ? this.lineActiveColor : this.lineInactiveColor;
                 const boneLines = new MultiLines(
                     [
-                        {start: bone.head, end: bone.neck},
-                        {start: bone.neck, end: bone.chest},
-                        {start: bone.chest, end: bone.left_shoulder},
+                        {start: bone.mouse, end: bone.head},
+                        {start: bone.head, end: bone.cervical_spine},
+                        {start: bone.cervical_spine, end: bone.left_shoulder},
                         {start: bone.left_shoulder, end: bone.left_elbow},
-                        {start: bone.left_elbow, end: bone.left_wrist1},
-                        {start: bone.left_wrist1, end: bone.left_wrist2},
-                        {start: bone.chest, end: bone.right_shoulder},
+                        {start: bone.left_elbow, end: bone.left_wrist},
+                        {start: bone.left_wrist, end: bone.left_finger},
+                        {start: bone.cervical_spine, end: bone.right_shoulder},
                         {start: bone.right_shoulder, end: bone.right_elbow},
-                        {start: bone.right_elbow, end: bone.right_wrist1},
-                        {start: bone.right_wrist1, end: bone.right_wrist2},
-                        {start: bone.chest, end: bone.pelvis},
-                        {start: bone.pelvis, end: bone.left_hip},
-                        {start: bone.left_hip, end: bone.left_knee},
-                        {start: bone.left_knee, end: bone.left_ankle1},
-                        {start: bone.left_ankle1, end: bone.left_ankle2},
-                        {start: bone.pelvis, end: bone.right_hip},
-                        {start: bone.right_hip, end: bone.right_knee},
-                        {start: bone.right_knee, end: bone.right_ankle1},
-                        {start: bone.right_ankle1, end: bone.right_ankle2},
+                        {start: bone.right_elbow, end: bone.right_wrist},
+                        {start: bone.right_wrist, end: bone.right_finger},
+                        {start: bone.cervical_spine, end: bone.pelvis},
+                        {start: bone.pelvis, end: bone.left_waist},
+                        {start: bone.left_waist, end: bone.left_knee},
+                        {start: bone.left_knee, end: bone.left_heel},
+                        {start: bone.left_heel, end: bone.left_toe},
+                        {start: bone.pelvis, end: bone.right_waist},
+                        {start: bone.right_waist, end: bone.right_knee},
+                        {start: bone.right_knee, end: bone.right_heel},
+                        {start: bone.right_heel, end: bone.right_toe},
                     ].filter(v => v.start.x != -9999 && v.end.x != -9999),
                     2,  // width
                     boneColor
@@ -220,11 +251,17 @@
                 boneLines.zIndex = 0;
                 this.graphics.push(boneLines);
 
-
                 const jointColor = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveColor : this.circleInactiveColor;
-                const boneJoints = new MultiCircles(Object.values(bone), 4, jointColor);
+                const jointPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") < 0).map(v => v[1]);
+                const boneJoints = new MultiCircles(jointPositions, 4, jointColor);
                 boneJoints.zIndex = 1;
                 this.graphics.push(boneJoints);
+
+                const jointColorRight = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveRightColor : this.circleInactiveRightColor;
+                const jointRightPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") >= 0).map(v => v[1]);
+                const boneJointsRight = new MultiCircles(jointRightPositions, 4, jointColorRight);
+                boneJointsRight.zIndex = 1;
+                this.graphics.push(boneJointsRight);
 
                 const boundingColor = isSelecting && OperationStore_Track.isBoundingMode ? this.lineActiveColor : this.lineInactiveColor;
                 const boundingBox = new RectangleLine(
@@ -235,7 +272,7 @@
                     2,
                     boundingColor
                 );
-                boneJoints.zIndex = 2;
+                boneJoints.zIndex = 3;
                 this.graphics.push(boundingBox);
             }
         }
@@ -256,8 +293,6 @@
                     reader.readAsText(AnnotationFilesStore.items[i]);
                 });
 
-                console.log(JSON.parse(fileText as string))
-
                 AnnotationsStore_Track.setAnnotationsOfFrame({
                     frame: frame,
                     data: JSON.parse(fileText as string)
@@ -272,14 +307,12 @@
             if (AnnotationFilesStore.items.length > 0) {
                 this.addHistory();
             }
-
-            console.log("bbb", AnnotationsStore_Track.annotations)
         }
 
         private onDragStart(e: MovingPoint) {
             // バウンディング
             if (OperationStore_Track.isBoundingMode) {
-                const clickedBounding = this.getClickedBounding(e);
+                const clickedBounding = this.searchBounding(e);
                 if (this.isDeleteMode) {
                     // 削除
                     if (clickedBounding.objectId) {
@@ -305,7 +338,7 @@
 
             // ボーン
             if (OperationStore_Track.isBoneMode) {
-                const clickedJoint = this.getClickedJoint(e);
+                const clickedJoint = this.searchJoint(e);
                 if (this.isDeleteMode) {
                     // 削除
                     AnnotationsStore_Track.deleteJoint({
@@ -397,7 +430,18 @@
             }
         }
 
-        private getClickedBounding(clickedPosition: Point) {
+
+        private onHover(e: Point) {
+            // ボーン
+            if (OperationStore_Track.isBoneMode) {
+                const hoveredJoint = this.searchJoint(e);
+                OperationStore_Track.setHoveringObjectId(hoveredJoint.objectId);
+                OperationStore_Track.setHoveringJointName(hoveredJoint.jointName);
+            }
+
+        }
+
+        private searchBounding(position: Point) {
             let smallestArea = Number.MAX_VALUE;
             let smallestObjectId: string = "";
             let selectingEdge = {top: false, right: false, bottom: false, left: false};
@@ -405,8 +449,8 @@
 
             for (const objectId in this.annotationsOfCurrentFrame) {
                 const bounding = this.annotationsOfCurrentFrame[objectId].bounding;
-                const x = clickedPosition.x;
-                const y = clickedPosition.y;
+                const x = position.x;
+                const y = position.y;
                 const insideHorizontal = (bounding.left - edgeWidth < x) && (x < bounding.left + bounding.width + edgeWidth);
                 const insideVertical = (bounding.top - edgeWidth < y) && (y < bounding.top + bounding.height + edgeWidth);
                 const area = bounding.width * bounding.height;
@@ -427,15 +471,15 @@
             return {objectId: smallestObjectId, selectingEdge: selectingEdge};
         }
 
-        private getClickedJoint(clickedPosition: Point) {
+        private searchJoint(position: Point) {
             let nearestDistance = Number.MAX_VALUE;
             let nearestJoint: { objectId: string, jointName: string } = {objectId: "", jointName: ""};
 
             for (const objectId in this.annotationsOfCurrentFrame) {
                 for (const jointName in this.annotationsOfCurrentFrame[objectId].bone) {
                     const bonePosition = (<any>this.annotationsOfCurrentFrame[objectId].bone)[jointName];
-                    const distance = PointUtil.distance(bonePosition, clickedPosition);
-                    if (distance < 0.1 && distance < nearestDistance) {
+                    const distance = PointUtil.distance(bonePosition, position);
+                    if (distance < 0.05 && distance < nearestDistance) {
                         nearestDistance = distance;
                         nearestJoint = {objectId: objectId, jointName: jointName};
                     }
@@ -450,10 +494,10 @@
         }
 
         private onTimeUpdate(frame: number): void {
-            OperationStore_Track.setFrame(frame.toString());
+            this.frame = frame.toString();
+            OperationStore_Track.setFrame(this.frame);
         }
 
-        //
         private async onDownload() {
             this.createBlobSignal = !this.createBlobSignal;
         }
@@ -462,7 +506,6 @@
             const fileName = FileUtil.removeExtension(this.currentFileNameFull) + "___" + OperationStore_Track.frame + "___";
             FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
-            console.log(Object.values(this.annotationsOfCurrentFrame))
             const json = JSON.stringify(this.annotationsOfCurrentFrame);
             FileDownloader.downloadJsonFile(fileName + ".json", json);
 

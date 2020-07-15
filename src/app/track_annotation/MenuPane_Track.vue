@@ -61,9 +61,9 @@
 
                     <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
                     <ButtonGrid
-                            :data="[{id:0,text:'食'},{id:1,text:'歩'},{id:2,text:'立'},{id:3,text:'休'},{id:4,text:'飲'}]"
+                            :data="[{id:0,text:'食'},{id:1,text:'飲'},{id:2,text:'歩'},{id:3,text:'立/通常'},{id:4,text:'立/反芻'},{id:5,text:'休/通常'}, {id:6,text:'休/反芻'}]"
                             :selectId="selectedClass"
-                            :cols="5"
+                            :cols="2"
                             :font-size="11"
                             @select="onSelectClass"
                     />

@@ -94,6 +94,7 @@
     export default class VideoPlayer extends Vue {
 
         @Prop() private createBlobSignal!: boolean;
+        @Prop() private frameForSeek!: number;
 
         private video: HTMLVideoElement = document.createElement("video");   // dummy
         private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");  // dummy
@@ -136,6 +137,16 @@
             });
 
             this.$watch(
+                () => this.frameForSeek,
+                () => {
+                    console.log(this.frameForSeek)
+                    if(this.frameForSeek != -1){
+                        this.video.currentTime = this.frameForSeek
+                    }
+                }
+            );
+
+            this.$watch(
                 () => this.createBlobSignal,
                 () => this.makeBlob()
             );
@@ -148,7 +159,7 @@
         }
 
         private getStepedSec(time: number): number {
-            return Math.floor(time / this.stepSec) * this.stepSec;
+            return Math.round(time / this.stepSec) * this.stepSec;
         }
 
         private play(): void {

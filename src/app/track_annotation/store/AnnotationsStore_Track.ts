@@ -17,26 +17,26 @@ export interface Annotation_Track {
     class: number;
     bounding: Bounding_Track;
     bone: {
+        mouse: Point;
         head: Point;
-        neck: Point;
-        chest: Point;
+        cervical_spine: Point;
         left_shoulder: Point;
         left_elbow: Point;
-        left_wrist1: Point;
-        left_wrist2: Point;
+        left_wrist: Point;
+        left_finger: Point;
         right_shoulder: Point;
         right_elbow: Point;
-        right_wrist1: Point;
-        right_wrist2: Point;
+        right_wrist: Point;
+        right_finger: Point;
         pelvis: Point;
-        left_hip: Point;
+        left_waist: Point;
         left_knee: Point;
-        left_ankle1: Point;
-        left_ankle2: Point;
-        right_hip: Point;
+        left_heel: Point;
+        left_toe: Point;
+        right_waist: Point;
         right_knee: Point;
-        right_ankle1: Point;
-        right_ankle2: Point;
+        right_heel: Point;
+        right_toe: Point;
     };
 }
 
@@ -112,8 +112,10 @@ class AnnotationsStore_Track extends VuexModule {
         copiedAnnotation.bounding.top += 0.01;
         copiedAnnotation.bounding.width -= 0.0001;   // 小さいものが優先して選ばれるため、コピーしたやつを選ばれやすくする
         for (const jointName in copiedAnnotation.bone) {
-            (<any>copiedAnnotation.bone)[jointName].x += 0.005;
-            (<any>copiedAnnotation.bone)[jointName].y += 0.01;
+            if((<any>copiedAnnotation.bone)[jointName].x != -9999){
+                (<any>copiedAnnotation.bone)[jointName].x += 0.005;
+                (<any>copiedAnnotation.bone)[jointName].y += 0.01;
+            }
         }
 
         Vue.set(
@@ -149,7 +151,6 @@ class AnnotationsStore_Track extends VuexModule {
         if (!this._annotations[currentFrame])
             Vue.set(this._annotations, currentFrame, {});
 
-        console.log(this._annotations, prevFrame);
         for (const objectId in this._annotations[prevFrame]) {
             let copiedAnnotation = DeepCloner.copy(this._annotations[prevFrame][objectId]);
             copiedAnnotation.frame = currentFrame;
@@ -181,6 +182,11 @@ class AnnotationsStore_Track extends VuexModule {
 
     @Mutation
     public setJointPosition(value: { frame: string, objectId: string, jointName: string, position: Point }) {
+        const currentPosition = (<any>this._annotations[value.frame][value.objectId].bone)[value.jointName];
+        if (currentPosition.x == -9999) {
+            return;
+        }
+
         Vue.set(
             this._annotations[value.frame][value.objectId].bone,
             value.jointName,
@@ -192,6 +198,10 @@ class AnnotationsStore_Track extends VuexModule {
     public addJointPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
         for (const jointName in this._annotations[value.frame][value.objectId].bone) {
             const currentPosition = (<any>this._annotations[value.frame][value.objectId].bone)[jointName];
+            if (currentPosition.x == -9999) {
+                continue;
+            }
+
             Vue.set(
                 this._annotations[value.frame][value.objectId].bone,
                 jointName,
@@ -240,26 +250,26 @@ function makeAnnotationInstance(frame: string, objectId: string): Annotation_Tra
             height: 0.24
         },
         bone: {
-            head: {x: 0.4, y: 0.4},
-            neck: {x: 0.45, y: 0.4},
-            chest: {x: 0.5, y: 0.4},
+            mouse: {x: 0.4, y: 0.4},
+            head: {x: 0.45, y: 0.4},
+            cervical_spine: {x: 0.5, y: 0.4},
             left_shoulder: {x: 0.5, y: 0.45},
             left_elbow: {x: 0.5, y: 0.5},
-            left_wrist1: {x: 0.5, y: 0.55},
-            left_wrist2: {x: 0.5, y: 0.6},
+            left_wrist: {x: 0.5, y: 0.55},
+            left_finger: {x: 0.5, y: 0.6},
             right_shoulder: {x: 0.475, y: 0.45 * 0.95},
             right_elbow: {x: 0.475, y: 0.5 * 0.95},
-            right_wrist1: {x: 0.475, y: 0.55 * 0.95},
-            right_wrist2: {x: 0.475, y: 0.6 * 0.95},
+            right_wrist: {x: 0.475, y: 0.55 * 0.95},
+            right_finger: {x: 0.475, y: 0.6 * 0.95},
             pelvis: {x: 0.6, y: 0.4},
-            left_hip: {x: 0.6, y: 0.45},
+            left_waist: {x: 0.6, y: 0.45},
             left_knee: {x: 0.6, y: 0.5},
-            left_ankle1: {x: 0.6, y: 0.55},
-            left_ankle2: {x: 0.6, y: 0.6},
-            right_hip: {x: 0.575, y: 0.45 * 0.95},
+            left_heel: {x: 0.6, y: 0.55},
+            left_toe: {x: 0.6, y: 0.6},
+            right_waist: {x: 0.575, y: 0.45 * 0.95},
             right_knee: {x: 0.575, y: 0.5 * 0.95},
-            right_ankle1: {x: 0.575, y: 0.55 * 0.95},
-            right_ankle2: {x: 0.575, y: 0.6 * 0.95},
+            right_heel: {x: 0.575, y: 0.55 * 0.95},
+            right_toe: {x: 0.575, y: 0.6 * 0.95},
         }
     }
 }

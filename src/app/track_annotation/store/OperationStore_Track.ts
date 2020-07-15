@@ -6,6 +6,8 @@ export interface Operation_Track {
     selectingObjectId: string;
     selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
     selectingJointName: string;
+    hoveringObjectId: string;
+    hoveringJointName: string;
     annotationMode: number;
 }
 
@@ -24,6 +26,8 @@ class OperationStore_Track extends VuexModule {
         selectingObjectId: "",
         selectingEdge: {top: false, right: false, bottom: false, left: false},
         selectingJointName: "",
+        hoveringObjectId: "",
+        hoveringJointName: "",
         annotationMode: 0,    // 0:Bounding  1:Bone
     };
 
@@ -46,6 +50,14 @@ class OperationStore_Track extends VuexModule {
 
     get selectingJointName(): string {
         return this._operation.selectingJointName;
+    }
+
+    get hoveringObjectId(): string {
+        return this._operation.hoveringObjectId;
+    }
+
+    get hoveringJointName(): string {
+        return this._operation.hoveringJointName;
     }
 
     get isBoundingMode(): boolean {
@@ -84,6 +96,16 @@ class OperationStore_Track extends VuexModule {
     @Mutation
     public setSelectingJointName(value: string) {
         this._operation.selectingJointName = value;
+    }
+
+    @Mutation
+    public setHoveringObjectId(value: string) {
+        this._operation.hoveringObjectId = value;
+    }
+
+    @Mutation
+    public setHoveringJointName(value: string) {
+        this._operation.hoveringJointName = value;
     }
 
     @Mutation
