@@ -162,8 +162,6 @@
             OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
             OperationStore_Track.setModeToBounding();
             this.addHistory();
-
-            console.log("aaa", AnnotationsStore_Track.annotations)
         }
 
         private onSelectCopyData(copyMenuId: number) {
