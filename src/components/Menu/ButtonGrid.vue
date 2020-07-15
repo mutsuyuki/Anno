@@ -9,7 +9,7 @@
             >
                 <button class="button"
                         v-if="isExist(row, col)"
-                        :title="getId(row,col) + ':' + getText(row,col)"
+                        :title="showTooltip ? getText(row,col) : ''"
                         :class="{'is_select' : getId(row,col) === selectId}"
                         :style="{'font-size': fontSize + 'px'}"
                         @click.prevent="$emit('select', getId(row,col))"
@@ -28,11 +28,12 @@
     @Component({})
     export default class ButtonGrid extends Vue {
 
-        @Prop({default: []}) private data!: { id: number, text: string }[];
-        @Prop({default: 0}) private selectId!: number;
+        @Prop({default: []}) private data!: { id: string, text: string }[];
+        @Prop({default: ""}) private selectId!: string;
         @Prop({default: 2}) private cols!: number;
-        @Prop({default: 200}) private maxHeight!: number;
+        @Prop({default: 9999}) private maxHeight!: number;
         @Prop({default: 12}) private fontSize!: number;
+        @Prop({default: false}) private showTooltip!: boolean;
 
         get rows() {
             return Math.ceil(this.data.length / this.cols)

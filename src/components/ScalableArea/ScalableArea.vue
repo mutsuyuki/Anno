@@ -408,7 +408,7 @@
 
             this.isZooming = true;
 
-            this.zoom(e.offsetX, e.offsetY, (-e.deltaY / 1000));
+            this.zoom(e.offsetX, e.offsetY, (-e.deltaY / 200) );
 
             clearTimeout(this.timeoutId);
             this.timeoutId = setTimeout(() => {

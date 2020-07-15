@@ -40,7 +40,7 @@
                 <ButtonGrid
                         class="copy_button"
                         :class="{'disable': !selectingObject}"
-                        :data="[{id:0,text:'選択中データを複製'}]"
+                        :data="[{id:'_',text:'選択中データを複製'}]"
                         :selectId="-1"
                         :cols="1"
                         @select="onSelectCopyData"
@@ -49,10 +49,10 @@
                 <ButtonGrid
                         class="copy_button"
                         :class="{'disable': isFirstFrame}"
-                        :data="[{id:1,text:'前フレーム全て複製'}]"
+                        :data="[{id:'_',text:'前フレーム全て複製'}]"
                         :selectId="-1"
                         :cols="1"
-                        @select="onSelectCopyData"
+                        @select="onSelectCopyFrame"
                 />
 
                 <div
@@ -61,7 +61,7 @@
 
                     <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
                     <ButtonGrid
-                            :data="[{id:0,text:'食'},{id:1,text:'飲'},{id:2,text:'歩'},{id:3,text:'立/通常'},{id:4,text:'立/反芻'},{id:5,text:'休/通常'}, {id:6,text:'休/反芻'}]"
+                            :data="[{id:'0',text:'食'},{id:'1',text:'飲'},{id:'2',text:'歩'},{id:'3',text:'立/通常'},{id:'4',text:'立/反芻'},{id:'5',text:'休/通常'}, {id:'6',text:'休/反芻'}]"
                             :selectId="selectedClass"
                             :cols="2"
                             :font-size="11"
@@ -70,7 +70,7 @@
 
                     <MenuSubTitle :text="'モード選択'" class="subtitle"/>
                     <ButtonGrid
-                            :data="[{id:0,text:'領域'}, {id:1,text:'ボーン'}]"
+                            :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}]"
                             :selectId="selectedMode"
                             :cols="2"
                             @select="onSelectMode"
@@ -78,8 +78,7 @@
 
                     <MenuSubTitle :text="'関節の復活'" class="subtitle"/>
                     <ButtonGrid
-                            :data="[{id:0,text:'削除した関節を戻す'}]"
-                            :selectId="-1"
+                            :data="[{id:'_',text:'削除した関節を戻す'}]"
                             :cols="1"
                             @select="onClickRebirthJoint"
                     />
@@ -164,27 +163,29 @@
             this.addHistory();
         }
 
-        private onSelectCopyData(copyMenuId: number) {
+        private onSelectCopyData(_: string) {
             const frame = OperationStore_Track.frame;
             const objectId = OperationStore_Track.selectingObjectId;
 
-            switch (copyMenuId) {
-                case 0:
-                    AnnotationsStore_Track.copyObject({frame: frame, objectId: objectId});
-                    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
-                    OperationStore_Track.setModeToBounding();
-                    break;
-                case 1:
-                    AnnotationsStore_Track.copyPrevFrameObjects(frame);
-                    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
-                    OperationStore_Track.setModeToBounding();
-                    break;
-            }
+            AnnotationsStore_Track.copyObject({frame: frame, objectId: objectId});
+            OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
+            OperationStore_Track.setModeToBounding();
 
             this.addHistory();
         }
 
-        private onSelectClass(classNo: number) {
+        private onSelectCopyFrame(_: string) {
+            const frame = OperationStore_Track.frame;
+            const objectId = OperationStore_Track.selectingObjectId;
+
+            AnnotationsStore_Track.copyPrevFrameObjects(frame);
+            OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
+            OperationStore_Track.setModeToBounding();
+
+            this.addHistory();
+        }
+
+        private onSelectClass(classNo: string) {
             const frame = OperationStore_Track.frame;
             const objectId = OperationStore_Track.selectingObjectId;
             AnnotationsStore_Track.setClass({frame: frame, objectId: objectId, class: classNo});
@@ -192,18 +193,18 @@
             this.addHistory();
         }
 
-        private onSelectMode(modeNo: number) {
-            switch (modeNo) {
-                case 0:
+        private onSelectMode(mode: string) {
+            switch (mode) {
+                case "bounding":
                     OperationStore_Track.setModeToBounding();
                     break;
-                case 1:
+                case "bone":
                     OperationStore_Track.setModeToBone();
                     break;
             }
         }
 
-        private onClickRebirthJoint(_: number) {
+        private onClickRebirthJoint(_ : number) {
             const frame = OperationStore_Track.frame;
             const objectId = OperationStore_Track.selectingObjectId;
             AnnotationsStore_Track.rebirthJoint({frame: frame, objectId: objectId});
@@ -242,10 +243,5 @@
         }
     }
 
-
-    .disable {
-        opacity: 0.2;
-        pointer-events: none;
-    }
 
 </style>

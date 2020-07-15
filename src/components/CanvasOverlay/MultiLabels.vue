@@ -43,15 +43,15 @@
             font-weight: bold;
             color: var(--white);
             text-align: center;
-            padding: 0 8px;
+            padding: 0;
             pointer-events: none;
             transform: translateY(calc(-100%));
             overflow: hidden;
             text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;
 
-            opacity: 0.1;
+            opacity: 0.4;
             &.active {
-                opacity: 0.6;
+                opacity: 0.7;
             }
         }
     }

@@ -14,7 +14,7 @@ export interface Bounding_Track {
 export interface Annotation_Track {
     frame: string;
     objectId: string;
-    class: number;
+    class: string;
     bounding: Bounding_Track;
     bone: {
         mouse: Point;
@@ -192,7 +192,7 @@ class AnnotationsStore_Track extends VuexModule {
     }
 
     @Mutation
-    public setClass(value: { frame: string, objectId: string, class: number }) {
+    public setClass(value: { frame: string, objectId: string, class: string }) {
         Vue.set(
             this._annotations[value.frame][value.objectId],
             "class",
@@ -271,7 +271,7 @@ function makeAnnotationInstance(frame: string, objectId: string): Annotation_Tra
     return {
         frame: frame,
         objectId: objectId,
-        class: 0,
+        class: "0",
         bounding: {
             left: 0.38,
             top: 0.38,
@@ -306,7 +306,7 @@ function makeAnnotationInstance(frame: string, objectId: string): Annotation_Tra
 function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation_Track } }): string {
     const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
     const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
-    const newObjectIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
+    const newestIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
 
-    return newObjectIdAsNumber.toString();
+    return newestIdAsNumber.toString();
 }

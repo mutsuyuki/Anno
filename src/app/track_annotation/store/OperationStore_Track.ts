@@ -8,7 +8,7 @@ export interface Operation_Track {
     selectingJointName: string;
     hoveringObjectId: string;
     hoveringJointName: string;
-    annotationMode: number;
+    annotationMode: string;
 }
 
 @Module({
@@ -28,7 +28,7 @@ class OperationStore_Track extends VuexModule {
         selectingJointName: "",
         hoveringObjectId: "",
         hoveringJointName: "",
-        annotationMode: 0,    // 0:Bounding  1:Bone
+        annotationMode: 'bounding',    // 0:Bounding  1:Bone
     };
 
     // getters
@@ -61,14 +61,14 @@ class OperationStore_Track extends VuexModule {
     }
 
     get isBoundingMode(): boolean {
-        return this._operation.annotationMode == 0;
+        return this._operation.annotationMode == "bounding";
     }
 
     get isBoneMode(): boolean {
-        return this._operation.annotationMode == 1;
+        return this._operation.annotationMode == "bone";
     }
 
-    get annotationMode(): number {
+    get annotationMode(): string {
         return this._operation.annotationMode;
     }
 
@@ -110,12 +110,12 @@ class OperationStore_Track extends VuexModule {
 
     @Mutation
     public setModeToBounding() {
-        this._operation.annotationMode = 0;
+        this._operation.annotationMode = "bounding";
     }
 
     @Mutation
     public setModeToBone() {
-        this._operation.annotationMode = 1;
+        this._operation.annotationMode = "bone";
     }
 
 }

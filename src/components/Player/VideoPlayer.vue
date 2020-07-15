@@ -140,7 +140,7 @@
                 () => this.frameForSeek,
                 () => {
                     console.log(this.frameForSeek)
-                    if(this.frameForSeek != -1){
+                    if (this.frameForSeek != -1) {
                         this.video.currentTime = this.frameForSeek
                     }
                 }
@@ -159,7 +159,9 @@
         }
 
         private getStepedSec(time: number): number {
-            return Math.round(time / this.stepSec) * this.stepSec;
+            let stepedSec = Math.round(time / this.stepSec) * this.stepSec;
+            stepedSec = Number(stepedSec.toFixed(10));   // 誤差の丸め
+            return stepedSec;
         }
 
         private play(): void {
