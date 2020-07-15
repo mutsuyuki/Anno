@@ -14,7 +14,7 @@ export default class FileDownloader {
     }
 
     static editTextBlob(fileName: string, content: string, mimeType: string) {
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // 文字化け対策
+        const bom = new Uint8Array([]); // 文字化け対策
         return new Blob([bom, content], {type: mimeType});
     }
 
