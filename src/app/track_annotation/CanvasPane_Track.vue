@@ -317,15 +317,11 @@ export default class CanvasPane_Track extends Vue {
             });
         }
 
-        // 首装置がないデータを読んだときにデフォルト値に変換
-        console.log("clone", DeepCloner.copy(AnnotationsStore_Track.annotations))
+        // 首装置がないデータを読んだときに削除済扱いで読み込む。
         for (const frame in AnnotationsStore_Track.annotations) {
             for (const objectId in AnnotationsStore_Track.annotations[frame]) {
-                console.log("clone2", AnnotationsStore_Track.annotations[frame][objectId], AnnotationsStore_Track.annotations[frame][objectId].neck_equipment, AnnotationsStore_Track.annotations[frame][objectId].neck_equipment == null)
                 if (AnnotationsStore_Track.annotations[frame][objectId].neck_equipment == null) {
-                    console.log("test1", frame, objectId)
-                    AnnotationsStore_Track.rebirthNeckEquipment({frame: frame, objectId: objectId})
-                    console.log("test2", frame, objectId)
+                    AnnotationsStore_Track.deleteNeckEquipment({frame: frame, objectId: objectId})
                 }
             }
         }
