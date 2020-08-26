@@ -12,11 +12,11 @@ const routes = [
     // name: 'Home_Hair',
     // component: Home_Hair
 
-    // name: 'Home_Track',
-    // component: Home_Track
+    name: 'Home_Track',
+    component: Home_Track
 
-    name: 'Home_ObjectDetection',
-    component: Home_ObjectDetection
+    // name: 'Home_ObjectDetection',
+    // component: Home_ObjectDetection
   },
 
 ];
