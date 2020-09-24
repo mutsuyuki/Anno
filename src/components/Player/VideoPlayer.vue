@@ -50,6 +50,11 @@
                            @input="timeChange"
                            @mouseup="timeChangeEnd"
                     />
+
+                    <div class="marker"
+                         v-for="markerPosition in markerPositions"
+                         :style="{'left' : markerPosition + '%'}"
+                    ></div>
                 </div>
             </div>
 
@@ -95,9 +100,10 @@
 
         @Prop() private createBlobSignal!: boolean;
         @Prop() private frameForSeek!: number;
+        @Prop() private markerTimes!: number[];
 
-        private video: HTMLVideoElement = document.createElement("video");   // dummy
-        private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");  // dummy
+        private video: HTMLVideoElement = document.createElement("video");
+        private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");
 
         private timelineProgress: number = 0;
         private stepSec: number = 0.033333;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667sec
@@ -113,6 +119,10 @@
         get totalFrame() {
             return 10;
             return Math.round(this.video.duration / this.stepSec);
+        }
+
+        get markerPositions() {
+            return this.markerTimes.map(v => (v / this.video.duration) * 100);
         }
 
         mounted() {
@@ -150,6 +160,16 @@
                 () => this.createBlobSignal,
                 () => this.makeBlob()
             );
+
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key == "ArrowRight") {
+                    this.nextData();
+                }
+                if (e.key == "ArrowLeft") {
+                    this.prevData();
+                }
+            });
         }
 
         private applyStepedSec(time: number): void {
@@ -178,6 +198,26 @@
 
         private back(): void {
             this.video.currentTime -= this.stepSec;
+        }
+
+        private nextData(): void {
+            for (let i = 0; i < this.markerTimes.length; i++) {
+                if (this.markerTimes[i] > this.video.currentTime) {
+                    this.video.currentTime = this.markerTimes[i];
+                    return;
+                }
+            }
+            alert("これより後の時間には教師データはありません。")
+        }
+
+        private prevData():void {
+            for (let i = this.markerTimes.length - 1; i >= 0; i--) {
+                if (this.markerTimes[i] < this.video.currentTime) {
+                    this.video.currentTime = this.markerTimes[i];
+                    return;
+                }
+            }
+            alert("これより前の時間には教師データはありません。")
         }
 
         private timeChange(e: InputEvent): void {
@@ -270,10 +310,19 @@
             }
 
             .timeline {
+                position: relative;
                 width: 100%;
 
                 input[type="range"] {
                     width: 100%;
+                }
+
+                .marker {
+                    position: absolute;
+                    top: calc(50% - 8px);
+                    height: 16px;
+                    width: 1px;
+                    background-color: skyblue;
                 }
             }
 

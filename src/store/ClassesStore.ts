@@ -14,7 +14,7 @@ import {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Tr
 class ClassesStore extends VuexModule {
 
     // states
-    private _classes: { [id: string]: string } = {0:"piman"};
+    private _classes: { [id: string]: string } = {};
 
     // getters
     get classes() {

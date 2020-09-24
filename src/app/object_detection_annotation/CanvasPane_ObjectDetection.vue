@@ -14,6 +14,7 @@
         <VideoPlayer
                 :frameForSeek="frameForSeek"
                 :createBlobSignal="createBlobSignal"
+                :markerTimes="annotatedFrames"
                 @dragareastart="onDragStart"
                 @dragarea="onDrag"
                 @dragareaend="onDragEnd"
@@ -73,8 +74,10 @@
     export default class CanvasPane_ObjectDetection extends Vue {
         private graphics: Graphic[] = [];
 
-        private lineActiveColor: Color = {r: 170, g: 60, b: 0, a: 1};
-        private lineInactiveColor: Color = {r: 170, g: 60, b: 0, a: 0.5};
+        private lineColors: { [id: string]: Color } = {
+            "0": {r: 220, g: 60, b: 0, a: 1},
+            "1": {r: 60, g: 0, b: 220, a: 1}
+        };
 
         private createBlobSignal: boolean = false;
         private isDeleteMode: boolean = false;
@@ -91,6 +94,10 @@
 
         get frameForSeek(): number {
             return Number(this.frame == OperationStore_ObjectDetection.frame ? -1 : OperationStore_ObjectDetection.frame);
+        }
+
+        get annotatedFrames(): number[] {
+            return Object.keys(AnnotationsStore_ObjectDetection.annotations).map(v => Number(v));
         }
 
         get operationOfCurrentFrame(): OperationOfFrame {
@@ -188,7 +195,9 @@
                 const annotation = this.annotationsOfCurrentFrame[objectId];
                 const isSelecting = OperationStore_ObjectDetection.selectingObjectId == objectId;
 
-                const boundingColor = isSelecting ? this.lineActiveColor : this.lineInactiveColor;
+                const classId = annotation.class;
+                const boundingColor = Object.assign({}, this.lineColors[classId], {a: isSelecting ? 1 : 0.5});
+                console.log(objectId, isSelecting, boundingColor)
                 const boundingBox = new RectangleLine(
                     annotation.bounding.left,
                     annotation.bounding.top,

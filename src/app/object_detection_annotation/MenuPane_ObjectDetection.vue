@@ -96,6 +96,22 @@
         }
     })
     export default class MenuPane_ObjectDetection extends Vue {
+        mounted() {
+            ClassesStore.addClass({id: "0", text: "piman"});
+            ClassesStore.addClass({id: "1", text: "stem"});
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key == "n") {
+                    this.onSelectCreateData(-1);
+                }
+                if (e.key == "0") {
+                    this.onSelectClass("0" as any);
+                }
+                if (e.key == "1") {
+                    this.onSelectClass("1" as any);
+                }
+            });
+        }
 
         get isVideoSelected() {
             return VideoFileStore.isSelected;
@@ -147,6 +163,7 @@
         }
 
         private onSelectClass(classNo: number) {
+            console.log("class is ", classNo);
             const frame = OperationStore_ObjectDetection.frame;
             const objectId = OperationStore_ObjectDetection.selectingObjectId;
             AnnotationsStore_ObjectDetection.setClass({frame: frame, objectId: objectId, class: classNo});

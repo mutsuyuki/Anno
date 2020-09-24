@@ -18,8 +18,20 @@
             body: '<span>マウスホイール</span>をころころ',
         },
         {
-            title: '画像移動',
-            body: '<span>Spaceキー</span>+ドラッグ',
+            title: 'データの新規作成',
+            body: '<span>n キー</span>',
+        },
+        {
+            title: 'クラスの設定',
+            body: '<span>0,1 キー</span>',
+        },
+        {
+            title: '次のデータに移動',
+            body: '<span>→ キー</span>',
+        },
+        {
+            title: '前のデータに移動',
+            body: '<span>← キー</span>',
         }
 
     ]"/>

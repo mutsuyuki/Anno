@@ -95,7 +95,7 @@
 
     .button_list {
         margin-left: 4px;
-        width:40px;
+        width:48px;
 
         ::v-deep button {
             color: var(--darkgray);
@@ -122,7 +122,7 @@
         button {
             margin-left: 4px;
             font-size: 9px;
-            width:40px;
+            width:48px;
             height: 32px;
         }
     }
