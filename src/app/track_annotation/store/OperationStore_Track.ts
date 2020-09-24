@@ -5,6 +5,7 @@ export interface Operation_Track {
     frame: string;
     selectingObjectId: string;
     selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
+    selectingNeckEquipmentEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
     selectingJointName: string;
     hoveringObjectId: string;
     hoveringJointName: string;
@@ -25,6 +26,7 @@ class OperationStore_Track extends VuexModule {
         frame: "0",
         selectingObjectId: "",
         selectingEdge: {top: false, right: false, bottom: false, left: false},
+        selectingNeckEquipmentEdge: {top: false, right: false, bottom: false, left: false},
         selectingJointName: "",
         hoveringObjectId: "",
         hoveringJointName: "",
@@ -52,6 +54,10 @@ class OperationStore_Track extends VuexModule {
         return this._operation.selectingJointName;
     }
 
+    get selectingNeckEquipmentEdge(): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
+        return this._operation.selectingNeckEquipmentEdge;
+    }
+
     get hoveringObjectId(): string {
         return this._operation.hoveringObjectId;
     }
@@ -67,6 +73,11 @@ class OperationStore_Track extends VuexModule {
     get isBoneMode(): boolean {
         return this._operation.annotationMode == "bone";
     }
+
+    get isNeckEquipmentMode(): boolean {
+        return this._operation.annotationMode == "neck_equipment";
+    }
+
 
     get annotationMode(): string {
         return this._operation.annotationMode;
@@ -99,6 +110,11 @@ class OperationStore_Track extends VuexModule {
     }
 
     @Mutation
+    public setSelectingNeckEquipmentEdge(value: { top: boolean; right: boolean; bottom: boolean; left: boolean }) {
+        this._operation.selectingNeckEquipmentEdge = value;
+    }
+
+    @Mutation
     public setHoveringObjectId(value: string) {
         this._operation.hoveringObjectId = value;
     }
@@ -116,6 +132,11 @@ class OperationStore_Track extends VuexModule {
     @Mutation
     public setModeToBone() {
         this._operation.annotationMode = "bone";
+    }
+
+    @Mutation
+    public setModeToNeckEquipment() {
+        this._operation.annotationMode = "neck_equipment";
     }
 
 }

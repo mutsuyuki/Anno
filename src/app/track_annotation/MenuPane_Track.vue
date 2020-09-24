@@ -70,17 +70,23 @@
 
                     <MenuSubTitle :text="'モード選択'" class="subtitle"/>
                     <ButtonGrid
-                            :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}]"
+                            :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}, {id: 'neck_equipment', text:'首'}]"
                             :selectId="selectedMode"
                             :cols="2"
                             @select="onSelectMode"
                     />
 
-                    <MenuSubTitle :text="'関節の復活'" class="subtitle"/>
+                    <MenuSubTitle :text="'復活'" class="subtitle"/>
                     <ButtonGrid
-                            :data="[{id:'_',text:'削除した関節を戻す'}]"
+                            :data="[{id:'_',text:'削除した関節を復活'}]"
                             :cols="1"
                             @select="onClickRebirthJoint"
+                    />
+                    <ButtonGrid
+                        style="margin-top: 8px"
+                        :data="[{id:'_',text:'削除した首装置を復活'}]"
+                        :cols="1"
+                        @select="onClickRebirthNeckEquipment"
                     />
                 </div>
             </div>
@@ -201,6 +207,9 @@
                 case "bone":
                     OperationStore_Track.setModeToBone();
                     break;
+                case "neck_equipment":
+                    OperationStore_Track.setModeToNeckEquipment();
+                    break;
             }
         }
 
@@ -208,6 +217,12 @@
             const frame = OperationStore_Track.frame;
             const objectId = OperationStore_Track.selectingObjectId;
             AnnotationsStore_Track.rebirthJoint({frame: frame, objectId: objectId});
+        }
+
+        private onClickRebirthNeckEquipment(_ : number) {
+            const frame = OperationStore_Track.frame;
+            const objectId = OperationStore_Track.selectingObjectId;
+            AnnotationsStore_Track.rebirthNeckEquipment({frame: frame, objectId: objectId});
         }
 
         private addHistory() {

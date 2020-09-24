@@ -38,6 +38,7 @@ export interface Annotation_Track {
         right_heel: Point;
         right_toe: Point;
     };
+    neck_equipment: Bounding_Track;
 }
 
 
@@ -117,6 +118,10 @@ class AnnotationsStore_Track extends VuexModule {
                 (<any>copiedAnnotation.bone)[jointName].y += 0.01;
             }
         }
+        if(copiedAnnotation.neck_equipment.left != -9999){
+            copiedAnnotation.neck_equipment.left += 0.005;
+            copiedAnnotation.neck_equipment.top += 0.01;
+        }
 
         Vue.set(
             this._annotations[value.frame],
@@ -153,6 +158,46 @@ class AnnotationsStore_Track extends VuexModule {
             targetAnnotation
         );
     }
+
+
+    @Mutation
+    public rebirthNeckEquipment(value: { frame: string, objectId: string }) {
+        if (!this._annotations[value.frame]) {
+            alert("現在のフレームにはアノテーションがありません");
+            return;
+        }
+
+        let targetAnnotation = this._annotations[value.frame][value.objectId];
+        if (!targetAnnotation) {
+            alert("アノテーションが選択されていません。");
+            return;
+        }
+        if (targetAnnotation.neck_equipment && targetAnnotation.neck_equipment.left != -9999) {
+            alert("首装置のアノテーションは削除されていません");
+            return;
+        }
+
+        const defaultBone = makeAnnotationInstance("", "").bone;
+        if (targetAnnotation.bone.cervical_spine.x != -9999) {
+            targetAnnotation.neck_equipment = {
+                left: targetAnnotation.bone.cervical_spine.x - 0.015,
+                top: targetAnnotation.bone.cervical_spine.y - 0.015,
+                width: 0.015 * 2,
+                height: 0.015 * 2
+            }
+        } else {
+            targetAnnotation.neck_equipment = DeepCloner.copy(targetAnnotation.bounding);
+            targetAnnotation.neck_equipment.width = 0.015 * 2;
+            targetAnnotation.neck_equipment.height = 0.015 * 2;
+        }
+
+        Vue.set(
+            this._annotations[value.frame],
+            value.objectId,
+            targetAnnotation
+        );
+    }
+
 
     @Mutation
     public copyPrevFrameObjects(currentFrame: string) {
@@ -239,6 +284,27 @@ class AnnotationsStore_Track extends VuexModule {
         }
     }
 
+    @Mutation
+    public setNeckEquipment(value: { frame: string, objectId: string, bounding: Bounding_Track }) {
+        Vue.set(
+            this._annotations[value.frame][value.objectId],
+            "neck_equipment",
+            DeepCloner.copy(value.bounding)
+        );
+    }
+
+
+    @Mutation
+    public addNeckEquipmentPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
+        console.log("111",this._annotations[value.frame][value.objectId].neck_equipment.left);
+        if (this._annotations[value.frame][value.objectId].neck_equipment.left == -9999)
+            return
+
+        console.log("222",this._annotations[value.frame][value.objectId].neck_equipment.left);
+        this._annotations[value.frame][value.objectId].neck_equipment.left += value.moveAmount.x;
+        this._annotations[value.frame][value.objectId].neck_equipment.top += value.moveAmount.y;
+    }
+
 
     @Mutation
     public deleteObject(value: { frame: string, objectId: string }) {
@@ -255,6 +321,16 @@ class AnnotationsStore_Track extends VuexModule {
             this._annotations[value.frame][value.objectId].bone,
             value.jointName,
             {x: -9999, y: -9999}
+        );
+    }
+
+
+    @Mutation
+    public deleteNeckEquipment(value: { frame: string, objectId: string }) {
+        Vue.set(
+            this._annotations[value.frame][value.objectId],
+            "neck_equipment",
+            {left: -9999, top: -9999, width: 0.015 * 2, height: 0.015 * 2}
         );
     }
 
@@ -299,6 +375,12 @@ function makeAnnotationInstance(frame: string, objectId: string): Annotation_Tra
             right_knee: {x: 0.575, y: 0.5 * 0.95},
             right_heel: {x: 0.575, y: 0.55 * 0.95},
             right_toe: {x: 0.575, y: 0.6 * 0.95},
+        },
+        neck_equipment: {
+            left: 0.5 - 0.015,
+            top: 0.4 - 0.015,
+            width: 0.015 * 2,
+            height: 0.015 * 2
         }
     }
 }
