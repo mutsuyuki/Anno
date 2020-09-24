@@ -14,6 +14,7 @@
         <VideoPlayer
             :frameForSeek="frameForSeek"
             :createBlobSignal="createBlobSignal"
+            :markerTimes="[]"
             @dragareastart="onDragStart"
             @dragarea="onDrag"
             @dragareaend="onDragEnd"
