@@ -112,15 +112,6 @@
             return VideoFileStore.url;
         }
 
-        get currentFrame() {
-            return Math.round(this.video.currentTime / this.stepSec);
-        }
-
-        get totalFrame() {
-            return 10;
-            return Math.round(this.video.duration / this.stepSec);
-        }
-
         get markerPositions() {
             return this.markerTimes.map(v => (v / this.video.duration) * 100);
         }
@@ -132,14 +123,15 @@
             this.video.addEventListener("loadeddata", () => {
                 this.timelineProgress = 0;
                 this.$forceUpdate();
-
                 this.$emit("timeupdate", 0);
             });
 
             this.video.addEventListener("timeupdate", () => {
                 this.timelineProgress = this.video.currentTime;
                 this.$forceUpdate();
-                this.$emit("timeupdate", this.getStepedSec(this.video.currentTime));
+                const stepedTime = this.getStepedSec(this.video.currentTime) ;
+                const timeForFrame = Math.round(stepedTime * 1000) / 1000;
+                this.$emit("timeupdate", timeForFrame);
             });
 
             this.video.addEventListener("pause", () => {
@@ -160,7 +152,6 @@
                 () => this.createBlobSignal,
                 () => this.makeBlob()
             );
-
 
             document.addEventListener("keydown", (e) => {
                 if (e.key == "ArrowRight") {
@@ -210,7 +201,7 @@
             alert("これより後の時間には教師データはありません。")
         }
 
-        private prevData():void {
+        private prevData(): void {
             for (let i = this.markerTimes.length - 1; i >= 0; i--) {
                 if (this.markerTimes[i] < this.video.currentTime) {
                     this.video.currentTime = this.markerTimes[i];

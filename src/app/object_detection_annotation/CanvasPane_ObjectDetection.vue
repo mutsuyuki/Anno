@@ -97,7 +97,9 @@
         }
 
         get annotatedFrames(): number[] {
-            return Object.keys(AnnotationsStore_ObjectDetection.annotations).map(v => Number(v));
+            return Object.keys(AnnotationsStore_ObjectDetection.annotations)
+                .map(v => Number(v))
+                .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
         }
 
         get operationOfCurrentFrame(): OperationOfFrame {
@@ -197,7 +199,6 @@
 
                 const classId = annotation.class;
                 const boundingColor = Object.assign({}, this.lineColors[classId], {a: isSelecting ? 1 : 0.5});
-                console.log(objectId, isSelecting, boundingColor)
                 const boundingBox = new RectangleLine(
                     annotation.bounding.left,
                     annotation.bounding.top,
@@ -217,7 +218,8 @@
             for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
                 const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
                 const fileNameParts = fileName.split("___");
-                const frame = fileNameParts[fileNameParts.length - 2];
+                // const frame =  fileNameParts[fileNameParts.length - 2];
+                const frame = (Math.round(Number(fileNameParts[fileNameParts.length - 2]) * 1000) / 1000).toString();
 
                 const fileText = await new Promise(resolve => {
                     const reader = new FileReader();
