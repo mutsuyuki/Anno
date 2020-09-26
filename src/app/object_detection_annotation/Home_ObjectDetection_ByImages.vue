@@ -1,16 +1,16 @@
 <template>
     <div>
         <div class="main_container">
-            <MenuPane_ObjectDetection class="menu_pane"
+            <MenuPane_ObjectDetection_ByImages class="menu_pane"
                             @addHistory="addHistory"
             />
             <div class="canvas_pane_container">
-                <CanvasPane_ObjectDetection class="canvas_pane"
+                <CanvasPane_ObjectDetection_ByImages class="canvas_pane"
                                   @addHistory="addHistory"
                 />
 
                 <!--画像サイズの計算コンポーネント-->
-                <VideoSizeChecker
+                <ImageSizeChecker
                         @sizeChange="fitWidth"
                         :url="targetMediaUrl"
                         :heightPadding="40 + 40 + 80 + 40"
@@ -24,30 +24,30 @@
 
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
-    import MenuPane_ObjectDetection from "@/app/object_detection_annotation/MenuPane_ObjectDetection.vue";
-    import CanvasPane_ObjectDetection from "@/app/object_detection_annotation/CanvasPane_ObjectDetection.vue";
+    import MenuPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/MenuPane_ObjectDetection_ByImages.vue";
+    import CanvasPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/CanvasPane_ObjectDetection_ByImages.vue";
     import Help_ObjectDetection from "@/app/object_detection_annotation/Help_ObjectDetection.vue";
+    import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
     import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import HelpStore from "@/store/HelpStore";
-    import VideoFileStore from "@/store/VideoFileStore";
-    import VideoSizeChecker from "@/components/SizeChecker/VideoSizeChecker.vue";
     import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
     import OperationOfFramesStore from "@/store/OperationOfFramesStore";
     import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
+    import ImageFilesStore from "@/store/ImageFilesStore";
 
     @Component({
         components: {
-            CanvasPane_ObjectDetection,
-            VideoSizeChecker,
-            MenuPane_ObjectDetection,
+            CanvasPane_ObjectDetection_ByImages,
+            MenuPane_ObjectDetection_ByImages,
+            ImageSizeChecker,
             Help_ObjectDetection,
         },
     })
-    export default class Home_ObjectDetection extends Vue {
+    export default class Home_ObjectDetection_ByImages extends Vue {
 
         get targetMediaUrl() {
-            return VideoFileStore.url;
+            return ImageFilesStore.currentItemUrl;
         }
 
         mounted() {
@@ -67,7 +67,7 @@
         }
 
         destroyed() {
-            VideoFileStore.clear();
+            ImageFilesStore.clear();
             AnnotationFilesStore.clear();
             HistoryStore.clear();
             HelpStore.hide();
