@@ -129,7 +129,7 @@
             this.video.addEventListener("timeupdate", () => {
                 this.timelineProgress = this.video.currentTime;
                 this.$forceUpdate();
-                const stepedTime = this.getStepedSec(this.video.currentTime) ;
+                const stepedTime = this.getStepedSec(this.video.currentTime);
                 const timeForFrame = Math.round(stepedTime * 1000) / 1000;
                 this.$emit("timeupdate", timeForFrame);
             });
@@ -194,7 +194,7 @@
         private nextData(): void {
             for (let i = 0; i < this.markerTimes.length; i++) {
                 if (this.markerTimes[i] >= this.video.currentTime + 0.01) {
-                    this.video.currentTime = this.markerTimes[i];
+                    this.applyStepedSec(this.markerTimes[i]);
                     return;
                 }
             }
@@ -204,7 +204,7 @@
         private prevData(): void {
             for (let i = this.markerTimes.length - 1; i >= 0; i--) {
                 if (this.markerTimes[i] <= this.video.currentTime - 0.01) {
-                    this.video.currentTime = this.markerTimes[i];
+                    this.applyStepedSec(this.markerTimes[i]);
                     return;
                 }
             }
