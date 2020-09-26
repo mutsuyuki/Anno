@@ -42,6 +42,13 @@
     })
     export default class ToolBar extends Vue {
 
+        mounted() {
+            document.addEventListener("keydown", (e: KeyboardEvent) => {
+                if (e.key == "a") CanvasSettingsStore.setOpacity(0);
+                if (e.key == "s") CanvasSettingsStore.setOpacity(1);
+            });
+        }
+
         private onClickUndo() {
             HistoryStore.undo();
         }

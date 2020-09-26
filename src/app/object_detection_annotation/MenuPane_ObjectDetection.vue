@@ -101,7 +101,7 @@
             ClassesStore.addClass({id: "1", text: "stem"});
 
             document.addEventListener("keydown", (e) => {
-                if (e.key == "n") {
+                if (e.key == "c") {
                     this.onSelectCreateData(-1);
                 }
                 if (e.key == "0") {

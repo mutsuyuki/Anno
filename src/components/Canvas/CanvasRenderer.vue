@@ -15,10 +15,7 @@
 
         private canvas!: HTMLCanvasElement;
         private context!: CanvasRenderingContext2D;
-
-        get opacity() {
-            return CanvasSettingsStore.opacity;
-        }
+        @Prop({default:1}) private opacity!: number;
 
         mounted() {
             this.initVar();
@@ -31,12 +28,6 @@
             );
 
             window.addEventListener("resize", () => this.draw());
-
-            document.addEventListener("keydown", (e: KeyboardEvent) => {
-                if (e.key == "i") CanvasSettingsStore.setOpacity(0);
-                if (e.key == "o") CanvasSettingsStore.setOpacity(0.4);
-                if (e.key == "p") CanvasSettingsStore.setOpacity(1);
-            });
         }
 
         private initVar() {

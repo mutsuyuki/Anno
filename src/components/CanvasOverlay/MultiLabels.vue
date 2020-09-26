@@ -1,5 +1,7 @@
 <template>
-    <div class="multi_label_container">
+    <div class="multi_label_container"
+         :style="{'opacity' : opacity}"
+    >
         <div
                 v-for="label in labels"
                 class="label"
@@ -20,6 +22,7 @@
     })
     export default class MultiLabels extends Vue {
         @Prop() private labels!: { text: string, position: Point, isActive: boolean }[];
+        @Prop({default:1}) private opacity!: number;
     }
 </script>
 

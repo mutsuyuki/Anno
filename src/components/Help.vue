@@ -15,19 +15,40 @@
                 <td v-html="description.body"></td>
             </tr>
 
+            <!-- ToolBar.vue -->
             <tr>
                 <th>アノテーションの不透度を0</th>
-                <td><span>Iキー</span></td>
+                <td><span>a キー</span></td>
             </tr>
-
-            <tr>
-                <th>アノテーションの不透度を0.5</th>
-                <td><span>Oキー</span></td>
-            </tr>
-
             <tr>
                 <th>アノテーションの不透度を1</th>
-                <td><span>Pキー</span></td>
+                <td><span>s キー</span></td>
+            </tr>
+
+            <!-- VideoPlayer.vue / ImagePlayer.vue -->
+            <tr>
+                <th>次のアノテーション済データを表示</th>
+                <td><span>→ キー</span></td>
+            </tr>
+            <tr>
+                <th>前のアノテーション済データを表示</th>
+                <td><span>← キー</span></td>
+            </tr>
+
+            <!-- ImagePlayer.vue -->
+            <tr>
+                <th>画像拡大</th>
+                <td>マウスホイール</td>
+            </tr>
+            <tr>
+                <th>画像移動</th>
+                <td><span>Space キー</span> + ドラッグ</td>
+            </tr>
+
+            <!-- DownloadButton.vue -->
+            <tr>
+                <th>教師データを保存</th>
+                <td><span>d キー</span></td>
             </tr>
 
         </table>
@@ -106,6 +127,8 @@
 
                 span {
                     background: #444;
+                    padding: 4px 8px;
+                    border-radius: 4px;
                 }
             }
 

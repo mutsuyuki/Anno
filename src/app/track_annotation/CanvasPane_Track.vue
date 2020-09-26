@@ -23,9 +23,9 @@
             @timeupdate="onTimeUpdate"
             @prepareBlob="onPrepareBlob"
         >
-            <CanvasRenderer class="canvas_renderer" :graphics="graphics"/>
-            <MultiLabels :labels="objectLabels"/>
-            <MultiLabels :labels="pointingJointLabel"/>
+            <CanvasRenderer class="canvas_renderer" :graphics="graphics" :opacity="opacity"/>
+            <MultiLabels :labels="objectLabels" :opacity="opacity"/>
+            <MultiLabels :labels="pointingJointLabel" :opacity="opacity"/>
         </VideoPlayer>
 
         <DownloadButton
@@ -59,6 +59,7 @@ import RectangleLine from "@/components/Canvas/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
 import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
+import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 
 @Component({
     components: {
@@ -112,6 +113,10 @@ export default class CanvasPane_Track extends Vue {
 
     get annotationsOfCurrentFrame(): { [objectId: string]: Annotation_Track } {
         return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
+    }
+
+    get opacity() {
+        return CanvasSettingsStore.opacity;
     }
 
     get objectLabels(): { text: string, position: Point, isActive: boolean }[] {

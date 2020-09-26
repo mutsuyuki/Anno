@@ -193,7 +193,7 @@
 
         private nextData(): void {
             for (let i = 0; i < this.markerTimes.length; i++) {
-                if (this.markerTimes[i] > this.video.currentTime) {
+                if (this.markerTimes[i] >= this.video.currentTime + 0.01) {
                     this.video.currentTime = this.markerTimes[i];
                     return;
                 }
@@ -203,7 +203,7 @@
 
         private prevData(): void {
             for (let i = this.markerTimes.length - 1; i >= 0; i--) {
-                if (this.markerTimes[i] < this.video.currentTime) {
+                if (this.markerTimes[i] <= this.video.currentTime - 0.01) {
                     this.video.currentTime = this.markerTimes[i];
                     return;
                 }

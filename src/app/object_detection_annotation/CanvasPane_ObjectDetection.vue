@@ -23,8 +23,8 @@
                 @timeupdate="onTimeUpdate"
                 @prepareBlob="onPrepareBlob"
         >
-            <CanvasRenderer class="canvas_renderer" :graphics="graphics"/>
-            <MultiLabels :labels="objectLabels"/>
+            <CanvasRenderer class="canvas_renderer" :graphics="graphics" :opacity="opacity"/>
+            <MultiLabels :labels="objectLabels" :opacity="opacity"/>
         </VideoPlayer>
 
         <DownloadButton
@@ -59,6 +59,7 @@
     import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
     import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
     import ClassesStore from "@/store/ClassesStore";
+    import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 
     @Component({
         components: {
@@ -116,6 +117,10 @@
 
         get annotationsOfCurrentFrame(): { [objectId: string]: Annotation_ObjectDetection } {
             return AnnotationsStore_ObjectDetection.annotations[OperationStore_ObjectDetection.frame] || {};
+        }
+
+        get opacity() {
+            return CanvasSettingsStore.opacity;
         }
 
         get objectLabels(): { text: string, position: Point, isActive: boolean }[] {
