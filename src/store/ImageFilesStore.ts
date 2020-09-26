@@ -20,12 +20,20 @@ class ImageFilesStore extends VuexModule {
         return this._items.items;
     }
 
+    get isSelected() {
+        return this.items.length > 0;
+    }
+
     get currentIndex(): number {
         return this._items.currentIndex;
     }
 
     get currentItem(): File {
         return this._items.currentItem;
+    }
+
+    get currentName(): string {
+        return this.currentItem ? this.currentItem.name: "";
     }
 
     get currentItemUrl(): string {

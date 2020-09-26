@@ -141,7 +141,6 @@
             this.$watch(
                 () => this.frameForSeek,
                 () => {
-                    console.log(this.frameForSeek)
                     if (this.frameForSeek != -1) {
                         this.video.currentTime = this.frameForSeek
                     }
