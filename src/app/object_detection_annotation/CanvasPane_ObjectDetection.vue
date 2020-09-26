@@ -13,14 +13,14 @@
 
         <VideoPlayer
                 :frameForSeek="frameForSeek"
-                :createBlobSignal="createBlobSignal"
                 :markerTimes="annotatedFrames"
+                :createBlobSignal="createBlobSignal"
                 @dragareastart="onDragStart"
                 @dragarea="onDrag"
                 @dragareaend="onDragEnd"
                 @hover="onHover"
                 @download="onDownload"
-                @timeupdate="onTimeUpdate"
+                @timeupdate="onFrameUpdate"
                 @prepareBlob="onPrepareBlob"
         >
             <CanvasRenderer class="canvas_renderer" :graphics="graphics" :opacity="opacity"/>
@@ -125,21 +125,16 @@
 
         get objectLabels(): { text: string, position: Point, isActive: boolean }[] {
             let result = [];
-            const classes = ClassesStore.classes;
             const annotations = this.annotationsOfCurrentFrame;
             for (const objectId in annotations) {
-                const classId = annotations[objectId].class;
-                const className = classes[classId] || "no name";
+                const annotation = annotations[objectId];
+                const className = ClassesStore.classes[annotation.class] || "???";
                 result.push({
-                    text: classId + " : " + className,
-                    position: {
-                        x: annotations[objectId].bounding.left * 100,
-                        y: annotations[objectId].bounding.top * 100
-                    },
+                    text: annotation.class + " : " + className,
+                    position: {x: annotation.bounding.left * 100, y: annotation.bounding.top * 100},
                     isActive: objectId == OperationStore_ObjectDetection.selectingObjectId
                 })
             }
-
             return result;
         }
 
@@ -223,7 +218,7 @@
             for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
                 const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
                 const fileNameParts = fileName.split("___");
-                const frame =  fileNameParts[fileNameParts.length - 2];
+                const frame = fileNameParts[fileNameParts.length - 2];
 
                 const fileText = await new Promise(resolve => {
                     const reader = new FileReader();
@@ -362,7 +357,7 @@
             this.$emit("addHistory")
         }
 
-        private onTimeUpdate(frame: number): void {
+        private onFrameUpdate(frame: number): void {
             this.frame = frame.toString();
             OperationStore_ObjectDetection.setFrame(this.frame);
         }
