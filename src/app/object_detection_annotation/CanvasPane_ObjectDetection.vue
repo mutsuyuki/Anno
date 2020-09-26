@@ -223,8 +223,7 @@
             for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
                 const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
                 const fileNameParts = fileName.split("___");
-                // const frame =  fileNameParts[fileNameParts.length - 2];
-                const frame = (Math.round(Number(fileNameParts[fileNameParts.length - 2]) * 1000) / 1000).toString();
+                const frame =  fileNameParts[fileNameParts.length - 2];
 
                 const fileText = await new Promise(resolve => {
                     const reader = new FileReader();
