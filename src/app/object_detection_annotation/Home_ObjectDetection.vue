@@ -61,8 +61,7 @@
                     OperationStore_ObjectDetection.setOperation(current.value.operation);
                     OperationOfFramesStore.setOperations(current.value.operationOfFrame);
                     AnnotationsStore_ObjectDetection.setAnnotation(current.value.annotation);
-                },
-                {deep: true}
+                }
             );
         }
 

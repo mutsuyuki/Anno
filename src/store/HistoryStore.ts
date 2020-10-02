@@ -1,6 +1,5 @@
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import {cloneDeep} from 'lodash'
 import DeepCloner from "@/common/utils/DeepCloner";
 
 export class HistoryRecord<T> {
@@ -27,7 +26,7 @@ class HistoryStore extends VuexModule {
 
     // getters
     get current() {
-        return cloneDeep(this._history[this._index]) || {};
+        return DeepCloner.copy( this._history[this._index] )|| {};
     }
 
     get index(): number {
@@ -50,21 +49,22 @@ class HistoryStore extends VuexModule {
 
     @Mutation
     public addHistory(record: HistoryRecord<any>) {
-        this._history = this._history.filter((v, i) => i <= this._index);
+        this._history.length = this._index + 1;
+        if (this._history.length >= 10) {
+            this._history.shift();
+        }
         this._history.push(record);
         this._index = this._history.length - 1;
     }
 
     @Mutation
     public undo() {
-        this._index -= 1;
-        this._index = Math.max(this._index, 0);
+        this._index = Math.max(this._index - 1, 0);
     }
 
     @Mutation
     public redo() {
-        this._index += 1;
-        this._index = Math.min(this._index, this._history.length - 1);
+        this._index = Math.min(this._index + 1, this._history.length - 1);
     }
 
     @Mutation

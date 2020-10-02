@@ -65,8 +65,7 @@
                     OperationStore_Track.setOperation(current.value.operation);
                     OperationOfFramesStore.setOperations(current.value.operationOfFrame);
                     AnnotationsStore_Track.setAnnotation(current.value.annotation);
-                },
-                {deep: true}
+                }
             );
         }
 
