@@ -24,6 +24,14 @@
                 <th>アノテーションの不透度を1</th>
                 <td><span>s キー</span></td>
             </tr>
+            <tr>
+                <th>操作を取り消す（Undo）</th>
+                <td><span>ctrl キー</span> + <span>z キー</span></td>
+            </tr>
+            <tr>
+                <th>取り消した操作をやり直す（Redo）</th>
+                <td><span>ctrl キー</span> + <span>shift キー</span> + <span>z キー</span></td>
+            </tr>
 
             <!-- VideoPlayer.vue / ImagePlayer.vue -->
             <tr>

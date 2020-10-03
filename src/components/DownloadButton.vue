@@ -1,7 +1,7 @@
 <template>
     <div class="download_panel ">
         <button class="button"
-                @click.prevent="$emit('download', $event)">
+                @click.prevent="$emit('download')">
             <img :src="require('@/assets/img/icons/download.svg')"/>
             <span> 教師データを保存</span>
         </button>
@@ -13,6 +13,11 @@
 
     @Component({})
     export default class DownloadButton extends Vue {
+        created(){
+            document.addEventListener("keydown", (e: KeyboardEvent) => {
+                if (e.key == "d") this.$emit('download');
+            });
+        }
     }
 </script>
 

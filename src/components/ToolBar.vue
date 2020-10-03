@@ -42,10 +42,19 @@
     })
     export default class ToolBar extends Vue {
 
+        private isControlDown: boolean = false;
+
         mounted() {
             document.addEventListener("keydown", (e: KeyboardEvent) => {
                 if (e.key == "a") CanvasSettingsStore.setOpacity(0);
                 if (e.key == "s") CanvasSettingsStore.setOpacity(1);
+
+                if (e.key == "Control") this.isControlDown = true;
+                if (e.key == "z" && this.isControlDown) HistoryStore.undo();
+                if (e.key == "Z" && this.isControlDown) HistoryStore.redo();
+            });
+            document.addEventListener("keyup", (e: KeyboardEvent) => {
+                if (e.key == "Control") this.isControlDown = false;
             });
         }
 
