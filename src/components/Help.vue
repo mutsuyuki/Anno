@@ -51,14 +51,18 @@
                 <td><span>← キー</span></td>
             </tr>
 
-            <!-- ImagePlayer.vue -->
+            <!-- ScalableArea.vue -->
             <tr>
                 <th>画像拡大</th>
                 <td>マウスホイール</td>
             </tr>
             <tr>
+                <th>画像を取り消し</th>
+                <td><span>r キー</span></td>
+            </tr>
+            <tr>
                 <th>画像移動</th>
-                <td><span>Space キー</span> + ドラッグ</td>
+                <td><span>右ドラッグ</span></td>
             </tr>
 
             <!-- DownloadButton.vue -->

@@ -40,7 +40,6 @@
         private translateX_: number = 0;
         private translateY_: number = 0;
 
-        private isSpaceKeyDown: boolean = false;
         private isDragging: boolean = false;
         private isMoving: boolean = false;
         private isZooming: boolean = false;
@@ -54,13 +53,9 @@
 
         created() {
             document.addEventListener("keydown", (e: KeyboardEvent) => {
-                if (e.key == " ") {
-                    this.isSpaceKeyDown = true;
-                }
-            });
-            document.addEventListener("keyup", (e: KeyboardEvent) => {
-                if (e.key == " ") {
-                    this.isSpaceKeyDown = false;
+                if (e.key == "r") {
+                    this.scale_ = 1;
+                    this.endZoom(0, 0)
                 }
             });
         }
@@ -232,11 +227,11 @@
             this.isDragging = false;
             this.isMoving = false;
 
-            if (e.button == 0 && !this.isSpaceKeyDown) {
+            if (e.button == 0) {
                 this.startDrag(e.offsetX, e.offsetY);
             }
 
-            if (e.button == 0 && this.isSpaceKeyDown) {
+            if (e.button == 2) {
                 this.startMove(e.clientX, e.clientY);
             }
 
