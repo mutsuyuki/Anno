@@ -36,10 +36,18 @@
             <!-- VideoPlayer.vue / ImagePlayer.vue -->
             <tr>
                 <th>次のアノテーション済データを表示</th>
-                <td><span>→ キー</span></td>
+                <td><span>shift キー</span> + <span>→ キー</span></td>
             </tr>
             <tr>
                 <th>前のアノテーション済データを表示</th>
+                <td><span>shift キー</span> + <span>← キー</span></td>
+            </tr>
+            <tr>
+                <th>次のフレームへ</th>
+                <td><span>→ キー</span></td>
+            </tr>
+            <tr>
+                <th>前のフレームへ</th>
                 <td><span>← キー</span></td>
             </tr>
 

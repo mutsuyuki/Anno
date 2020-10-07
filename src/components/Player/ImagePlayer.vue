@@ -58,6 +58,8 @@
     })
     export default class ImagePlayer extends Vue {
 
+        private isShiftDown: boolean = false;
+
         get imageUrl() {
             return ImageFilesStore.currentItemUrl;
         }
@@ -90,6 +92,35 @@
             ImageFilesStore.last();
         }
 
+        mounted() {
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key == "Shift") {
+                    this.isShiftDown = true;
+                }
+                if (e.key == "ArrowRight") {
+                    if(this.isShiftDown){
+                        alert("not implemented yet")
+                    }else{
+                        this.next();
+                    }
+                }
+                if (e.key == "ArrowLeft") {
+                    if (this.isShiftDown) {
+                        alert("not implemented yet")
+                    } else {
+                        this.prev();
+                    }
+                }
+            });
+
+            document.addEventListener("keyup", (e) => {
+                if (e.key == "Shift") {
+                    this.isShiftDown = false;
+                }
+            })
+
+        }
     }
 </script>
 

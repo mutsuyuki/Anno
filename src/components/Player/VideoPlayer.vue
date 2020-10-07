@@ -107,6 +107,7 @@
 
         private timelineProgress: number = 0;
         private stepSec: number = 0.033333;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667sec
+        private isShiftDown: boolean = false;
 
         get videoUrl() {
             return VideoFileStore.url;
@@ -153,13 +154,30 @@
             );
 
             document.addEventListener("keydown", (e) => {
+                if (e.key == "Shift") {
+                    this.isShiftDown = true;
+                }
                 if (e.key == "ArrowRight") {
-                    this.nextData();
+                    if(this.isShiftDown){
+                        this.nextData();
+                    }else{
+                        this.forward();
+                    }
                 }
                 if (e.key == "ArrowLeft") {
-                    this.prevData();
+                    if (this.isShiftDown) {
+                        this.prevData();
+                    } else {
+                        this.back();
+                    }
                 }
             });
+
+            document.addEventListener("keyup", (e) => {
+                if (e.key == "Shift") {
+                    this.isShiftDown = false;
+                }
+            })
         }
 
         private applyStepedSec(time: number): void {
