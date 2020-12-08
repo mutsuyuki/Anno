@@ -25,8 +25,8 @@ class HistoryStore extends VuexModule {
     private _index: number = 0;
 
     // getters
-    get current() {
-        return DeepCloner.copy( this._history[this._index] )|| {};
+    get current(): any {
+        return DeepCloner.copy(this._history[this._index]) || {};
     }
 
     get index(): number {

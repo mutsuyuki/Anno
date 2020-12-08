@@ -53,13 +53,13 @@ a:focus, *:focus {
 
   /* スクロールの背景の設定 */
   &::-webkit-scrollbar-track {
-    background: #ff0000;
+    //background: #ff0000;
   }
 
   /* スクロールのつまみ部分の設定 */
   &::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    background: #0000ff;
+    border-radius: calc(var(--scroll-bar-width) / 2);
+    background: var(--darkgray);
   }
 
 }
