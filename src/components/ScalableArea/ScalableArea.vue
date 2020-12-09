@@ -34,6 +34,7 @@ export default class ScalableArea extends Vue {
   @Prop({default: false}) private debug!: boolean;
 
   private scale_: number = 1;
+  private prevScale: number = 1;
   private minScale: number = 1;
   private maxScale: number = 10;
 
@@ -201,13 +202,17 @@ export default class ScalableArea extends Vue {
   //  ズーム
   // -------------------
   private startZoom(x: number, y: number) {
+    this.prevScale = this.scale_;
     this.$emit("zoomstart", {x: x, y: y, scale: this.scale_})
   }
 
 
   private zoom(x: number, y: number, delta: number) {
     let newScale = this.scale_ + delta;
-    if (newScale < this.minScale || newScale > this.maxScale)
+    const isZoomUpLimit = newScale > this.scale_ && this.scale_ >= this.maxScale;
+    const isZoomDownLimit = newScale < this.scale_ && this.scale_ <= this.minScale;
+
+    if (isZoomUpLimit < isZoomDownLimit)
       newScale = this.scale_ + delta * 0.005;
 
     this.scale_ = newScale;
