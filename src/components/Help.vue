@@ -9,69 +9,70 @@
          @click="onClickClose"
     />
 
-    <table>
-      <tr v-for="description in descriptions">
-        <th>{{ description.title }}</th>
-        <td v-html="description.body"></td>
-      </tr>
+    <div class="contents">
+      <table>
+        <tr v-for="description in descriptions">
+          <th>{{ description.title }}</th>
+          <td v-html="description.body"></td>
+        </tr>
 
-      <!-- ToolBar.vue -->
-      <tr>
-        <th>アノテーションの不透度を0</th>
-        <td><span>a キー</span></td>
-      </tr>
-      <tr>
-        <th>アノテーションの不透度を1</th>
-        <td><span>s キー</span></td>
-      </tr>
-      <tr>
-        <th>操作を取り消す（Undo）</th>
-        <td><span>ctrl キー</span> + <span>z キー</span></td>
-      </tr>
-      <tr>
-        <th>取り消した操作をやり直す（Redo）</th>
-        <td><span>ctrl キー</span> + <span>shift キー</span> + <span>z キー</span></td>
-      </tr>
+        <!-- ToolBar.vue -->
+        <tr>
+          <th>アノテーションの不透度を0</th>
+          <td><span>a キー</span></td>
+        </tr>
+        <tr>
+          <th>アノテーションの不透度を1</th>
+          <td><span>s キー</span></td>
+        </tr>
+        <tr>
+          <th>操作を取り消す（Undo）</th>
+          <td><span>ctrl キー</span> + <span>z キー</span></td>
+        </tr>
+        <tr>
+          <th>取り消した操作をやり直す（Redo）</th>
+          <td><span>ctrl キー</span> + <span>shift キー</span> + <span>z キー</span></td>
+        </tr>
 
-      <!-- VideoPlayer.vue / ImagePlayer.vue -->
-      <tr>
-        <th>次のアノテーション済データを表示</th>
-        <td><span>shift キー</span> + <span>→ キー</span></td>
-      </tr>
-      <tr>
-        <th>前のアノテーション済データを表示</th>
-        <td><span>shift キー</span> + <span>← キー</span></td>
-      </tr>
-      <tr>
-        <th>次のフレームへ</th>
-        <td><span>→ キー</span></td>
-      </tr>
-      <tr>
-        <th>前のフレームへ</th>
-        <td><span>← キー</span></td>
-      </tr>
+        <!-- VideoPlayer.vue / ImagePlayer.vue -->
+        <tr>
+          <th>次のアノテーション済データを表示</th>
+          <td><span>shift キー</span> + <span>→ キー</span></td>
+        </tr>
+        <tr>
+          <th>前のアノテーション済データを表示</th>
+          <td><span>shift キー</span> + <span>← キー</span></td>
+        </tr>
+        <tr>
+          <th>次のフレームへ</th>
+          <td><span>→ キー</span></td>
+        </tr>
+        <tr>
+          <th>前のフレームへ</th>
+          <td><span>← キー</span></td>
+        </tr>
 
-      <!-- ScalableArea.vue -->
-      <tr>
-        <th>画像拡大</th>
-        <td>マウスホイール</td>
-      </tr>
-      <tr>
-        <th>画像を取り消し</th>
-        <td><span>r キー</span></td>
-      </tr>
-      <tr>
-        <th>画像移動</th>
-        <td><span>右ドラッグ</span></td>
-      </tr>
+        <!-- ScalableArea.vue -->
+        <tr>
+          <th>画像拡大</th>
+          <td>マウスホイール</td>
+        </tr>
+        <tr>
+          <th>画像を取り消し</th>
+          <td><span>r キー</span></td>
+        </tr>
+        <tr>
+          <th>画像移動</th>
+          <td><span>右ドラッグ</span></td>
+        </tr>
 
-      <!-- DownloadButton.vue -->
-      <tr>
-        <th>教師データを保存</th>
-        <td><span>d キー</span></td>
-      </tr>
-
-    </table>
+        <!-- DownloadButton.vue -->
+        <tr>
+          <th>教師データを保存</th>
+          <td><span>d キー</span></td>
+        </tr>
+      </table>
+    </div>
   </div>
 
 </template>
@@ -90,7 +91,7 @@ export default class Help extends Vue {
     return HelpStore.isShow;
   }
 
-  created() {
+  mounted() {
     document.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key == "h") {
         HelpStore.toggle();
@@ -121,7 +122,9 @@ export default class Help extends Vue {
   border-radius: 8px;
   padding: 24px;
 
+  $header_height:48px;
   h3 {
+    height: $header_height;
     font-size: 18px;
     color: #ddd;
     padding: 8px;
@@ -135,25 +138,29 @@ export default class Help extends Vue {
     cursor: pointer;
   }
 
-  table {
-    width: 100%;
+  .contents {
+    @import "src/assets/scss/mixin";
+    @include scrollable;
+    height: calc(100% - #{$header_height});
 
-    th, td {
-      font-size: 14px;
-      color: #ddd;
-      text-align: left;
-      border-bottom: 1px solid #777;
-      padding: 8px;
+    table {
+      width: 100%;
 
-      span {
-        background: #444;
-        padding: 4px 8px;
-        border-radius: 4px;
+      th, td {
+        font-size: 14px;
+        color: #ddd;
+        text-align: left;
+        border-bottom: 1px solid #777;
+        padding: 8px;
+
+        span {
+          background: #444;
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
       }
     }
-
   }
-
 }
 
 </style>

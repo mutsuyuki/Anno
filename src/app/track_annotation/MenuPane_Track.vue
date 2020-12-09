@@ -238,13 +238,10 @@ export default class MenuPane_Track extends Vue {
 <style scoped lang="scss">
 
 .container {
+  @import "src/assets/scss/mixin";
+  @include scrollable;
   padding: 16px;
   height: calc(100vh - 40px - 40px); // 100vh - header - footer
-  overflow: scroll;
-
-  &::-webkit-scrollbar {
-    width: var(--scroll-bar-width);
-  }
 
   .file_selectors {
     *:nth-child(n + 2) {
