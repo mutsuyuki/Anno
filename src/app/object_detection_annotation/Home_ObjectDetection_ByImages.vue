@@ -1,25 +1,21 @@
 <template>
-    <div>
-        <div class="main_container">
-            <MenuPane_ObjectDetection_ByImages class="menu_pane"
-                            @addHistory="addHistory"
-            />
-            <div class="canvas_pane_container">
-                <CanvasPane_ObjectDetection_ByImages class="canvas_pane"
-                                  @addHistory="addHistory"
-                />
+  <AnnotationPageLayout>
+    <template v-slot:menu>
+      <MenuPane_ObjectDetection_ByImages @addHistory="addHistory" />
+    </template>
 
-                <!--画像サイズの計算コンポーネント-->
-                <ImageSizeChecker
-                        @sizeChange="fitWidth"
-                        :url="targetMediaUrl"
-                        :heightPadding="40 + 40 + 80 + 40"
-                />
-            </div>
-        </div>
+    <template v-slot:editor>
+      <CanvasPane_ObjectDetection_ByImages @addHistory="addHistory" />
+    </template>
 
-        <Help_ObjectDetection/>
-    </div>
+    <template v-slot:size-check-target>
+      <img :src="sizeCheckVideoUrl">
+    </template>
+
+    <template v-slot:help>
+      <Help_ObjectDetection/>
+    </template>
+  </AnnotationPageLayout>
 </template>
 
 <script lang="ts">
@@ -27,7 +23,6 @@
     import MenuPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/MenuPane_ObjectDetection_ByImages.vue";
     import CanvasPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/CanvasPane_ObjectDetection_ByImages.vue";
     import Help_ObjectDetection from "@/app/object_detection_annotation/Help_ObjectDetection.vue";
-    import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
     import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
     import AnnotationFilesStore from "@/store/AnnotationFilesStore";
     import HelpStore from "@/store/HelpStore";
@@ -35,18 +30,19 @@
     import OperationOfFramesStore from "@/store/OperationOfFramesStore";
     import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
     import ImageFilesStore from "@/store/ImageFilesStore";
+    import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
     @Component({
         components: {
+          AnnotationPageLayout,
             CanvasPane_ObjectDetection_ByImages,
             MenuPane_ObjectDetection_ByImages,
-            ImageSizeChecker,
             Help_ObjectDetection,
         },
     })
     export default class Home_ObjectDetection_ByImages extends Vue {
 
-        get targetMediaUrl() {
+        get sizeCheckVideoUrl() {
             return ImageFilesStore.currentItemUrl;
         }
 
@@ -84,44 +80,9 @@
             HistoryStore.addHistory(this.makeHistoryRecord());
             OperationOfFramesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: true});
         }
-
-        private fitWidth(width: number) {
-            const canvasPaneElement = this.$el.getElementsByClassName("canvas_pane")[0] as HTMLElement;
-            canvasPaneElement.style.width = width + "px";
-        }
     }
 </script>
 
-<style lang="scss" scoped>
-
-    .main_container {
-        display: flex;
-        height: 100vh;
-        width: 100%;
-
-        .menu_pane {
-            width: 200px;
-            min-width: 200px;
-            height: 100%;
-            overflow-y: scroll;
-        }
-
-        .canvas_pane_container {
-            margin: 0 auto;
-            width: calc(100% - 200px);
-            height: 100%;
-            overflow-y: scroll;
-            background-color: var(--background-canvas);
-
-            .canvas_pane {
-                height: 100%;
-                min-width: 500px;
-                margin: 0 auto;
-                padding: 0 16px;
-            }
-        }
-    }
-
-</style>
+<style lang="scss" scoped></style>
 
 
