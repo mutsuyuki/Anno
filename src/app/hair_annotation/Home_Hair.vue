@@ -5,13 +5,6 @@
       <MenuPane_Hair class="menu_pane"/>
       <div class="canvas_pane_container">
         <!--                <CanvasPane_Hair class="canvas_pane"/>-->
-
-        <!--画像サイズの計算コンポーネント todo cssだけで実現できるならこの仕組みはやめたい-->
-        <ImageSizeChecker
-            @sizeChange="fitWidth"
-            :url="sizeCheckImageUrl"
-            :heightPadding="40 + 40 + 48 + 48"
-        />
       </div>
     </div>
 
@@ -24,7 +17,6 @@ import {Component, Vue} from "vue-property-decorator";
 import MenuPane_Hair from "@/app/hair_annotation/MenuPane_Hair.vue";
 // import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane_Hair.vue";
 import Help_Hair from "@/app/hair_annotation/Help_Hair.vue";
-import ImageSizeChecker from "@/components/SizeChecker/ImageSizeChecker.vue";
 import ImageFilesStore from "@/store/ImageFilesStore";
 import HistoryStore from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
@@ -32,28 +24,17 @@ import HelpStore from "@/store/HelpStore";
 
 @Component({
   components: {
-    ImageSizeChecker,
     // CanvasPane_Hair,
     MenuPane_Hair,
     Help_Hair,
   },
 })
 export default class Home_Hair extends Vue {
-
   destroyed() {
     ImageFilesStore.clear();
     AnnotationFilesStore.clear();
     HistoryStore.clear();
     HelpStore.hide();
-  }
-
-  get sizeCheckImageUrl() {
-    return ImageFilesStore.currentItemUrl;
-  }
-
-  private fitWidth(width: number) {
-    const canvasPaneElement = this.$el.getElementsByClassName("canvas_pane")[0] as HTMLElement;
-    canvasPaneElement.style.width = width + "px";
   }
 }
 </script>
