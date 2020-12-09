@@ -1,21 +1,21 @@
 <template>
-    <AnnotationPageLayout>
-      <template v-slot:menu>
-        <MenuPane_Track @addHistory="addHistory" />
-      </template>
+  <AnnotationPageLayout>
+    <template v-slot:menu>
+      <MenuPane_Track @addHistory="addHistory"/>
+    </template>
 
-      <template v-slot:editor>
-        <CanvasPane_Track @addHistory="addHistory" />
-      </template>
+    <template v-slot:editor>
+      <CanvasPane_Track @addHistory="addHistory"/>
+    </template>
 
-      <template v-slot:size-check-target>
-        <video :src="sizeCheckVideoUrl"></video>
-      </template>
+    <template v-slot:size-check-target>
+      <video :src="sizeCheckVideoUrl"></video>
+    </template>
 
-      <template v-slot:help>
-        <Help_Track/>
-      </template>
-    </AnnotationPageLayout>
+    <template v-slot:help>
+      <Help_Track/>
+    </template>
+  </AnnotationPageLayout>
 </template>
 
 <script lang="ts">

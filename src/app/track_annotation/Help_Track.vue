@@ -1,6 +1,6 @@
 <template>
 
-    <Help :descriptions="[
+  <Help :descriptions="[
 
         {
             title: 'アノテーションの追加方法',
@@ -28,15 +28,15 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Vue} from "vue-property-decorator";
-    import Help from "@/components/Help.vue";
+import {Component, Prop, Vue} from "vue-property-decorator";
+import Help from "@/components/Help.vue";
 
-    @Component({
-        components: {Help},
-    })
-    export default class Help_Track extends Vue {
+@Component({
+  components: {Help},
+})
+export default class Help_Track extends Vue {
 
-    }
+}
 </script>
 
 <style lang="scss" scoped>

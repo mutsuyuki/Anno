@@ -1,216 +1,216 @@
 <template>
-    <div class="control_pane">
+  <div class="control_pane">
 
-        <MenuHeader
-                :text="'Object Detection'"
+    <MenuHeader
+        :text="'Object Detection'"
+    />
+
+    <div class="container">
+      <MenuSubTitle :text="'ファイル'"/>
+      <div class="file_selectors">
+        <FileSelector
+            :iconPath="require('@/assets/img/icons/image_multi.svg')"
+            :message="'画像を選択'"
+            :accept="'image/*'"
+            :isMultiple="true"
+            @change="onSelectImageFiles"
         />
 
-        <div class="container">
-            <MenuSubTitle :text="'ファイル'"/>
-            <div class="file_selectors">
-                <FileSelector
-                        :iconPath="require('@/assets/img/icons/image_multi.svg')"
-                        :message="'画像を選択'"
-                        :accept="'image/*'"
-                        :isMultiple="true"
-                        @change="onSelectImageFiles"
-                />
+        <FileSelector
+            v-show="isImagesSelected"
+            :iconPath="require('@/assets/img/icons/text_multi.svg')"
+            :message="'教師データを選択'"
+            :accept="'application/json'"
+            :isMultiple="true"
+            @change="onSelectAnnotationFiles"
+        />
+      </div>
 
-                <FileSelector
-                        v-show="isImagesSelected"
-                        :iconPath="require('@/assets/img/icons/text_multi.svg')"
-                        :message="'教師データを選択'"
-                        :accept="'application/json'"
-                        :isMultiple="true"
-                        @change="onSelectAnnotationFiles"
-                />
-            </div>
+      <div class="object_detection_menu"
+           v-show="isImagesSelected"
+      >
+        <MenuSubTitle :text="'データ作成'" class="subtitle"/>
+        <ButtonGrid
+            :data="[{id:'_',text:'新しいデータを作る'}]"
+            :cols="1"
+            @select="onSelectCreateData"
+        />
 
-            <div class="object_detection_menu"
-                 v-show="isImagesSelected"
-            >
-                <MenuSubTitle :text="'データ作成'" class="subtitle"/>
-                <ButtonGrid
-                        :data="[{id:'_',text:'新しいデータを作る'}]"
-                        :cols="1"
-                        @select="onSelectCreateData"
-                />
+        <div v-show="selectingObject">
 
-                <div v-show="selectingObject">
+          <ButtonGrid
+              class="copy_button"
+              :class="{'disable': !selectingObject}"
+              :data="[{id:'_',text:'選択中データを複製'}]"
+              :cols="1"
+              @select="onSelectCopyData"
+          />
 
-                    <ButtonGrid
-                            class="copy_button"
-                            :class="{'disable': !selectingObject}"
-                            :data="[{id:'_',text:'選択中データを複製'}]"
-                            :cols="1"
-                            @select="onSelectCopyData"
-                    />
+          <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
+          <ClassEditor
+              :classes="classes"
+              :selectId="selectedClass"
+              @select="onSelectClass"
+              @delete="onDeleteClass"
+              @add="onAddClass"
+          />
 
-                    <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
-                    <ClassEditor
-                            :classes="classes"
-                            :selectId="selectedClass"
-                            @select="onSelectClass"
-                            @delete="onDeleteClass"
-                            @add="onAddClass"
-                    />
-
-                </div>
-
-            </div>
         </div>
 
-        <MenuFooter
-                :text="'Enjoy Annotation!'"
-                @help="onClickHelp"
-        />
-
+      </div>
     </div>
+
+    <MenuFooter
+        :text="'Enjoy Annotation!'"
+        @help="onClickHelp"
+    />
+
+  </div>
 
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Vue} from 'vue-property-decorator';
-    import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-    import FileSelector from "@/components/Menu/FileSelector.vue";
-    import HelpStore from "@/store/HelpStore";
-    import MenuHeader from "@/components/Menu/MenuHeader.vue";
-    import MenuFooter from "@/components/Menu/MenuFooter.vue";
-    import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
-    import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
-    import AnnotationsStore_ObjectDetection
-        from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
-    import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-    import ClassEditor from "@/components/Menu/ClassEditor.vue";
-    import ClassesStore from "@/store/ClassesStore";
-    import ImageFilesStore from "@/store/ImageFilesStore";
+import {Component, Prop, Vue} from 'vue-property-decorator';
+import AnnotationFilesStore from "@/store/AnnotationFilesStore";
+import FileSelector from "@/components/Menu/FileSelector.vue";
+import HelpStore from "@/store/HelpStore";
+import MenuHeader from "@/components/Menu/MenuHeader.vue";
+import MenuFooter from "@/components/Menu/MenuFooter.vue";
+import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
+import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
+import AnnotationsStore_ObjectDetection
+  from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
+import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
+import ClassEditor from "@/components/Menu/ClassEditor.vue";
+import ClassesStore from "@/store/ClassesStore";
+import ImageFilesStore from "@/store/ImageFilesStore";
 
-    @Component({
-        components: {
-            ClassEditor,
-            ButtonGrid,
-            MenuSubTitle,
-            MenuFooter,
-            MenuHeader,
-            FileSelector
-        }
-    })
-    export default class MenuPane_ObjectDetection_ByImages extends Vue {
+@Component({
+  components: {
+    ClassEditor,
+    ButtonGrid,
+    MenuSubTitle,
+    MenuFooter,
+    MenuHeader,
+    FileSelector
+  }
+})
+export default class MenuPane_ObjectDetection_ByImages extends Vue {
 
-        get isImagesSelected() {
-            return ImageFilesStore.isSelected;
-        }
+  get isImagesSelected() {
+    return ImageFilesStore.isSelected;
+  }
 
-        get selectedClass() {
-            return this.selectingObject ? this.selectingObject.class : -1;
-        }
+  get selectedClass() {
+    return this.selectingObject ? this.selectingObject.class : -1;
+  }
 
-        get selectingObject() {
-            const frame = OperationStore_ObjectDetection.frame;
-            if (!AnnotationsStore_ObjectDetection.annotations[frame])
-                return null;
+  get selectingObject() {
+    const frame = OperationStore_ObjectDetection.frame;
+    if (!AnnotationsStore_ObjectDetection.annotations[frame])
+      return null;
 
-            const objectId = OperationStore_ObjectDetection.selectingObjectId;
-            return AnnotationsStore_ObjectDetection.annotations[frame][objectId];
-        }
+    const objectId = OperationStore_ObjectDetection.selectingObjectId;
+    return AnnotationsStore_ObjectDetection.annotations[frame][objectId];
+  }
 
-        get classes() {
-            return ClassesStore.classesArray;
-        }
+  get classes() {
+    return ClassesStore.classesArray;
+  }
 
-        mounted() {
-            ClassesStore.addClass({id: "0", text: "piman"});
-            ClassesStore.addClass({id: "1", text: "stem"});
+  mounted() {
+    ClassesStore.addClass({id: "0", text: "piman"});
+    ClassesStore.addClass({id: "1", text: "stem"});
 
-            document.addEventListener("keydown", (e) => {
-                if (e.key == "c") {
-                    this.onSelectCreateData(-1);
-                }
-                if (e.key == "0") {
-                    this.onSelectClass("0" as any);
-                }
-                if (e.key == "1") {
-                    this.onSelectClass("1" as any);
-                }
-            });
-        }
+    document.addEventListener("keydown", (e) => {
+      if (e.key == "c") {
+        this.onSelectCreateData(-1);
+      }
+      if (e.key == "0") {
+        this.onSelectClass("0" as any);
+      }
+      if (e.key == "1") {
+        this.onSelectClass("1" as any);
+      }
+    });
+  }
 
-        private onSelectImageFiles(files: File[]) {
-            ImageFilesStore.setFiles(files);
-            AnnotationFilesStore.setFiles([]);
-        }
+  private onSelectImageFiles(files: File[]) {
+    ImageFilesStore.setFiles(files);
+    AnnotationFilesStore.setFiles([]);
+  }
 
-        private onSelectAnnotationFiles(files: File[]) {
-            if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
-                return;
+  private onSelectAnnotationFiles(files: File[]) {
+    if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
+      return;
 
-            AnnotationFilesStore.setFiles(files);
-        }
+    AnnotationFilesStore.setFiles(files);
+  }
 
-        private onSelectCreateData(_: number) {
-            AnnotationsStore_ObjectDetection.create(OperationStore_ObjectDetection.frame);
-            OperationStore_ObjectDetection.setSelectingObjectId(AnnotationsStore_ObjectDetection.newestObjectId);
-            this.addHistory();
-        }
+  private onSelectCreateData(_: number) {
+    AnnotationsStore_ObjectDetection.create(OperationStore_ObjectDetection.frame);
+    OperationStore_ObjectDetection.setSelectingObjectId(AnnotationsStore_ObjectDetection.newestObjectId);
+    this.addHistory();
+  }
 
-        private onSelectCopyData() {
-            const frame = OperationStore_ObjectDetection.frame;
-            const objectId = OperationStore_ObjectDetection.selectingObjectId;
+  private onSelectCopyData() {
+    const frame = OperationStore_ObjectDetection.frame;
+    const objectId = OperationStore_ObjectDetection.selectingObjectId;
 
-            AnnotationsStore_ObjectDetection.copyObject({frame: frame, objectId: objectId});
-            OperationStore_ObjectDetection.setSelectingObjectId(AnnotationsStore_ObjectDetection.newestObjectId);
+    AnnotationsStore_ObjectDetection.copyObject({frame: frame, objectId: objectId});
+    OperationStore_ObjectDetection.setSelectingObjectId(AnnotationsStore_ObjectDetection.newestObjectId);
 
-            this.addHistory();
-        }
+    this.addHistory();
+  }
 
-        private onSelectClass(classNo: number) {
-            console.log("class is ", classNo);
-            const frame = OperationStore_ObjectDetection.frame;
-            const objectId = OperationStore_ObjectDetection.selectingObjectId;
-            AnnotationsStore_ObjectDetection.setClass({frame: frame, objectId: objectId, class: classNo});
+  private onSelectClass(classNo: number) {
+    console.log("class is ", classNo);
+    const frame = OperationStore_ObjectDetection.frame;
+    const objectId = OperationStore_ObjectDetection.selectingObjectId;
+    AnnotationsStore_ObjectDetection.setClass({frame: frame, objectId: objectId, class: classNo});
 
-            this.addHistory();
-        }
+    this.addHistory();
+  }
 
-        private onDeleteClass(classNo: number) {
-            ClassesStore.removeClass(classNo.toString());
-        }
+  private onDeleteClass(classNo: number) {
+    ClassesStore.removeClass(classNo.toString());
+  }
 
-        private onAddClass(className: string) {
-            ClassesStore.addClassByName(className);
-        }
+  private onAddClass(className: string) {
+    ClassesStore.addClassByName(className);
+  }
 
-        private addHistory() {
-            this.$emit("addHistory")
-        }
+  private addHistory() {
+    this.$emit("addHistory")
+  }
 
-        private onClickHelp(): void {
-            HelpStore.toggle();
-        }
-    }
+  private onClickHelp(): void {
+    HelpStore.toggle();
+  }
+}
 </script>
 
 <style scoped lang="scss">
 
-    .container {
-        padding: 16px;
-        height: calc(100vh - 40px - 40px); // 100vh - header - footer
+.container {
+  padding: 16px;
+  height: calc(100vh - 40px - 40px); // 100vh - header - footer
 
-        .file_selectors {
-            *:nth-child(n + 2) {
-                margin-top: 8px;
-            }
-        }
-
-        .copy_button {
-            margin-top: 8px;
-        }
-
-        .object_detection_menu {
-            .subtitle {
-                margin-top: 24px;
-            }
-        }
+  .file_selectors {
+    *:nth-child(n + 2) {
+      margin-top: 8px;
     }
+  }
+
+  .copy_button {
+    margin-top: 8px;
+  }
+
+  .object_detection_menu {
+    .subtitle {
+      margin-top: 24px;
+    }
+  }
+}
 
 </style>

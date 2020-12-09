@@ -4,34 +4,36 @@ import ListManager from "@/common/utils/ListManager";
 
 
 @Module({
-    name: "HelpStore",
-    dynamic: true,
-    store: store,
-    namespaced: true
+  name: "HelpStore",
+  dynamic: true,
+  store: store,
+  namespaced: true
 })
 
 class HelpStore extends VuexModule {
 
-    // states
-    private _isShow:boolean = false;
+  // states
+  private _isShow: boolean = false;
 
-    // getters
-    get isShow(): boolean {
-        return this._isShow;
-    }
+  // getters
+  get isShow(): boolean {
+    return this._isShow;
+  }
 
-    @Mutation
-    public show() {
-        this._isShow = true;
-    }
-    @Mutation
-    public hide() {
-        this._isShow = false;
-    }
-    @Mutation
-    public toggle() {
-        this._isShow = !this._isShow;
-    }
+  @Mutation
+  public show() {
+    this._isShow = true;
+  }
+
+  @Mutation
+  public hide() {
+    this._isShow = false;
+  }
+
+  @Mutation
+  public toggle() {
+    this._isShow = !this._isShow;
+  }
 }
 
 

@@ -1,11 +1,11 @@
 <template>
   <AnnotationPageLayout>
     <template v-slot:menu>
-      <MenuPane_ObjectDetection_ByImages @addHistory="addHistory" />
+      <MenuPane_ObjectDetection_ByImages @addHistory="addHistory"/>
     </template>
 
     <template v-slot:editor>
-      <CanvasPane_ObjectDetection_ByImages @addHistory="addHistory" />
+      <CanvasPane_ObjectDetection_ByImages @addHistory="addHistory"/>
     </template>
 
     <template v-slot:size-check-target>
@@ -19,68 +19,69 @@
 </template>
 
 <script lang="ts">
-    import {Component, Vue} from "vue-property-decorator";
-    import MenuPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/MenuPane_ObjectDetection_ByImages.vue";
-    import CanvasPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/CanvasPane_ObjectDetection_ByImages.vue";
-    import Help_ObjectDetection from "@/app/object_detection_annotation/Help_ObjectDetection.vue";
-    import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
-    import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-    import HelpStore from "@/store/HelpStore";
-    import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-    import OperationOfFramesStore from "@/store/OperationOfFramesStore";
-    import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
-    import ImageFilesStore from "@/store/ImageFilesStore";
-    import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
+import {Component, Vue} from "vue-property-decorator";
+import MenuPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/MenuPane_ObjectDetection_ByImages.vue";
+import CanvasPane_ObjectDetection_ByImages
+  from "@/app/object_detection_annotation/CanvasPane_ObjectDetection_ByImages.vue";
+import Help_ObjectDetection from "@/app/object_detection_annotation/Help_ObjectDetection.vue";
+import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
+import AnnotationFilesStore from "@/store/AnnotationFilesStore";
+import HelpStore from "@/store/HelpStore";
+import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
+import OperationOfFramesStore from "@/store/OperationOfFramesStore";
+import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
+import ImageFilesStore from "@/store/ImageFilesStore";
+import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
-    @Component({
-        components: {
-          AnnotationPageLayout,
-            CanvasPane_ObjectDetection_ByImages,
-            MenuPane_ObjectDetection_ByImages,
-            Help_ObjectDetection,
-        },
-    })
-    export default class Home_ObjectDetection_ByImages extends Vue {
+@Component({
+  components: {
+    AnnotationPageLayout,
+    CanvasPane_ObjectDetection_ByImages,
+    MenuPane_ObjectDetection_ByImages,
+    Help_ObjectDetection,
+  },
+})
+export default class Home_ObjectDetection_ByImages extends Vue {
 
-        get sizeCheckVideoUrl() {
-            return ImageFilesStore.currentItemUrl;
+  get sizeCheckVideoUrl() {
+    return ImageFilesStore.currentItemUrl;
+  }
+
+  mounted() {
+    HistoryStore.init(this.makeHistoryRecord());
+
+    // ヒストリが変わった
+    this.$watch(
+        () => HistoryStore.index,
+        () => {
+          const current = HistoryStore.current;
+          OperationStore_ObjectDetection.setOperation(current.value.operation);
+          OperationOfFramesStore.setOperations(current.value.operationOfFrame);
+          AnnotationsStore_ObjectDetection.setAnnotation(current.value.annotation);
         }
+    );
+  }
 
-        mounted() {
-            HistoryStore.init(this.makeHistoryRecord());
+  destroyed() {
+    ImageFilesStore.clear();
+    AnnotationFilesStore.clear();
+    HistoryStore.clear();
+    HelpStore.hide();
+  }
 
-            // ヒストリが変わった
-            this.$watch(
-                () => HistoryStore.index,
-                () => {
-                    const current = HistoryStore.current;
-                    OperationStore_ObjectDetection.setOperation(current.value.operation);
-                    OperationOfFramesStore.setOperations(current.value.operationOfFrame);
-                    AnnotationsStore_ObjectDetection.setAnnotation(current.value.annotation);
-                }
-            );
-        }
+  private makeHistoryRecord() {
+    return new HistoryRecord({
+      operation: OperationStore_ObjectDetection.operation,
+      operationOfFrame: OperationOfFramesStore.operations,
+      annotation: AnnotationsStore_ObjectDetection.annotations,
+    });
+  }
 
-        destroyed() {
-            ImageFilesStore.clear();
-            AnnotationFilesStore.clear();
-            HistoryStore.clear();
-            HelpStore.hide();
-        }
-
-        private makeHistoryRecord() {
-            return new HistoryRecord({
-                operation: OperationStore_ObjectDetection.operation,
-                operationOfFrame: OperationOfFramesStore.operations,
-                annotation: AnnotationsStore_ObjectDetection.annotations,
-            });
-        }
-
-        private addHistory() {
-            HistoryStore.addHistory(this.makeHistoryRecord());
-            OperationOfFramesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: true});
-        }
-    }
+  private addHistory() {
+    HistoryStore.addHistory(this.makeHistoryRecord());
+    OperationOfFramesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: true});
+  }
+}
 </script>
 
 <style lang="scss" scoped></style>
