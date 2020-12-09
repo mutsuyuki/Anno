@@ -58,7 +58,7 @@
           <td>マウスホイール</td>
         </tr>
         <tr>
-          <th>画像を取り消し</th>
+          <th>画像拡大をやめる</th>
           <td><span>r キー</span></td>
         </tr>
         <tr>
