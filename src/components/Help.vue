@@ -9,7 +9,7 @@
          @click="onClickClose"
     />
 
-    <div class="contents">
+    <ScrollableArea class="contents">
       <table>
         <tr v-for="description in descriptions">
           <th>{{ description.title }}</th>
@@ -72,7 +72,7 @@
           <td><span>d キー</span></td>
         </tr>
       </table>
-    </div>
+    </ScrollableArea>
   </div>
 
 </template>
@@ -80,9 +80,10 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import HelpStore from "@/store/HelpStore";
+import ScrollableArea from "@/components/Layout/ScrollableArea.vue";
 
 @Component({
-  components: {},
+  components: {ScrollableArea},
 })
 export default class Help extends Vue {
   @Prop() descriptions!: { title: string, body: string }[];
@@ -139,8 +140,6 @@ export default class Help extends Vue {
   }
 
   .contents {
-    @import "src/assets/scss/mixin";
-    @include scrollable;
     height: calc(100% - #{$header_height});
 
     table {

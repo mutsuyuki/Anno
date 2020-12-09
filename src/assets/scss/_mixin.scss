@@ -1,7 +1,0 @@
-
-@mixin scrollable{
-  overflow: scroll;
-  &::-webkit-scrollbar {
-    width: var(--scroll-bar-width);
-  }
-}

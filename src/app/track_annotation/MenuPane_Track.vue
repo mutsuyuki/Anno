@@ -5,7 +5,7 @@
         :text="'Tracking'"
     />
 
-    <div class="container">
+    <ScrollableArea class="container">
       <MenuSubTitle :text="'ファイル'"/>
       <div class="file_selectors">
         <FileSelector
@@ -90,7 +90,7 @@
           />
         </div>
       </div>
-    </div>
+    </ScrollableArea>
 
     <MenuFooter
         :text="'Enjoy Annotation!'"
@@ -113,9 +113,11 @@ import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
 import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
+import ScrollableArea from "@/components/Layout/ScrollableArea.vue";
 
 @Component({
   components: {
+    ScrollableArea,
     ButtonGrid,
     MenuSubTitle,
     MenuFooter,
@@ -238,8 +240,6 @@ export default class MenuPane_Track extends Vue {
 <style scoped lang="scss">
 
 .container {
-  @import "src/assets/scss/mixin";
-  @include scrollable;
   padding: 16px;
   height: calc(100vh - 40px - 40px); // 100vh - header - footer
 

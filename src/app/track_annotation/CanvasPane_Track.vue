@@ -60,9 +60,11 @@ import DeepCloner from "@/common/utils/DeepCloner";
 import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
 import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
+import ScrollableArea from "@/components/Layout/ScrollableArea.vue";
 
 @Component({
   components: {
+    ScrollableArea,
     MultiLabels,
     VideoPlayer,
     DownloadButton,
@@ -100,7 +102,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get operationOfCurrentFrame(): OperationOfFrame {
-    return OperationOfFramesStore.operations[OperationStore_Track.frame] || {};
+    return OperationOfFramesStore.operations[OperationStore_Track.frame] || ({} as OperationOfFrame);
   }
 
   get isUseAnnotationFile() {
@@ -258,13 +260,13 @@ export default class CanvasPane_Track extends Vue {
       this.graphics.push(boneLines);
 
       const jointColor = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveColor : this.circleInactiveColor;
-      const jointPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") < 0).map(v => v[1]);
+      const jointPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") < 0).map(v => v[1]) as Point[];
       const boneJoints = new MultiCircles(jointPositions, 4, jointColor);
       boneJoints.zIndex = 1;
       this.graphics.push(boneJoints);
 
       const jointColorRight = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveRightColor : this.circleInactiveRightColor;
-      const jointRightPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") >= 0).map(v => v[1]);
+      const jointRightPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") >= 0).map(v => v[1]) as Point[];
       const boneJointsRight = new MultiCircles(jointRightPositions, 4, jointColorRight);
       boneJointsRight.zIndex = 1;
       this.graphics.push(boneJointsRight);

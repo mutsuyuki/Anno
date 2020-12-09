@@ -57,7 +57,6 @@ export default class AnnotationPageLayout extends Vue {
     width: 200px;
     min-width: 200px;
     height: 100%;
-    overflow-y: scroll;
   }
 
   .editor_pane_container {
