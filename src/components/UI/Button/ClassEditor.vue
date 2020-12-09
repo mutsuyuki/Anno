@@ -38,7 +38,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
+import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 
 @Component({
   components: {ButtonGrid}

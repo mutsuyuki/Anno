@@ -1,6 +1,5 @@
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import ListManager from "@/common/utils/ListManager";
 
 
 @Module({

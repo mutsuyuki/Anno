@@ -1,7 +1,5 @@
 <template>
-  <div class="canvas-pane"
-       v-show="isImagesSelected"
-  >
+  <div v-show="isImagesSelected" >
     <ToolBar/>
 
     <AnnotationStatusBar
@@ -31,9 +29,9 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import ImagePlayer from "@/components/Player/ImagePlayer.vue";
-import CanvasRenderer from "@/components/Canvas/CanvasRenderer.vue";
-import {Graphic} from "@/components/Canvas/Graphic";
+import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
+import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
 import FileUtil from "@/common/utils/FileUtil";
@@ -41,16 +39,13 @@ import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/ToolBar.vue";
-import DownloadButton from "@/components/DownloadButton.vue";
-import VideoFileStore from "@/store/VideoFileStore";
-import VideoPlayer from "@/components/Player/VideoPlayer.vue";
+import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
+import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
 import AnnotationsStore_ObjectDetection, {Annotation_ObjectDetection} from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
-import MultiLines from "@/components/Canvas/MultiLines";
-import MultiCircles from "@/components/Canvas/MultiCircles";
-import RectangleLine from "@/components/Canvas/RectangleLine";
+import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
-import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
+import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
 import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
 import ClassesStore from "@/store/ClassesStore";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";

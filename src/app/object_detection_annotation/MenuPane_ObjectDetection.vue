@@ -1,4 +1,5 @@
 <template>
+
   <div class="control_pane">
 
     <MenuHeader
@@ -7,24 +8,12 @@
 
     <div class="container">
       <MenuSubTitle :text="'ファイル'"/>
-      <div class="file_selectors">
-        <FileSelector
-            :iconPath="require('@/assets/img/icons/video.svg')"
-            :message="'動画を選択'"
-            :accept="'video/*'"
-            :isMultiple="false"
-            @change="onSelectVideoFile"
-        />
-
-        <FileSelector
-            v-show="isVideoSelected"
-            :iconPath="require('@/assets/img/icons/text_multi.svg')"
-            :message="'教師データを選択'"
-            :accept="'application/json'"
-            :isMultiple="true"
-            @change="onSelectAnnotationFiles"
-        />
-      </div>
+      <FileSelectorSet
+          :useVideoSelector="true"
+          :useAnnotationSelector="isVideoSelected"
+          @selectVideoFile="onSelectVideoFile"
+          @selectAnnotationFiles="onSelectAnnotationFiles"
+      />
 
       <div class="object_detection_menu"
            v-show="isVideoSelected"
@@ -72,21 +61,23 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import FileSelector from "@/components/Menu/FileSelector.vue";
+import FileSelector from "@/components/UI/Button/FileSelector.vue";
 import HelpStore from "@/store/HelpStore";
 import VideoFileStore from "@/store/VideoFileStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
-import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
+import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import AnnotationsStore_ObjectDetection
   from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-import ClassEditor from "@/components/Menu/ClassEditor.vue";
+import ClassEditor from "@/components/UI/Button/ClassEditor.vue";
 import ClassesStore from "@/store/ClassesStore";
+import FileSelectorSet from "@/components/UI/Button/FileSelectorSet.vue";
 
 @Component({
   components: {
+    FileSelectorSet,
     ClassEditor,
     ButtonGrid,
     MenuSubTitle,
@@ -194,12 +185,6 @@ export default class MenuPane_ObjectDetection extends Vue {
 .container {
   padding: 16px;
   height: calc(100vh - 40px - 40px); // 100vh - header - footer
-
-  .file_selectors {
-    *:nth-child(n + 2) {
-      margin-top: 8px;
-    }
-  }
 
   .copy_button {
     margin-top: 8px;

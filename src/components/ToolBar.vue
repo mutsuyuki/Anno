@@ -31,9 +31,9 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ScalableArea from "@/components/ScalableArea/ScalableArea.vue";
+import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
 import InlineSvg from "@/components/InlineSvg";
-import NormalizedScalableArea from "@/components/ScalableArea/NormalizedScalableArea.vue";
+import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 import HistoryStore from "@/store/HistoryStore";
 

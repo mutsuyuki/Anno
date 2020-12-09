@@ -1,128 +1,106 @@
 <template>
-  <div class="control_pane">
-
-    <MenuHeader
-        :text="'Tracking'"
+  <MenuLayout
+      :headerText="'Tracking'"
+      @help="onHelp"
+  >
+    <MenuSubTitle :text="'ファイル'"/>
+    <FileSelectorSet
+        :useVideoSelector="true"
+        :useAnnotationSelector="isVideoSelected"
+        @selectVideoFile="onSelectVideoFile"
+        @selectAnnotationFiles="onSelectAnnotationFiles"
     />
 
-    <ScrollableArea class="container">
-      <MenuSubTitle :text="'ファイル'"/>
-      <div class="file_selectors">
-        <FileSelector
-            :iconPath="require('@/assets/img/icons/video.svg')"
-            :message="'動画を選択'"
-            :accept="'video/*'"
-            :isMultiple="false"
-            @change="onSelectVideoFile"
+    <div class="track_menu"
+         v-show="isVideoSelected"
+    >
+      <MenuSubTitle :text="'データ作成'" class="subtitle"/>
+      <ButtonGrid
+          :data="[{id:0,text:'新しいデータを作る'}]"
+          :selectId="-1"
+          :cols="1"
+          @select="onSelectCreateData"
+      />
+
+      <ButtonGrid
+          class="copy_button"
+          :class="{'disable': !selectingObject}"
+          :data="[{id:'_',text:'選択中データを複製'}]"
+          :selectId="-1"
+          :cols="1"
+          @select="onSelectCopyData"
+      />
+
+      <ButtonGrid
+          class="copy_button"
+          :class="{'disable': isFirstFrame}"
+          :data="[{id:'_',text:'前フレーム全て複製'}]"
+          :selectId="-1"
+          :cols="1"
+          @select="onSelectCopyFrame"
+      />
+
+      <div v-show="selectingObject">
+
+        <MenuSubTitle :text="'モード選択'" class="subtitle"/>
+        <ButtonGrid
+            :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}, {id: 'neck_equipment', text:'首'}]"
+            :selectId="selectedMode"
+            :cols="2"
+            @select="onSelectMode"
         />
 
-        <FileSelector
-            v-show="isVideoSelected"
-            :iconPath="require('@/assets/img/icons/text_multi.svg')"
-            :message="'教師データを選択'"
-            :accept="'application/json'"
-            :isMultiple="true"
-            @change="onSelectAnnotationFiles"
+        <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
+        <ButtonGrid
+            :data="[{id:'0',text:'食'},{id:'1',text:'飲'},{id:'2',text:'歩'},{id:'3',text:'立/通常'},{id:'4',text:'立/反芻'},{id:'5',text:'休/通常'}, {id:'6',text:'休/反芻'}]"
+            :selectId="selectedClass"
+            :cols="2"
+            :font-size="11"
+            @select="onSelectClass"
+        />
+
+        <MenuSubTitle :text="'復活'" class="subtitle"/>
+        <ButtonGrid
+            :data="[{id:'_',text:'削除した関節を復活'}]"
+            :cols="1"
+            @select="onClickRebirthJoint"
+        />
+        <ButtonGrid
+            style="margin-top: 8px"
+            :data="[{id:'_',text:'削除した首装置を復活'}]"
+            :cols="1"
+            @select="onClickRebirthNeckEquipment"
         />
       </div>
-
-      <div class="track_menu"
-           v-show="isVideoSelected"
-      >
-        <MenuSubTitle :text="'データ作成'" class="subtitle"/>
-        <ButtonGrid
-            :data="[{id:0,text:'新しいデータを作る'}]"
-            :selectId="-1"
-            :cols="1"
-            @select="onSelectCreateData"
-        />
-
-        <ButtonGrid
-            class="copy_button"
-            :class="{'disable': !selectingObject}"
-            :data="[{id:'_',text:'選択中データを複製'}]"
-            :selectId="-1"
-            :cols="1"
-            @select="onSelectCopyData"
-        />
-
-        <ButtonGrid
-            class="copy_button"
-            :class="{'disable': isFirstFrame}"
-            :data="[{id:'_',text:'前フレーム全て複製'}]"
-            :selectId="-1"
-            :cols="1"
-            @select="onSelectCopyFrame"
-        />
-
-        <div
-            v-show="selectingObject"
-        >
-
-          <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
-          <ButtonGrid
-              :data="[{id:'0',text:'食'},{id:'1',text:'飲'},{id:'2',text:'歩'},{id:'3',text:'立/通常'},{id:'4',text:'立/反芻'},{id:'5',text:'休/通常'}, {id:'6',text:'休/反芻'}]"
-              :selectId="selectedClass"
-              :cols="2"
-              :font-size="11"
-              @select="onSelectClass"
-          />
-
-          <MenuSubTitle :text="'モード選択'" class="subtitle"/>
-          <ButtonGrid
-              :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}, {id: 'neck_equipment', text:'首'}]"
-              :selectId="selectedMode"
-              :cols="2"
-              @select="onSelectMode"
-          />
-
-          <MenuSubTitle :text="'復活'" class="subtitle"/>
-          <ButtonGrid
-              :data="[{id:'_',text:'削除した関節を復活'}]"
-              :cols="1"
-              @select="onClickRebirthJoint"
-          />
-          <ButtonGrid
-              style="margin-top: 8px"
-              :data="[{id:'_',text:'削除した首装置を復活'}]"
-              :cols="1"
-              @select="onClickRebirthNeckEquipment"
-          />
-        </div>
-      </div>
-    </ScrollableArea>
-
-    <MenuFooter
-        :text="'Enjoy Annotation!'"
-        @help="onClickHelp"
-    />
-
-  </div>
+    </div>
+  </MenuLayout>
 
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import FileSelector from "@/components/Menu/FileSelector.vue";
 import HelpStore from "@/store/HelpStore";
 import VideoFileStore from "@/store/VideoFileStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
-import ButtonGrid from "@/components/Menu/ButtonGrid.vue";
+import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
-import ScrollableArea from "@/components/Layout/ScrollableArea.vue";
+import ScrollableArea from "@/components/UI/ScrollableArea.vue";
+import FileSelectorSet from "@/components/UI/Button/FileSelectorSet.vue";
+import MenuLayout from "@/components/Menu/MenuLayout.vue";
 
 @Component({
   components: {
+    MenuLayout,
+    FileSelectorSet,
     ScrollableArea,
     ButtonGrid,
     MenuSubTitle,
     MenuFooter,
     MenuHeader,
-    FileSelector
   }
 })
 export default class MenuPane_Track extends Vue {
@@ -231,7 +209,7 @@ export default class MenuPane_Track extends Vue {
     this.$emit("addHistory")
   }
 
-  private onClickHelp(): void {
+  private onHelp(): void {
     HelpStore.toggle();
   }
 }
@@ -239,24 +217,13 @@ export default class MenuPane_Track extends Vue {
 
 <style scoped lang="scss">
 
-.container {
-  padding: 16px;
-  height: calc(100vh - 40px - 40px); // 100vh - header - footer
+.copy_button {
+  margin-top: 8px;
+}
 
-  .file_selectors {
-    *:nth-child(n + 2) {
-      margin-top: 8px;
-    }
-  }
-
-  .copy_button {
-    margin-top: 8px;
-  }
-
-  .track_menu {
-    .subtitle {
-      margin-top: 24px;
-    }
+.track_menu {
+  .subtitle {
+    margin-top: 24px;
   }
 }
 

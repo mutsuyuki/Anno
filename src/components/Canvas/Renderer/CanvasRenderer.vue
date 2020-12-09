@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {Graphic} from "@/components/Canvas/Graphic";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 
 @Component({
@@ -79,4 +79,10 @@ export default class CanvasRenderer extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+</style>

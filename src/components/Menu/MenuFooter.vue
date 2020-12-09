@@ -27,7 +27,7 @@ export default class MenuFooter extends Vue {
   justify-content: left;
   align-items: center;
   background: var(--background-dark);
-  height: 40px;
+  height: 100%;
 
   .icon {
     padding: 12px;

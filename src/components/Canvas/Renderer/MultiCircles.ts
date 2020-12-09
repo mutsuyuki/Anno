@@ -1,7 +1,7 @@
-import {Graphic} from "@/components/Canvas/Graphic";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {Point} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
-import Circle from "@/components/Canvas/Circle";
+import Circle from "@/components/Canvas/Renderer/Circle";
 
 export default class MultiCircles implements Graphic {
 

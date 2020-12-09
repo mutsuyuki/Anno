@@ -1,4 +1,4 @@
-import {Graphic} from "@/components/Canvas/Graphic";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {Point} from "@/common/interface/Point";
 import {Color, ColorUtil} from "@/common/interface/Color";
 import DeepCloner from "@/common/utils/DeepCloner";

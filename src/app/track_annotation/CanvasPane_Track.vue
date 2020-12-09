@@ -1,7 +1,5 @@
 <template>
-  <div class="canvas-pane"
-       v-show="isVideoSelected"
-  >
+  <div v-show="isVideoSelected">
     <ToolBar/>
 
     <AnnotationStatusBar
@@ -23,7 +21,7 @@
         @timeupdate="onTimeUpdate"
         @prepareBlob="onPrepareBlob"
     >
-      <CanvasRenderer class="canvas_renderer" :graphics="graphics" :opacity="opacity"/>
+      <CanvasRenderer :graphics="graphics" :opacity="opacity"/>
       <MultiLabels :labels="objectLabels" :opacity="opacity"/>
       <MultiLabels :labels="pointingJointLabel" :opacity="opacity"/>
     </VideoPlayer>
@@ -38,9 +36,9 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import ImagePlayer from "@/components/Player/ImagePlayer.vue";
-import CanvasRenderer from "@/components/Canvas/CanvasRenderer.vue";
-import {Graphic} from "@/components/Canvas/Graphic";
+import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
+import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
 import FileUtil from "@/common/utils/FileUtil";
@@ -48,19 +46,19 @@ import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/ToolBar.vue";
-import DownloadButton from "@/components/DownloadButton.vue";
+import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoFileStore from "@/store/VideoFileStore";
-import VideoPlayer from "@/components/Player/VideoPlayer.vue";
+import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
 import AnnotationsStore_Track, {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Track";
-import MultiLines from "@/components/Canvas/MultiLines";
-import MultiCircles from "@/components/Canvas/MultiCircles";
-import RectangleLine from "@/components/Canvas/RectangleLine";
+import MultiLines from "@/components/Canvas/Renderer/MultiLines";
+import MultiCircles from "@/components/Canvas/Renderer/MultiCircles";
+import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
-import MultiLabels from "@/components/CanvasOverlay/MultiLabels.vue";
+import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
 import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
-import ScrollableArea from "@/components/Layout/ScrollableArea.vue";
+import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 
 @Component({
   components: {
@@ -685,50 +683,12 @@ export default class CanvasPane_Track extends Vue {
 
 <style scoped lang="scss">
 
-.annotation-pane {
-  padding: 0 16px;
-}
-
 .annotation-status-bar {
   margin-top: 16px;
-}
-
-.canvas_renderer {
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .download-button {
   margin-top: 16px;
 }
-
-.width-slider-container {
-  position: fixed;
-  top: calc(40px + 40px);
-  right: 16px;
-  width: calc(100vw - 200px - 16px - 16px);
-  height: 24px;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 99999;
-
-  input[type="range"] {
-    width: 85%;
-    margin-left: 8px;
-  }
-
-  button {
-    width: 15%;
-    height: 24px;
-    font-size: 12px;
-    margin-left: 8px;
-    padding: 0px;
-    background: rgba(black, 0.5);
-  }
-}
-
 
 </style>

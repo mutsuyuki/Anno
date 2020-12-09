@@ -38,7 +38,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ScalableArea from "@/components/ScalableArea/ScalableArea.vue";
+import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
 
 @Component({
   components: {ScalableArea}

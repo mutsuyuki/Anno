@@ -39,7 +39,7 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ImageFilesStore from "@/store/ImageFilesStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import FileSelector from "@/components/Menu/FileSelector.vue";
+import FileSelector from "@/components/UI/Button/FileSelector.vue";
 import HelpStore from "@/store/HelpStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";

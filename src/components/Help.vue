@@ -80,7 +80,7 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import HelpStore from "@/store/HelpStore";
-import ScrollableArea from "@/components/Layout/ScrollableArea.vue";
+import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 
 @Component({
   components: {ScrollableArea},

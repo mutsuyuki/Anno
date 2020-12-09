@@ -1,7 +1,7 @@
-import {Graphic} from "@/components/Canvas/Graphic";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {Point} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
-import Line from "@/components/Canvas/Line";
+import Line from "@/components/Canvas/Renderer/Line";
 
 export default class MultiLines implements Graphic {
 

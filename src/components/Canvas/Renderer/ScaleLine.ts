@@ -1,8 +1,8 @@
-import {Graphic} from "@/components/Canvas/Graphic";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {Point} from "@/common/interface/Point";
 import {Color, ColorUtil} from "@/common/interface/Color";
 import DeepCloner from "@/common/utils/DeepCloner";
-import Line from "@/components/Canvas/Line";
+import Line from "@/components/Canvas/Renderer/Line";
 
 export default class ScaleLine extends Line {
 
