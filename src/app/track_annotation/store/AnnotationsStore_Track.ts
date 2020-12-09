@@ -296,11 +296,9 @@ class AnnotationsStore_Track extends VuexModule {
 
   @Mutation
   public addNeckEquipmentPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
-    console.log("111", this._annotations[value.frame][value.objectId].neck_equipment.left);
     if (this._annotations[value.frame][value.objectId].neck_equipment.left == -9999)
       return
 
-    console.log("222", this._annotations[value.frame][value.objectId].neck_equipment.left);
     this._annotations[value.frame][value.objectId].neck_equipment.left += value.moveAmount.x;
     this._annotations[value.frame][value.objectId].neck_equipment.top += value.moveAmount.y;
   }

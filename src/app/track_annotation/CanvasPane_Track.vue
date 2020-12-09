@@ -318,7 +318,6 @@ export default class CanvasPane_Track extends Vue {
         data: JSON.parse(fileText as string)
       });
 
-
       OperationOfFramesStore.setIsUseAnnotationFile({
         frame: frame,
         isUseAnnotationFile: true

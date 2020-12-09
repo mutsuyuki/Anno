@@ -89,6 +89,7 @@ export default class ToolBar extends Vue {
 
 .toolbar {
   height: 40px;
+  min-width: 450px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
