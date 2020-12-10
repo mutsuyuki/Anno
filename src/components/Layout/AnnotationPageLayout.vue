@@ -54,15 +54,16 @@ export default class AnnotationPageLayout extends Vue {
   width: 100%;
   overflow: hidden;
 
+  $menu_width:220px;
   .menu_pane {
-    width: 200px;
-    min-width: 200px;
+    width: $menu_width;
+    min-width: $menu_width;
     height: 100%;
   }
 
   .editor_pane_container {
     margin: 0 auto;
-    width: calc(100% - 200px);
+    width: calc(100% - #{$menu_width});
     height: 100%;
     background-color: var(--background-canvas);
 
