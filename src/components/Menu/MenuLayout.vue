@@ -4,7 +4,7 @@
       <MenuHeader :text="headerText"/>
     </div>
 
-    <ScrollableArea class="control-container">
+    <ScrollableArea class="menu-container">
       <slot></slot>
     </ScrollableArea>
 
@@ -31,23 +31,29 @@ import ScrollableArea from "@/components/UI/ScrollableArea.vue";
   }
 })
 export default class MenuLayout extends Vue {
-  @Prop({default:"Annotation Tool"}) private headerText!:string;
-  @Prop({default:"Enjoy Annotation!"}) private footerText!:string;
+  @Prop({default: "Annotation Tool"}) private headerText!: string;
+  @Prop({default: "Enjoy Annotation!"}) private footerText!: string;
 
 }
 </script>
 
 <style scoped lang="scss">
-.header-container{
+.header-container {
   height: 40px;
 }
 
-.control-container {
+.menu-container {
   padding: 16px;
   height: calc(100vh - 40px - 40px); // 100vh - header - footer
+
+  &::v-deep {
+    .submenu+.submenu{
+      margin-top: 24px;
+    }
+  }
 }
 
-.footer-container{
+.footer-container {
   height: 40px;
 }
 

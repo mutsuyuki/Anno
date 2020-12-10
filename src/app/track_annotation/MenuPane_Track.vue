@@ -3,76 +3,83 @@
       :headerText="'Tracking'"
       @help="onHelp"
   >
-    <MenuSubTitle :text="'ファイル'"/>
-    <FileSelectorSet
-        :useVideoSelector="true"
-        :useAnnotationSelector="isVideoSelected"
-        @selectVideoFile="onSelectVideoFile"
-        @selectAnnotationFiles="onSelectAnnotationFiles"
-    />
-
-    <div class="track_menu"
-         v-show="isVideoSelected"
-    >
-      <MenuSubTitle :text="'データ作成'" class="subtitle"/>
-      <ButtonGrid
-          :data="[{id:0,text:'新しいデータを作る'}]"
-          :selectId="-1"
-          :cols="1"
-          @select="onSelectCreateData"
+    <SubMenu :menuTitle="'ファイル'">
+      <FileSelectorSet
+          :useVideoSelector="true"
+          :useAnnotationSelector="isVideoSelected"
+          @selectVideoFile="onSelectVideoFile"
+          @selectAnnotationFiles="onSelectAnnotationFiles"
       />
+    </SubMenu>
 
-      <ButtonGrid
-          class="copy_button"
-          :class="{'disable': !selectingObject}"
-          :data="[{id:'_',text:'選択中データを複製'}]"
-          :selectId="-1"
-          :cols="1"
-          @select="onSelectCopyData"
-      />
+    <SubMenu v-show="isVideoSelected">
+      <SubMenu :menuTitle="'データ作成'">
+        <Row>
+          <ButtonGrid
+              :data="[{id:0,text:'新しいデータを作る'}]"
+              :selectId="-1"
+              :cols="1"
+              @select="onSelectCreateData"
+          />
 
-      <ButtonGrid
-          class="copy_button"
-          :class="{'disable': isFirstFrame}"
-          :data="[{id:'_',text:'前フレーム全て複製'}]"
-          :selectId="-1"
-          :cols="1"
-          @select="onSelectCopyFrame"
-      />
+          <ButtonGrid
+              class="copy_button"
+              :class="{'disable': !selectingObject}"
+              :data="[{id:'_',text:'選択中データを複製'}]"
+              :selectId="-1"
+              :cols="1"
+              @select="onSelectCopyData"
+          />
 
-      <div v-show="selectingObject">
+          <ButtonGrid
+              class="copy_button"
+              :class="{'disable': isFirstFrame}"
+              :data="[{id:'_',text:'前フレーム全て複製'}]"
+              :selectId="-1"
+              :cols="1"
+              @select="onSelectCopyFrame"
+          />
+        </Row>
+      </SubMenu>
 
-        <MenuSubTitle :text="'モード選択'" class="subtitle"/>
-        <ButtonGrid
-            :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}, {id: 'neck_equipment', text:'首'}]"
-            :selectId="selectedMode"
-            :cols="2"
-            @select="onSelectMode"
-        />
+      <SubMenu v-show="selectingObject">
 
-        <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
-        <ButtonGrid
-            :data="[{id:'0',text:'食'},{id:'1',text:'飲'},{id:'2',text:'歩'},{id:'3',text:'立/通常'},{id:'4',text:'立/反芻'},{id:'5',text:'休/通常'}, {id:'6',text:'休/反芻'}]"
-            :selectId="selectedClass"
-            :cols="2"
-            :font-size="11"
-            @select="onSelectClass"
-        />
+        <SubMenu :menuTitle="'モード選択'">
+          <ButtonGrid
+              :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}, {id: 'neck_equipment', text:'首'}]"
+              :selectId="selectedMode"
+              :cols="2"
+              @select="onSelectMode"
+          />
+        </SubMenu>
 
-        <MenuSubTitle :text="'復活'" class="subtitle"/>
-        <ButtonGrid
-            :data="[{id:'_',text:'削除した関節を復活'}]"
-            :cols="1"
-            @select="onClickRebirthJoint"
-        />
-        <ButtonGrid
-            style="margin-top: 8px"
-            :data="[{id:'_',text:'削除した首装置を復活'}]"
-            :cols="1"
-            @select="onClickRebirthNeckEquipment"
-        />
-      </div>
-    </div>
+        <SubMenu :menuTitle="'クラス設定'">
+          <ButtonGrid
+              :data="[{id:'0',text:'食'},{id:'1',text:'飲'},{id:'2',text:'歩'},{id:'3',text:'立/通常'},{id:'4',text:'立/反芻'},{id:'5',text:'休/通常'}, {id:'6',text:'休/反芻'}]"
+              :selectId="selectedClass"
+              :cols="2"
+              :font-size="11"
+              @select="onSelectClass"
+          />
+        </SubMenu>
+
+        <SubMenu :menuTitle="'復活'">
+          <Row>
+            <ButtonGrid
+                :data="[{id:'_',text:'削除した関節を復活'}]"
+                :cols="1"
+                @select="onClickRebirthJoint"
+            />
+            <ButtonGrid
+                style="margin-top: 8px"
+                :data="[{id:'_',text:'削除した首装置を復活'}]"
+                :cols="1"
+                @select="onClickRebirthNeckEquipment"
+            />
+          </Row>
+        </SubMenu>
+      </SubMenu>
+    </SubMenu>
   </MenuLayout>
 
 </template>
@@ -91,9 +98,13 @@ import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Tr
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 import FileSelectorSet from "@/components/UI/Button/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
+import SubMenu from "@/components/Menu/SubMenu.vue";
+import Row from "@/components/UI/Layout/Row.vue";
 
 @Component({
   components: {
+    Row,
+    SubMenu,
     MenuLayout,
     FileSelectorSet,
     ScrollableArea,
@@ -215,17 +226,4 @@ export default class MenuPane_Track extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
-
-.copy_button {
-  margin-top: 8px;
-}
-
-.track_menu {
-  .subtitle {
-    margin-top: 24px;
-  }
-}
-
-
-</style>
+<style scoped lang="scss"></style>
