@@ -1,4 +1,5 @@
 <template>
+
   <MenuLayout
       :headerText="'Tracking'"
       @help="onHelp"
@@ -42,41 +43,70 @@
         </Row>
       </SubMenu>
 
+      <!--データ選択時表示メニュー-->
       <SubMenu v-show="selectingObject">
-
         <SubMenu :menuTitle="'モード選択'">
           <ButtonGrid
-              :data="[{id:'bounding',text:'領域'}, {id:'bone',text:'ボーン'}, {id: 'neck_equipment', text:'首'}]"
+              :data="[
+                  {id:'bounding',text:'領域'},
+                  {id:'bone',text:'ボーン'},
+                  {id:'neck_mark', text:'首'}
+              ]"
               :selectId="selectedMode"
-              :cols="2"
+              :cols="3"
               @select="onSelectMode"
           />
         </SubMenu>
 
-        <SubMenu :menuTitle="'クラス設定'">
-          <ButtonGrid
-              :data="[{id:'0',text:'食'},{id:'1',text:'飲'},{id:'2',text:'歩'},{id:'3',text:'立/通常'},{id:'4',text:'立/反芻'},{id:'5',text:'休/通常'}, {id:'6',text:'休/反芻'}]"
-              :selectId="selectedClass"
-              :cols="2"
-              :font-size="11"
-              @select="onSelectClass"
-          />
+        <!--矩形選択モード-->
+        <SubMenu v-show="selectedMode==='bounding'">
+          <SubMenu :menuTitle="'クラス設定'">
+            <ButtonGrid
+                :data="behaviours"
+                :selectId="selectedClass"
+                :cols="3"
+                :font-size="11"
+                @select="onSelectBehaviour"
+            />
+          </SubMenu>
         </SubMenu>
 
-        <SubMenu :menuTitle="'復活'">
-          <Row>
+        <!--ボーンモード-->
+        <SubMenu v-show="selectedMode==='bone'">
+          <SubMenu v-show="!isNeckExist" :menuTitle="'反転'">
+            <ButtonGrid
+                :data="[{id:'_',text:'左右反転'}]"
+                :cols="1"
+                @select="onClickFlipJoint"
+            />
+          </SubMenu>
+          <SubMenu :menuTitle="'復活'">
             <ButtonGrid
                 :data="[{id:'_',text:'削除した関節を復活'}]"
                 :cols="1"
                 @select="onClickRebirthJoint"
             />
+          </SubMenu>
+        </SubMenu>
+
+        <!--首装置モード-->
+        <SubMenu v-show="selectedMode==='neck_mark'">
+          <SubMenu v-show="!isNeckExist" :menuTitle="'データ追加'">
             <ButtonGrid
-                style="margin-top: 8px"
-                :data="[{id:'_',text:'削除した首装置を復活'}]"
+                :data="[{id:'_',text:'首装置を追加'}]"
                 :cols="1"
-                @select="onClickRebirthNeckEquipment"
+                @select="onClickCreateNeckMark"
             />
-          </Row>
+          </SubMenu>
+          <SubMenu v-show="isNeckExist" :menuTitle="'クラス設定'">
+            <ButtonGrid
+                :data="neckMarks"
+                :selectId="selectedClass"
+                :cols="5"
+                :font-size="11"
+                @select="onSelectNeckMark"
+            />
+          </SubMenu>
         </SubMenu>
       </SubMenu>
     </SubMenu>
@@ -100,6 +130,7 @@ import FileSelectorSet from "@/components/UI/Button/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
 import Row from "@/components/UI/Layout/Row.vue";
+import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
 
 @Component({
   components: {
@@ -121,7 +152,7 @@ export default class MenuPane_Track extends Vue {
   }
 
   get selectedClass() {
-    return this.selectingObject ? this.selectingObject.class : -1;
+    return this.selectingObject ? this.selectingObject.behaviour_class : -1;
   }
 
   get selectedMode() {
@@ -139,6 +170,18 @@ export default class MenuPane_Track extends Vue {
 
   get isFirstFrame() {
     return Number(OperationStore_Track.frame) <= 0;
+  }
+
+  get isNeckExist() {
+    return this.selectingObject?.neck_mark_bounding.left != -9999;
+  }
+
+  get behaviours() {
+    return Object.keys(BEHAVIOUR).map(key => ({id: key, text: BEHAVIOUR[key]}));
+  }
+
+  get neckMarks() {
+    return Object.keys(NECK_MARK).map(key => ({id: key, text: NECK_MARK[key]})) ;
   }
 
   private onSelectVideoFile(files: File[]) {
@@ -182,14 +225,6 @@ export default class MenuPane_Track extends Vue {
     this.addHistory();
   }
 
-  private onSelectClass(classNo: string) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.setClass({frame: frame, objectId: objectId, class: classNo});
-
-    this.addHistory();
-  }
-
   private onSelectMode(mode: string) {
     switch (mode) {
       case "bounding":
@@ -198,10 +233,24 @@ export default class MenuPane_Track extends Vue {
       case "bone":
         OperationStore_Track.setModeToBone();
         break;
-      case "neck_equipment":
-        OperationStore_Track.setModeToNeckEquipment();
+      case "neck_mark":
+        OperationStore_Track.setModeToNeckMark();
         break;
     }
+  }
+
+  private onSelectBehaviour(classNo: string) {
+    const frame = OperationStore_Track.frame;
+    const objectId = OperationStore_Track.selectingObjectId;
+    AnnotationsStore_Track.setBehaviour({frame: frame, objectId: objectId, behaviour_class: classNo});
+
+    this.addHistory();
+  }
+
+  private onClickFlipJoint(_: number) {
+    const frame = OperationStore_Track.frame;
+    const objectId = OperationStore_Track.selectingObjectId;
+    AnnotationsStore_Track.flipJoint({frame: frame, objectId: objectId});
   }
 
   private onClickRebirthJoint(_: number) {
@@ -210,10 +259,18 @@ export default class MenuPane_Track extends Vue {
     AnnotationsStore_Track.rebirthJoint({frame: frame, objectId: objectId});
   }
 
-  private onClickRebirthNeckEquipment(_: number) {
+  private onClickCreateNeckMark(_: number) {
     const frame = OperationStore_Track.frame;
     const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.rebirthNeckEquipment({frame: frame, objectId: objectId});
+    AnnotationsStore_Track.createNeckMark({frame: frame, objectId: objectId});
+  }
+
+  private onSelectNeckMark(classNo: string) {
+    const frame = OperationStore_Track.frame;
+    const objectId = OperationStore_Track.selectingObjectId;
+    AnnotationsStore_Track.setNeckMarkClass({frame: frame, objectId: objectId, neck_mark_class: classNo});
+
+    this.addHistory();
   }
 
   private addHistory() {

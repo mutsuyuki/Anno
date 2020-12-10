@@ -59,6 +59,7 @@ import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
 import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
+import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
 
 @Component({
   components: {
@@ -75,12 +76,11 @@ import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 export default class CanvasPane_Track extends Vue {
   private graphics: Graphic[] = [];
 
-  private circleActiveColor: Color = {r: 0, g: 150, b: 40, a: 1};
-  private circleInactiveColor: Color = {r: 0, g: 150, b: 40, a: 0.5};
-  private circleActiveRightColor: Color = {r: 150, g: 40, b: 0, a: 1};
-  private circleInactiveRightColor: Color = {r: 150, g: 40, b: 0, a: 0.5};
-  private lineActiveColor: Color = {r: 0, g: 40, b: 150, a: 1};
-  private lineInactiveColor: Color = {r: 0, g: 40, b: 150, a: 0.5};
+  private boundingColor: Color = {r: 40, g: 80, b: 220, a: 1};
+  private jointColor: Color = {r: 0, g: 150, b: 40, a: 1};
+  private jointRightLegColor: Color = {r: 150, g: 40, b: 0, a: 1};
+  private boneColor: Color = {r: 0, g: 40, b: 150, a: 1};
+  private neckMarkColor: Color = {r: 150, g: 80, b: 40, a: 1};
 
   private createBlobSignal: boolean = false;
   private isDeleteMode: boolean = false;
@@ -123,11 +123,14 @@ export default class CanvasPane_Track extends Vue {
     let result = [];
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
+      const annotation = annotations[objectId];
+      const behaviour = BEHAVIOUR[annotation.behaviour_class];
+      const neckMark = annotation.neck_mark_bounding.left != -9999 ? NECK_MARK[annotation.neck_mark_class] : '';
       result.push({
-        text: "ID : " + objectId,
+        text: objectId + " : " + behaviour + " : " + neckMark,
         position: {
-          x: annotations[objectId].bounding.left * 100,
-          y: annotations[objectId].bounding.top * 100
+          x: annotation.bounding.left * 100,
+          y: annotation.bounding.top * 100
         },
         isActive: objectId == OperationStore_Track.selectingObjectId
       })
@@ -228,7 +231,22 @@ export default class CanvasPane_Track extends Vue {
       const bone = annotation.bone;
       const isSelecting = OperationStore_Track.selectingObjectId == objectId;
 
-      const boneColor = isSelecting && OperationStore_Track.isBoneMode ? this.lineActiveColor : this.lineInactiveColor;
+      // ------ bounding box --------------------------------------------------
+      this.boundingColor.a = isSelecting ? OperationStore_Track.isBoundingMode ? 1 : 0.8 : 0.4;
+      const boundingBox = new RectangleLine(
+          annotation.bounding.left,
+          annotation.bounding.top,
+          annotation.bounding.width,
+          annotation.bounding.height,
+          2,
+          this.boundingColor
+      );
+      boundingBox.zIndex = 0;
+      this.graphics.push(boundingBox);
+
+
+      // ------ bone  --------------------------------------------------
+      this.boneColor.a = isSelecting && OperationStore_Track.isBoneMode ? 1 : 0.5;
       const boneLines = new MultiLines(
           [
             {start: bone.mouse, end: bone.head},
@@ -252,46 +270,39 @@ export default class CanvasPane_Track extends Vue {
             {start: bone.right_heel, end: bone.right_toe},
           ].filter(v => v.start.x != -9999 && v.end.x != -9999),
           2,  // width
-          boneColor
+          this.boneColor
       );
-      boneLines.zIndex = 0;
+      boneLines.zIndex = 1;
       this.graphics.push(boneLines);
 
-      const jointColor = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveColor : this.circleInactiveColor;
-      const jointPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") < 0).map(v => v[1]) as Point[];
-      const boneJoints = new MultiCircles(jointPositions, 4, jointColor);
-      boneJoints.zIndex = 1;
+      // ------ joint --------------------------------------------------
+      this.jointColor.a = isSelecting && OperationStore_Track.isBoneMode ? 1 : 0.4;
+      const joints = Object.entries(bone).filter((v) => v[0].indexOf("right") < 0);
+      const jointPositions = joints.map(v => v[1]) as Point[];
+      const boneJoints = new MultiCircles(jointPositions, 3, this.jointColor);
+      boneJoints.zIndex = 2;
       this.graphics.push(boneJoints);
 
-      const jointColorRight = isSelecting && OperationStore_Track.isBoneMode ? this.circleActiveRightColor : this.circleInactiveRightColor;
-      const jointRightPositions = Object.entries(bone).filter((v) => v[0].indexOf("right") >= 0).map(v => v[1]) as Point[];
-      const boneJointsRight = new MultiCircles(jointRightPositions, 4, jointColorRight);
-      boneJointsRight.zIndex = 1;
+      // ------ joint right leg --------------------------------------------------
+      this.jointRightLegColor.a = isSelecting && OperationStore_Track.isBoneMode ? 1 : 0.4;
+      const jointsRightLeg = Object.entries(bone).filter((v) => v[0].indexOf("right") >= 0);
+      const jointRightLegPositions = jointsRightLeg.map(v => v[1]) as Point[];
+      const boneJointsRight = new MultiCircles(jointRightLegPositions, 3, this.jointRightLegColor);
+      boneJointsRight.zIndex = 3;
       this.graphics.push(boneJointsRight);
 
-      const boundingColor = isSelecting && OperationStore_Track.isBoundingMode ? this.lineActiveColor : this.lineInactiveColor;
-      const boundingBox = new RectangleLine(
-          annotation.bounding.left,
-          annotation.bounding.top,
-          annotation.bounding.width,
-          annotation.bounding.height,
+      // ------ neck  --------------------------------------------------
+      this.neckMarkColor.a = isSelecting && OperationStore_Track.isNeckMarkMode ? 1 : 0.5;
+      const neckMarkBox = new RectangleLine(
+          annotation.neck_mark_bounding.left,
+          annotation.neck_mark_bounding.top,
+          annotation.neck_mark_bounding.width,
+          annotation.neck_mark_bounding.height,
           2,
-          boundingColor
+          this.neckMarkColor
       );
-      boneJoints.zIndex = 3;
-      this.graphics.push(boundingBox);
-
-      const neckEquipmentColor = isSelecting && OperationStore_Track.isNeckEquipmentMode ? this.lineActiveColor : this.lineInactiveColor;
-      const neckEquipmentBox = new RectangleLine(
-          annotation.neck_equipment.left,
-          annotation.neck_equipment.top,
-          annotation.neck_equipment.width,
-          annotation.neck_equipment.height,
-          2,
-          neckEquipmentColor
-      );
-      neckEquipmentBox.zIndex = 4;
-      this.graphics.push(neckEquipmentBox);
+      neckMarkBox.zIndex = 4;
+      this.graphics.push(neckMarkBox);
     }
   }
 
@@ -325,8 +336,8 @@ export default class CanvasPane_Track extends Vue {
     // 首装置がないデータを読んだときに削除済扱いで読み込む。
     for (const frame in AnnotationsStore_Track.annotations) {
       for (const objectId in AnnotationsStore_Track.annotations[frame]) {
-        if (AnnotationsStore_Track.annotations[frame][objectId].neck_equipment == null) {
-          AnnotationsStore_Track.deleteNeckEquipment({frame: frame, objectId: objectId})
+        if (AnnotationsStore_Track.annotations[frame][objectId].neck_mark_bounding == null) {
+          AnnotationsStore_Track.deleteNeckMark({frame: frame, objectId: objectId})
         }
       }
     }
@@ -337,28 +348,26 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDragStart(e: MovingPoint) {
-    // バウンディング
-    if (OperationStore_Track.isBoundingMode) {
-      const clickedBounding = this.searchBounding(e);
-      if (this.isDeleteMode) {
-        // 削除
-        if (clickedBounding.objectId) {
+    const allFalse = {top: false, right: false, bottom: false, left: false};
 
+    // すべての選択状態を一旦解除
+    OperationStore_Track.setSelectingObjectId("");
+    OperationStore_Track.setSelectingEdge(allFalse);
+    OperationStore_Track.setSelectingNeckMarkEdge(allFalse);
+    OperationStore_Track.setSelectingJointName("");
+
+    // バウンディングを探す
+    const clickedBounding = this.searchBounding(e);
+
+    // バウンディングモード
+    if (OperationStore_Track.isBoundingMode) {
+      if (this.isDeleteMode) {
+        if (clickedBounding.objectId) {
+          // 削除
           AnnotationsStore_Track.deleteObject({
             frame: OperationStore_Track.frame,
             objectId: clickedBounding.objectId
           });
-
-
-          OperationStore_Track.setSelectingObjectId("");
-          OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
-          OperationStore_Track.setSelectingNeckEquipmentEdge({
-            top: false,
-            right: false,
-            bottom: false,
-            left: false
-          });
-          OperationStore_Track.setSelectingJointName("");
 
           this.addHistory();
         }
@@ -366,84 +375,55 @@ export default class CanvasPane_Track extends Vue {
         // 選択
         OperationStore_Track.setSelectingObjectId(clickedBounding.objectId);
         OperationStore_Track.setSelectingEdge(clickedBounding.selectingEdge);
-        OperationStore_Track.setSelectingNeckEquipmentEdge({
-          top: false,
-          right: false,
-          bottom: false,
-          left: false
-        });
-        OperationStore_Track.setSelectingJointName("");
       }
     }
 
-    // ボーン
+    // ボーンモード
     if (OperationStore_Track.isBoneMode) {
       const clickedJoint = this.searchJoint(e);
       if (this.isDeleteMode) {
-        // 削除
-        AnnotationsStore_Track.deleteJoint({
-          frame: OperationStore_Track.frame,
-          objectId: clickedJoint.objectId,
-          jointName: clickedJoint.jointName
-        });
-
-        OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
-        OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
-        OperationStore_Track.setSelectingNeckEquipmentEdge({
-          top: false,
-          right: false,
-          bottom: false,
-          left: false
-        });
-        OperationStore_Track.setSelectingJointName("");
-
-        this.addHistory();
-      } else {
-        // 選択
-        OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
-        OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
-        OperationStore_Track.setSelectingNeckEquipmentEdge({
-          top: false,
-          right: false,
-          bottom: false,
-          left: false
-        });
-        OperationStore_Track.setSelectingJointName(clickedJoint.jointName);
-      }
-    }
-
-    // 首装置
-    if (OperationStore_Track.isNeckEquipmentMode) {
-      const clickedBounding = this.searchBounding(e);
-      const clickedNeckEquipment = this.searchNeckEquipment(e);
-      if (this.isDeleteMode) {
-        // 削除
-        if (clickedNeckEquipment.objectId) {
-
-          AnnotationsStore_Track.deleteNeckEquipment({
+        if (clickedJoint.objectId) {
+          // 削除
+          AnnotationsStore_Track.deleteJoint({
             frame: OperationStore_Track.frame,
-            objectId: clickedNeckEquipment.objectId
+            objectId: clickedJoint.objectId,
+            jointName: clickedJoint.jointName
           });
 
-          OperationStore_Track.setSelectingObjectId(clickedNeckEquipment.objectId);
-          OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
-          OperationStore_Track.setSelectingNeckEquipmentEdge({
-            top: false,
-            right: false,
-            bottom: false,
-            left: false
-          });
-          OperationStore_Track.setSelectingJointName("");
-          OperationStore_Track.setModeToBounding();
+          // 選択
+          OperationStore_Track.setSelectingObjectId(clickedJoint.objectId);
 
           this.addHistory();
         }
       } else {
         // 選択
+        const selectedObjectId = clickedJoint.objectId || clickedBounding.objectId;
+        OperationStore_Track.setSelectingObjectId(selectedObjectId);
+        OperationStore_Track.setSelectingJointName(clickedJoint.jointName);
+      }
+    }
+
+    // 首装置モード
+    if (OperationStore_Track.isNeckMarkMode) {
+      const clickedNeckMark = this.searchNeckMark(e);
+      if (this.isDeleteMode) {
+        if (clickedNeckMark.objectId) {
+          // 削除
+          AnnotationsStore_Track.deleteNeckMark({
+            frame: OperationStore_Track.frame,
+            objectId: clickedNeckMark.objectId
+          });
+
+          // 選択
+          OperationStore_Track.setSelectingObjectId(clickedNeckMark.objectId);
+
+          this.addHistory();
+        }
+      } else {
+        // 選択
+        const selectedObjectId = clickedNeckMark.objectId || clickedBounding.objectId;
         OperationStore_Track.setSelectingObjectId(clickedBounding.objectId);
-        OperationStore_Track.setSelectingEdge({top: false, right: false, bottom: false, left: false});
-        OperationStore_Track.setSelectingNeckEquipmentEdge(clickedNeckEquipment.selectingEdge);
-        OperationStore_Track.setSelectingJointName("");
+        OperationStore_Track.setSelectingNeckMarkEdge(clickedNeckMark.selectingEdge);
       }
     }
 
@@ -494,7 +474,7 @@ export default class CanvasPane_Track extends Vue {
             objectId: objectId,
             moveAmount: {x: e.deltaX, y: e.deltaY}
           })
-          AnnotationsStore_Track.addNeckEquipmentPositions({
+          AnnotationsStore_Track.moveNeckMarkBounding({
             frame: frame,
             objectId: objectId,
             moveAmount: {x: e.deltaX, y: e.deltaY}
@@ -516,28 +496,28 @@ export default class CanvasPane_Track extends Vue {
     }
 
     // 首装置選択
-    if (OperationStore_Track.isNeckEquipmentMode) {
+    if (OperationStore_Track.isNeckMarkMode) {
       if (this.selectingObject) {
         const frame = OperationStore_Track.frame;
         const objectId = OperationStore_Track.selectingObjectId;
 
-        let bounding = DeepCloner.copy(this.selectingObject.neck_equipment);
+        let bounding = DeepCloner.copy(this.selectingObject.neck_mark_bounding);
         if (bounding.left != -9999) {
-          const isEdgeSelect = Object.values(OperationStore_Track.selectingNeckEquipmentEdge).filter(v => v).length >= 1;
+          const isEdgeSelect = Object.values(OperationStore_Track.selectingNeckMarkEdge).filter(v => v).length >= 1;
           if (isEdgeSelect) {
             // 端のドラッグは矩形の拡大縮小
-            if (OperationStore_Track.selectingNeckEquipmentEdge.left) {
+            if (OperationStore_Track.selectingNeckMarkEdge.left) {
               bounding.left += e.deltaX;
               bounding.width -= e.deltaX;
             }
-            if (OperationStore_Track.selectingNeckEquipmentEdge.right) {
+            if (OperationStore_Track.selectingNeckMarkEdge.right) {
               bounding.width += e.deltaX;
             }
-            if (OperationStore_Track.selectingNeckEquipmentEdge.top) {
+            if (OperationStore_Track.selectingNeckMarkEdge.top) {
               bounding.top += e.deltaY;
               bounding.height -= e.deltaY;
             }
-            if (OperationStore_Track.selectingNeckEquipmentEdge.bottom) {
+            if (OperationStore_Track.selectingNeckMarkEdge.bottom) {
               bounding.height += e.deltaY;
             }
           } else {
@@ -546,10 +526,10 @@ export default class CanvasPane_Track extends Vue {
             bounding.left += e.deltaX;
           }
 
-          AnnotationsStore_Track.setNeckEquipment({
+          AnnotationsStore_Track.setNeckMarkBounding({
             frame: frame,
             objectId: objectId,
-            bounding: bounding
+            neck_mark_bounding: bounding
           });
         }
       }
@@ -605,14 +585,14 @@ export default class CanvasPane_Track extends Vue {
   }
 
 
-  private searchNeckEquipment(position: Point) {
+  private searchNeckMark(position: Point) {
     let smallestArea = Number.MAX_VALUE;
     let smallestObjectId: string = "";
     let selectingEdge = {top: false, right: false, bottom: false, left: false};
     const edgeWidth = 0.02;
 
     for (const objectId in this.annotationsOfCurrentFrame) {
-      const bounding = this.annotationsOfCurrentFrame[objectId].neck_equipment;
+      const bounding = this.annotationsOfCurrentFrame[objectId].neck_mark_bounding;
       const x = position.x;
       const y = position.y;
       const insideHorizontal = (bounding.left - edgeWidth < x) && (x < bounding.left + bounding.width + edgeWidth);

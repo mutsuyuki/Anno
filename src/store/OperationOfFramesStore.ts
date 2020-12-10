@@ -2,6 +2,7 @@ import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store/index";
 
+// ----- interfaces -------------------------------
 export interface OperationOfFrame {
   isDirty: boolean
   isUseAnnotationFile: boolean;

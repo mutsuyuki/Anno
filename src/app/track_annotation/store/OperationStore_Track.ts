@@ -1,11 +1,12 @@
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
 
+// ----- interfaces -------------------------------
 export interface Operation_Track {
   frame: string;
   selectingObjectId: string;
   selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
-  selectingNeckEquipmentEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
+  selectingNeckMarkEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
   selectingJointName: string;
   hoveringObjectId: string;
   hoveringJointName: string;
@@ -26,7 +27,7 @@ class OperationStore_Track extends VuexModule {
     frame: "0",
     selectingObjectId: "",
     selectingEdge: {top: false, right: false, bottom: false, left: false},
-    selectingNeckEquipmentEdge: {top: false, right: false, bottom: false, left: false},
+    selectingNeckMarkEdge: {top: false, right: false, bottom: false, left: false},
     selectingJointName: "",
     hoveringObjectId: "",
     hoveringJointName: "",
@@ -54,8 +55,8 @@ class OperationStore_Track extends VuexModule {
     return this._operation.selectingJointName;
   }
 
-  get selectingNeckEquipmentEdge(): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
-    return this._operation.selectingNeckEquipmentEdge;
+  get selectingNeckMarkEdge(): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
+    return this._operation.selectingNeckMarkEdge;
   }
 
   get hoveringObjectId(): string {
@@ -74,8 +75,8 @@ class OperationStore_Track extends VuexModule {
     return this._operation.annotationMode == "bone";
   }
 
-  get isNeckEquipmentMode(): boolean {
-    return this._operation.annotationMode == "neck_equipment";
+  get isNeckMarkMode(): boolean {
+    return this._operation.annotationMode == "neck_mark";
   }
 
 
@@ -110,8 +111,8 @@ class OperationStore_Track extends VuexModule {
   }
 
   @Mutation
-  public setSelectingNeckEquipmentEdge(value: { top: boolean; right: boolean; bottom: boolean; left: boolean }) {
-    this._operation.selectingNeckEquipmentEdge = value;
+  public setSelectingNeckMarkEdge(value: { top: boolean; right: boolean; bottom: boolean; left: boolean }) {
+    this._operation.selectingNeckMarkEdge = value;
   }
 
   @Mutation
@@ -135,8 +136,8 @@ class OperationStore_Track extends VuexModule {
   }
 
   @Mutation
-  public setModeToNeckEquipment() {
-    this._operation.annotationMode = "neck_equipment";
+  public setModeToNeckMark() {
+    this._operation.annotationMode = "neck_mark";
   }
 
 }
