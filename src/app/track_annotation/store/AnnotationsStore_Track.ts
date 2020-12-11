@@ -236,8 +236,8 @@ class AnnotationsStore_Track extends VuexModule {
     for (const jointName in targetBone) {
       const joint = targetBone[jointName];
       if (joint.x != -9999) {
-        minX = Math.min(minX , joint.x);
-        maxX = Math.max(maxX , joint.x);
+        minX = Math.min(minX, joint.x);
+        maxX = Math.max(maxX, joint.x);
       }
     }
 
@@ -364,19 +364,23 @@ class AnnotationsStore_Track extends VuexModule {
   }
 
   @Mutation
-  public addJointPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
+  public moveJointPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
+
+    const movedBone = DeepCloner.copy(this._annotations[value.frame][value.objectId].bone);
     for (const jointName in this._annotations[value.frame][value.objectId].bone) {
       const currentPosition = (<any>this._annotations[value.frame][value.objectId].bone)[jointName];
       if (currentPosition.x == -9999) {
         continue;
       }
-
-      Vue.set(
-        this._annotations[value.frame][value.objectId].bone,
-        jointName,
-        PointUtil.add(DeepCloner.copy(currentPosition), DeepCloner.copy(value.moveAmount))
-      );
+      movedBone[jointName].x += value.moveAmount.x;
+      movedBone[jointName].y += value.moveAmount.y;
     }
+
+    Vue.set(
+      this._annotations[value.frame][value.objectId],
+      "bone",
+      movedBone
+    );
   }
 
   @Mutation

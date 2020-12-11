@@ -53,7 +53,9 @@ class HistoryStore extends VuexModule {
     if (this._history.length >= 10) {
       this._history.shift();
     }
-    this._history.push(record);
+    const clonedRecord = DeepCloner.copy(record);
+    Object.freeze(clonedRecord);
+    this._history.push(clonedRecord);
     this._index = this._history.length - 1;
   }
 

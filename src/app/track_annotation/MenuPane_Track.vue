@@ -248,18 +248,24 @@ export default class MenuPane_Track extends Vue {
     const frame = OperationStore_Track.frame;
     const objectId = OperationStore_Track.selectingObjectId;
     AnnotationsStore_Track.flipJoint({frame: frame, objectId: objectId});
+
+    this.addHistory();
   }
 
   private onClickRebirthJoint(_: number) {
     const frame = OperationStore_Track.frame;
     const objectId = OperationStore_Track.selectingObjectId;
     AnnotationsStore_Track.rebirthJoint({frame: frame, objectId: objectId});
+
+    this.addHistory();
   }
 
   private onClickCreateNeckMark(_: number) {
     const frame = OperationStore_Track.frame;
     const objectId = OperationStore_Track.selectingObjectId;
     AnnotationsStore_Track.createNeckMark({frame: frame, objectId: objectId});
+
+    this.addHistory();
   }
 
   private onSelectNeckMark(classNo: string) {

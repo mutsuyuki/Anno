@@ -332,18 +332,7 @@ export default class CanvasPane_Track extends Vue {
       });
     }
 
-    // 首装置がないデータを読んだときに削除済扱いで読み込む。
-    for (const frame in AnnotationsStore_Track.annotations) {
-      for (const objectId in AnnotationsStore_Track.annotations[frame]) {
-        if (AnnotationsStore_Track.annotations[frame][objectId].neck_mark_bounding == null) {
-          AnnotationsStore_Track.deleteNeckMark({frame: frame, objectId: objectId})
-        }
-      }
-    }
-
-    if (AnnotationFilesStore.items.length > 0) {
-      this.addHistory();
-    }
+    this.addHistory();
   }
 
   private onDragStart(e: MovingPoint) {
@@ -467,7 +456,7 @@ export default class CanvasPane_Track extends Vue {
 
         if (!isEdgeSelect) {
           // 現在座標にdeltaを足す（deltaだけ移動）
-          AnnotationsStore_Track.addJointPositions({
+          AnnotationsStore_Track.moveJointPositions({
             frame: frame,
             objectId: objectId,
             moveAmount: {x: e.deltaX, y: e.deltaY}
