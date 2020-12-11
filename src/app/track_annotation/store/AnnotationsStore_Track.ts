@@ -3,43 +3,17 @@ import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decor
 import store from "@/store";
 import {Point, PointUtil} from "@/common/interface/Point";
 import DeepCloner from "@/common/utils/DeepCloner";
+import {AnimalBoneModel} from "@/common/model/AnimalBoneModel";
+import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 
 // ----- interfaces -------------------------------
-export interface Bounding_Track {
-  left: number,
-  top: number
-  width: number,
-  height: number
-}
-
 export interface Annotation_Track {
   frame: string;
   objectId: string;
   behaviour_class: string;
-  bounding: Bounding_Track;
-  bone: {
-    mouse: Point;
-    head: Point;
-    cervical_spine: Point;
-    left_shoulder: Point;
-    left_elbow: Point;
-    left_wrist: Point;
-    left_finger: Point;
-    right_shoulder: Point;
-    right_elbow: Point;
-    right_wrist: Point;
-    right_finger: Point;
-    pelvis: Point;
-    left_waist: Point;
-    left_knee: Point;
-    left_heel: Point;
-    left_toe: Point;
-    right_waist: Point;
-    right_knee: Point;
-    right_heel: Point;
-    right_toe: Point;
-  };
-  neck_mark_bounding: Bounding_Track;
+  bounding: BoundingBoxModel;
+  bone: AnimalBoneModel;
+  neck_mark_bounding: BoundingBoxModel;
   neck_mark_class: string;
 }
 
@@ -341,7 +315,7 @@ class AnnotationsStore_Track extends VuexModule {
   }
 
   @Mutation
-  public setBounding(value: { frame: string, objectId: string, bounding: Bounding_Track }) {
+  public setBounding(value: { frame: string, objectId: string, bounding: BoundingBoxModel }) {
     Vue.set(
       this._annotations[value.frame][value.objectId],
       "bounding",
@@ -366,10 +340,9 @@ class AnnotationsStore_Track extends VuexModule {
   @Mutation
   public moveJointPositions(value: { frame: string, objectId: string, moveAmount: Point }) {
 
-    const movedBone = DeepCloner.copy(this._annotations[value.frame][value.objectId].bone);
-    for (const jointName in this._annotations[value.frame][value.objectId].bone) {
-      const currentPosition = (<any>this._annotations[value.frame][value.objectId].bone)[jointName];
-      if (currentPosition.x == -9999) {
+    const movedBone = DeepCloner.copy(this._annotations[value.frame][value.objectId].bone) as any;
+    for (const jointName in movedBone) {
+      if (movedBone[jointName].x == -9999) {
         continue;
       }
       movedBone[jointName].x += value.moveAmount.x;
@@ -384,7 +357,7 @@ class AnnotationsStore_Track extends VuexModule {
   }
 
   @Mutation
-  public setNeckMarkBounding(value: { frame: string, objectId: string, neck_mark_bounding: Bounding_Track }) {
+  public setNeckMarkBounding(value: { frame: string, objectId: string, neck_mark_bounding: BoundingBoxModel }) {
     Vue.set(
       this._annotations[value.frame][value.objectId],
       "neck_mark_bounding",
