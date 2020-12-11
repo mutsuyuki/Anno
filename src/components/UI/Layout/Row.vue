@@ -6,10 +6,9 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import FileSelector from "@/components/UI/Button/FileSelector.vue";
 
 @Component({
-  components: {FileSelector}
+  components: {}
 })
 export default class Row extends Vue {
 }

@@ -18,7 +18,6 @@ export default class MultiCircles implements Graphic {
       );
       this.circles.push(circle)
     }
-
   }
 
   public draw(context: CanvasRenderingContext2D) {

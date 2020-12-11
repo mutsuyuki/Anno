@@ -28,7 +28,7 @@ import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/store/HelpStore";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-import OperationOfFramesStore from "@/store/OperationOfFramesStore";
+import EditSequencesStore from "@/store/EditSequenceStore";
 import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
 import ImageFilesStore from "@/store/ImageFilesStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
@@ -56,7 +56,7 @@ export default class Home_ObjectDetection_ByImages extends Vue {
         () => {
           const current = HistoryStore.current;
           OperationStore_ObjectDetection.setOperation(current.value.operation);
-          OperationOfFramesStore.setOperations(current.value.operationOfFrame);
+          EditSequencesStore.setSequences(current.value.editSequence);
           AnnotationsStore_ObjectDetection.setAnnotation(current.value.annotation);
         }
     );
@@ -72,14 +72,14 @@ export default class Home_ObjectDetection_ByImages extends Vue {
   private makeHistoryRecord() {
     return new HistoryRecord({
       operation: OperationStore_ObjectDetection.operation,
-      operationOfFrame: OperationOfFramesStore.operations,
+      editSequence: EditSequencesStore.sequences,
       annotation: AnnotationsStore_ObjectDetection.annotations,
     });
   }
 
   private addHistory() {
     HistoryStore.addHistory(this.makeHistoryRecord());
-    OperationOfFramesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: true});
   }
 }
 </script>

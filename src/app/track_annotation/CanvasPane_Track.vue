@@ -30,7 +30,6 @@
         class="download-button"
         @download="onDownload"
     />
-
   </div>
 </template>
 
@@ -56,7 +55,7 @@ import MultiCircles from "@/components/Canvas/Renderer/MultiCircles";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
-import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
+import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
@@ -99,8 +98,8 @@ export default class CanvasPane_Track extends Vue {
     return Number(this.frame == OperationStore_Track.frame ? -1 : OperationStore_Track.frame);
   }
 
-  get operationOfCurrentFrame(): OperationOfFrame {
-    return OperationOfFramesStore.operations[OperationStore_Track.frame] || ({} as OperationOfFrame);
+  get operationOfCurrentFrame(): EditSequence {
+    return EditSequencesStore.sequences[OperationStore_Track.frame] || ({} as EditSequence);
   }
 
   get isUseAnnotationFile() {
@@ -198,7 +197,7 @@ export default class CanvasPane_Track extends Vue {
     // フレームが変わった
     this.$watch(
         () => OperationStore_Track.frame,
-        () => OperationOfFramesStore.createIfNothing(OperationStore_Track.frame),
+        () => EditSequencesStore.createIfNothing(OperationStore_Track.frame),
         {deep: true, immediate: true}
     );
 
@@ -327,7 +326,7 @@ export default class CanvasPane_Track extends Vue {
         data: JSON.parse(fileText as string)
       });
 
-      OperationOfFramesStore.setIsUseAnnotationFile({
+      EditSequencesStore.setIsUseAnnotationFile({
         frame: frame,
         isUseAnnotationFile: true
       });
@@ -426,7 +425,6 @@ export default class CanvasPane_Track extends Vue {
         OperationStore_Track.setSelectingNeckMarkEdge(clickedNeckMark.selectingEdge);
       }
     }
-
   }
 
   private onDrag(e: MovingPoint) {
@@ -536,13 +534,11 @@ export default class CanvasPane_Track extends Vue {
     }
   }
 
-  //
   private onDragEnd(e: MovingPoint) {
     if (this.selectingObject && !this.isDeleteMode) {
       this.addHistory();
     }
   }
-
 
   private onHover(e: Point) {
     // ボーン
@@ -551,7 +547,6 @@ export default class CanvasPane_Track extends Vue {
       OperationStore_Track.setHoveringObjectId(hoveredJoint.objectId);
       OperationStore_Track.setHoveringJointName(hoveredJoint.jointName);
     }
-
   }
 
   private searchBounding(position: Point) {
@@ -584,7 +579,6 @@ export default class CanvasPane_Track extends Vue {
     return {objectId: smallestObjectId, selectingEdge: selectingEdge};
   }
 
-
   private searchNeckMark(position: Point) {
     let smallestArea = Number.MAX_VALUE;
     let smallestObjectId: string = "";
@@ -614,7 +608,6 @@ export default class CanvasPane_Track extends Vue {
 
     return {objectId: smallestObjectId, selectingEdge: selectingEdge};
   }
-
 
   private searchJoint(position: Point) {
     let nearestDistance = Number.MAX_VALUE;
@@ -654,8 +647,8 @@ export default class CanvasPane_Track extends Vue {
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
-    OperationOfFramesStore.setIsDownloaded({frame: OperationStore_Track.frame, isDownloaded: true});
-    OperationOfFramesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: false});
+    EditSequencesStore.setIsDownloaded({frame: OperationStore_Track.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: false});
   }
 }
 

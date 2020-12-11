@@ -45,7 +45,7 @@
 
       <!--データ選択時表示メニュー-->
       <SubMenu v-show="selectingObject">
-        <SubMenu :menuTitle="'モード選択'">
+        <SubMenu :menuTitle="'データタイプ'">
           <ButtonGrid
               :data="[
                   {id:'bounding',text:'領域'},
@@ -73,7 +73,7 @@
 
         <!--ボーンモード-->
         <SubMenu v-show="selectedMode==='bone'">
-          <SubMenu v-show="!isNeckExist" :menuTitle="'反転'">
+          <SubMenu :menuTitle="'反転'">
             <ButtonGrid
                 :data="[{id:'_',text:'左右反転'}]"
                 :cols="1"
@@ -126,7 +126,7 @@ import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
-import FileSelectorSet from "@/components/UI/Button/FileSelectorSet.vue";
+import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
 import Row from "@/components/UI/Layout/Row.vue";
@@ -215,10 +215,7 @@ export default class MenuPane_Track extends Vue {
   }
 
   private onSelectCopyFrame(_: string) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-
-    AnnotationsStore_Track.copyPrevFrameObjects(frame);
+    AnnotationsStore_Track.copyPrevFrameObjects(OperationStore_Track.frame);
     OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
     OperationStore_Track.setModeToBounding();
 

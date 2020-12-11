@@ -61,7 +61,7 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import FileSelector from "@/components/UI/Button/FileSelector.vue";
+import FileSelector from "@/components/UI/FileSelector/FileSelector.vue";
 import HelpStore from "@/store/HelpStore";
 import VideoFileStore from "@/store/VideoFileStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
@@ -73,7 +73,7 @@ import AnnotationsStore_ObjectDetection
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
 import ClassEditor from "@/components/UI/Button/ClassEditor.vue";
 import ClassesStore from "@/store/ClassesStore";
-import FileSelectorSet from "@/components/UI/Button/FileSelectorSet.vue";
+import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 
 @Component({
   components: {

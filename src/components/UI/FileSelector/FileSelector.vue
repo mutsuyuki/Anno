@@ -2,10 +2,10 @@
   <label class="button">
     <div class="title">
       <img :src="iconPath"/>
-      <span>{{ message }}</span>
+      <span>{{ text }}</span>
     </div>
     <input type="file" class="hidden"
-           @change="$emit('change', eventToFiles($event))"
+           @change="onChange"
            :accept="accept"
            :multiple="isMultiple"
     />
@@ -23,26 +23,30 @@ import {HTMLElementEvent} from "@/common/interface/HTMLElementEvent";
   }
 })
 export default class FileSelector extends Vue {
-
   @Prop() private iconPath!: string;
-  @Prop() private message!: string;
+  @Prop() private text!: string;
   @Prop() private selectedName!: string;
   @Prop() private accept!: string;
   @Prop() private isMultiple!: boolean;
 
+  private onChange(e: HTMLElementEvent<HTMLInputElement>) {
+    if (!e.target || !e.target.files) {
+      this.$emit("cancel");
+      return;
+    }
 
-  private eventToFiles(e: HTMLElementEvent<HTMLInputElement>): File[] {
     let files: File[] = [];
-
-    if (!e.target || !e.target.files)
-      return files;
-
     for (let i = 0; i < e.target.files.length; i++) {
       const file = e.target.files[i];
       if (typeof file == "object")
         files.push(file)
     }
-    return files;
+
+    if (files.length > 0) {
+      this.$emit("change", files);
+    } else {
+      this.$emit("cancel");
+    }
   }
 
 }

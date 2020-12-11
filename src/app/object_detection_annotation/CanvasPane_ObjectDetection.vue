@@ -53,7 +53,7 @@ import AnnotationsStore_ObjectDetection, {Annotation_ObjectDetection} from "@/ap
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
-import OperationOfFramesStore, {OperationOfFrame} from "@/store/OperationOfFramesStore";
+import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
 import ClassesStore from "@/store/ClassesStore";
 import CanvasSettingsStore from "@/store/CanvasSettingsStore";
 
@@ -99,8 +99,8 @@ export default class CanvasPane_ObjectDetection extends Vue {
         .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
   }
 
-  get operationOfCurrentFrame(): OperationOfFrame {
-    return OperationOfFramesStore.operations[OperationStore_ObjectDetection.frame] || {};
+  get operationOfCurrentFrame(): EditSequence {
+    return EditSequencesStore.sequences[OperationStore_ObjectDetection.frame] || {};
   }
 
   get isUseAnnotationFile() {
@@ -161,7 +161,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
     // フレームが変わった
     this.$watch(
         () => OperationStore_ObjectDetection.frame,
-        () => OperationOfFramesStore.createIfNothing(OperationStore_ObjectDetection.frame),
+        () => EditSequencesStore.createIfNothing(OperationStore_ObjectDetection.frame),
         {deep: true, immediate: true}
     );
 
@@ -229,7 +229,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
         data: JSON.parse(fileText as string)
       });
 
-      OperationOfFramesStore.setIsUseAnnotationFile({
+      EditSequencesStore.setIsUseAnnotationFile({
         frame: frame,
         isUseAnnotationFile: true
       });
@@ -369,8 +369,8 @@ export default class CanvasPane_ObjectDetection extends Vue {
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
-    OperationOfFramesStore.setIsDownloaded({frame: OperationStore_ObjectDetection.frame, isDownloaded: true});
-    OperationOfFramesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: false});
+    EditSequencesStore.setIsDownloaded({frame: OperationStore_ObjectDetection.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: false});
   }
 }
 

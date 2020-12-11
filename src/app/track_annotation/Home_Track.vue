@@ -1,21 +1,23 @@
 <template>
-  <AnnotationPageLayout>
-    <template v-slot:menu>
-      <MenuPane_Track @addHistory="addHistory"/>
-    </template>
+  <div>
+    <AnnotationPageLayout>
+      <template v-slot:menu>
+        <MenuPane_Track @addHistory="addHistory"/>
+      </template>
 
-    <template v-slot:editor>
-      <CanvasPane_Track @addHistory="addHistory"/>
-    </template>
+      <template v-slot:editor>
+        <CanvasPane_Track @addHistory="addHistory"/>
+      </template>
 
-    <template v-slot:size-check-target>
-      <video :src="sizeCheckVideoUrl"></video>
-    </template>
+      <template v-slot:size-check-target>
+        <video :src="sizeCheckVideoUrl"></video>
+      </template>
 
-    <template v-slot:help>
-      <Help_Track/>
-    </template>
-  </AnnotationPageLayout>
+      <template v-slot:help>
+        <Help_Track/>
+      </template>
+    </AnnotationPageLayout>
+  </div>
 </template>
 
 <script lang="ts">
@@ -29,7 +31,7 @@ import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/store/HelpStore";
 import VideoFileStore from "@/store/VideoFileStore";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
-import OperationOfFramesStore from "@/store/OperationOfFramesStore";
+import EditSequencesStore from "@/store/EditSequenceStore";
 import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
@@ -56,7 +58,7 @@ export default class Home_Track extends Vue {
         () => {
           const current = HistoryStore.current;
           OperationStore_Track.setOperation(current.value.operation);
-          OperationOfFramesStore.setOperations(current.value.operationOfFrame);
+          EditSequencesStore.setSequences(current.value.editSequence);
           AnnotationsStore_Track.setAnnotation(current.value.annotation);
         }
     );
@@ -71,15 +73,15 @@ export default class Home_Track extends Vue {
 
   private makeHistoryRecord() {
     return new HistoryRecord({
+      editSequence: EditSequencesStore.sequences,
       operation: OperationStore_Track.operation,
-      operationOfFrame: OperationOfFramesStore.operations,
       annotation: AnnotationsStore_Track.annotations,
     });
   }
 
   private addHistory() {
     HistoryStore.addHistory(this.makeHistoryRecord());
-    OperationOfFramesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: true});
   }
 }
 </script>
