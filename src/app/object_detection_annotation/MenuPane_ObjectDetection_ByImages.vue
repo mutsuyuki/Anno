@@ -61,7 +61,7 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileSelector from "@/components/UI/FileSelector/FileSelector.vue";
-import HelpStore from "@/store/HelpStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
@@ -69,9 +69,9 @@ import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import AnnotationsStore_ObjectDetection
   from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-import ClassEditor from "@/components/UI/Button/ClassEditor.vue";
-import ClassesStore from "@/store/ClassesStore";
-import ImageFilesStore from "@/store/ImageFilesStore";
+import ClassEditor from "@/components/UI_Singleton/ClassEditor/ClassEditor.vue";
+import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
+import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 
 @Component({
@@ -88,7 +88,7 @@ import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 export default class MenuPane_ObjectDetection_ByImages extends Vue {
 
   get isImagesSelected() {
-    return ImageFilesStore.isSelected;
+    return ImagePlayerStore.isSelected;
   }
 
   get selectedClass() {
@@ -105,12 +105,12 @@ export default class MenuPane_ObjectDetection_ByImages extends Vue {
   }
 
   get classes() {
-    return ClassesStore.classesArray;
+    return ClassEditorStore.classesArray;
   }
 
   mounted() {
-    ClassesStore.addClass({id: "0", text: "piman"});
-    ClassesStore.addClass({id: "1", text: "stem"});
+    ClassEditorStore.addClass({id: "0", text: "piman"});
+    ClassEditorStore.addClass({id: "1", text: "stem"});
 
     document.addEventListener("keydown", (e) => {
       if (e.key == "c") {
@@ -126,7 +126,7 @@ export default class MenuPane_ObjectDetection_ByImages extends Vue {
   }
 
   private onSelectImageFiles(files: File[]) {
-    ImageFilesStore.setFiles(files);
+    ImagePlayerStore.setFiles(files);
     AnnotationFilesStore.setFiles([]);
   }
 
@@ -163,11 +163,11 @@ export default class MenuPane_ObjectDetection_ByImages extends Vue {
   }
 
   private onDeleteClass(classNo: number) {
-    ClassesStore.removeClass(classNo.toString());
+    ClassEditorStore.removeClass(classNo.toString());
   }
 
   private onAddClass(className: string) {
-    ClassesStore.addClassByName(className);
+    ClassEditorStore.addClassByName(className);
   }
 
   private addHistory() {

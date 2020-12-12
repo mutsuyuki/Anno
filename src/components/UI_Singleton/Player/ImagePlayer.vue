@@ -49,8 +49,8 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
-import InlineSvg from "@/components/InlineSvg";
-import ImageFilesStore from "@/store/ImageFilesStore";
+import InlineSvg from "@/common/utils/InlineSvg";
+import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
 
 @Component({
@@ -61,35 +61,35 @@ export default class ImagePlayer extends Vue {
   private isShiftDown: boolean = false;
 
   get imageUrl() {
-    return ImageFilesStore.currentItemUrl;
+    return ImagePlayerStore.currentItemUrl;
   }
 
   get currentPage() {
-    return ImageFilesStore.currentIndex + 1;
+    return ImagePlayerStore.currentIndex + 1;
   }
 
   set currentPage(value) {
-    ImageFilesStore.setIndex(value)
+    ImagePlayerStore.setIndex(value)
   }
 
   get totalPage() {
-    return ImageFilesStore.numberOfItems;
+    return ImagePlayerStore.numberOfItems;
   }
 
   private first() {
-    ImageFilesStore.first();
+    ImagePlayerStore.first();
   }
 
   private prev() {
-    ImageFilesStore.prev();
+    ImagePlayerStore.prev();
   }
 
   private next() {
-    ImageFilesStore.next();
+    ImagePlayerStore.next();
   }
 
   private last() {
-    ImageFilesStore.last();
+    ImagePlayerStore.last();
   }
 
   mounted() {

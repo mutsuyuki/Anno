@@ -4,13 +4,13 @@ import ListManager from "@/common/utils/ListManager";
 
 
 @Module({
-  name: "ImageFilesStore",
+  name: "ImagePlayerStore",
   dynamic: true,
   store: store,
   namespaced: true
 })
 
-class ImageFilesStore extends VuexModule {
+class ImagePlayerStore extends VuexModule {
 
   // states
   private _items: ListManager<File> = new ListManager<File>([]);
@@ -80,4 +80,4 @@ class ImageFilesStore extends VuexModule {
   }
 }
 
-export default getModule(ImageFilesStore);
+export default getModule(ImagePlayerStore);

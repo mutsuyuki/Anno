@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
-import MediaSizeChecker from "@/components/SizeChecker/MediaSizeChecker.vue";
+import MediaSizeChecker from "@/components/Layout/MediaSizeChecker.vue";
 
 @Component({
   components: {

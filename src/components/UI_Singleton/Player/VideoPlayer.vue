@@ -13,9 +13,9 @@
         @zoomend="$emit('zoomend', $event)"
     >
       <div class="video_area">
-        <video id="video_player" :src="videoUrl"></video>
+        <video id="video_player" :src="videoUrl" :style="{'opacity':videoOpacity}"></video>
         <canvas id="video_buffer"></canvas>
-        <div class="overlay_layer">
+        <div class="overlay_layer" :style="{'opacity':overlayOpacity}">
           <slot></slot>
         </div>
       </div>
@@ -84,9 +84,9 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
-import InlineSvg from "@/components/InlineSvg";
+import InlineSvg from "@/common/utils/InlineSvg";
 import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
-import VideoFileStore from "@/store/VideoFileStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import FileDownloader from "@/common/utils/FileDownloader";
 
 @Component({
@@ -101,6 +101,8 @@ export default class VideoPlayer extends Vue {
   @Prop() private createBlobSignal!: boolean;
   @Prop() private frameForSeek!: number;
   @Prop() private markerTimes!: number[];
+  @Prop({default:1}) private videoOpacity!: number;
+  @Prop({default:1}) private overlayOpacity!: number;
 
   private video: HTMLVideoElement = document.createElement("video");
   private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");
@@ -110,7 +112,7 @@ export default class VideoPlayer extends Vue {
   private isShiftDown: boolean = false;
 
   get videoUrl() {
-    return VideoFileStore.url;
+    return VideoPlayerStore.url;
   }
 
   get markerPositions() {

@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
-import Help from "@/components/Help.vue";
+import Help from "@/components/UI_Singleton/Help/Help.vue";
 
 @Component({
   components: {Help},

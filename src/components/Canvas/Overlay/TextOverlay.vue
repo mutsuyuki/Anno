@@ -1,7 +1,5 @@
 <template>
-  <div class="multi_label_container"
-       :style="{'opacity' : opacity}"
-  >
+  <div class="text_overlay">
     <div
         v-for="label in labels"
         class="label"
@@ -11,6 +9,7 @@
       {{ label.text }}
     </div>
   </div>
+
 </template>
 
 <script lang="ts">
@@ -20,15 +19,14 @@ import {Point} from "@/common/interface/Point";
 @Component({
   components: {}
 })
-export default class MultiLabels extends Vue {
+export default class TextOverlay extends Vue {
   @Prop() private labels!: { text: string, position: Point, isActive: boolean }[];
-  @Prop({default: 1}) private opacity!: number;
 }
 </script>
 
 <style scoped lang="scss">
 
-.multi_label_container {
+.text_overlay {
   position: absolute;
   top: 0;
   left: 0;

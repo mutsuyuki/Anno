@@ -13,6 +13,7 @@
         :frameForSeek="frameForSeek"
         :createBlobSignal="createBlobSignal"
         :markerTimes="[]"
+        :overlayOpacity="opacity"
         @dragareastart="onDragStart"
         @dragarea="onDrag"
         @dragareaend="onDragEnd"
@@ -21,9 +22,21 @@
         @timeupdate="onTimeUpdate"
         @prepareBlob="onPrepareBlob"
     >
-      <CanvasRenderer :graphics="graphics" :opacity="opacity"/>
-      <MultiLabels :labels="objectLabels" :opacity="opacity"/>
-      <MultiLabels :labels="pointingJointLabel" :opacity="opacity"/>
+      <!--      <BoundingBoxOverlay-->
+      <!--          :boundngBoxModels="bodyBoundingBoxes"-->
+      <!--          :selectingObjectId="selectingObjectId"-->
+      <!--          :isDeleteMode="isDeleteMode"-->
+      <!--          :dragStartPosition="dragStartPosition"-->
+      <!--          :draggingPosition="draggingPosition"-->
+      <!--          :dragEndPosition="dragEndPosition"-->
+      <!--          :hoverPosition="hoverPosition"-->
+      <!--          :color="{r: 40, g: 80, b: 220, a: 1}"-->
+      <!--      />-->
+
+      <CanvasRenderer :graphics="graphics"/>
+      <TextOverlay :labels="objectLabels"/>
+      <TextOverlay :labels="pointingJointLabel"/>
+
     </VideoPlayer>
 
     <DownloadButton
@@ -35,7 +48,7 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
+import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
 import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
@@ -44,26 +57,29 @@ import FileUtil from "@/common/utils/FileUtil";
 import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
-import ToolBar from "@/components/ToolBar.vue";
+import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
-import VideoFileStore from "@/store/VideoFileStore";
-import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
+import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
 import AnnotationsStore_Track, {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Track";
 import MultiLines from "@/components/Canvas/Renderer/MultiLines";
 import MultiCircles from "@/components/Canvas/Renderer/MultiCircles";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
-import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
+import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
-import CanvasSettingsStore from "@/store/CanvasSettingsStore";
+import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
+import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
+import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 
 @Component({
   components: {
+    BoundingBoxOverlay,
+    TextOverlay,
     ScrollableArea,
-    MultiLabels,
     VideoPlayer,
     DownloadButton,
     ToolBar,
@@ -86,31 +102,34 @@ export default class CanvasPane_Track extends Vue {
 
   private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
 
-  get currentFileNameFull() {
-    return VideoFileStore.name;
-  }
-
+  // --- container ---------
   get isVideoSelected() {
-    return VideoFileStore.isSelected;
+    return VideoPlayerStore.isSelected;
   }
 
+  // --- AnnotationStatusBar ---------
+  get currentFileNameFull() {
+    return VideoPlayerStore.name;
+  }
+
+  get isUseAnnotationFile() {
+    return this.currentEditSequence.isUseAnnotationFile;
+  }
+
+  get isDownloaded() {
+    return this.currentEditSequence.isDownloaded && !this.currentEditSequence.isDirty;
+  }
+
+  // --- VideoPlayer ---------
   get frameForSeek(): number {
     return Number(this.frame == OperationStore_Track.frame ? -1 : OperationStore_Track.frame);
   }
 
-  get operationOfCurrentFrame(): EditSequence {
+  get currentEditSequence(): EditSequence {
     return EditSequencesStore.sequences[OperationStore_Track.frame] || ({} as EditSequence);
   }
 
-  get isUseAnnotationFile() {
-    return this.operationOfCurrentFrame.isUseAnnotationFile;
-  }
-
-  get isDownloaded() {
-    return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
-  }
-
-  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation_Track } {
+  get currentAnnotations(): { [objectId: string]: Annotation_Track } {
     return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
   }
 
@@ -118,9 +137,18 @@ export default class CanvasPane_Track extends Vue {
     return CanvasSettingsStore.opacity;
   }
 
+  get bodyBoundingBoxes(): { [objectId: string]: BoundingBoxModel } {
+    let result = {} as any;
+    const annotations = this.currentAnnotations;
+    for (const objectId in annotations) {
+      result[objectId] = annotations[objectId].bounding;
+    }
+    return result;
+  }
+
   get objectLabels(): { text: string, position: Point, isActive: boolean }[] {
     let result = [];
-    const annotations = this.annotationsOfCurrentFrame;
+    const annotations = this.currentAnnotations;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
       const behaviour = BEHAVIOUR[annotation.behaviour_class];
@@ -140,7 +168,7 @@ export default class CanvasPane_Track extends Vue {
 
   get pointingJointLabel(): { text: string, position: Point, isActive: boolean }[] {
     const hoveringObjectId = OperationStore_Track.hoveringObjectId;
-    const targetAnnotation = this.annotationsOfCurrentFrame[hoveringObjectId];
+    const targetAnnotation = this.currentAnnotations[hoveringObjectId];
     if (!targetAnnotation) {
       return [];
     }
@@ -182,7 +210,7 @@ export default class CanvasPane_Track extends Vue {
   created() {
     // 表示対象のアノテーションたちの状態が変わった
     this.$watch(
-        () => this.annotationsOfCurrentFrame,
+        () => this.currentAnnotations,
         () => this.draw(),
         {deep: true}
     );
@@ -225,8 +253,8 @@ export default class CanvasPane_Track extends Vue {
   private draw() {
     this.graphics = [];
 
-    for (const objectId in this.annotationsOfCurrentFrame) {
-      const annotation = this.annotationsOfCurrentFrame[objectId];
+    for (const objectId in this.currentAnnotations) {
+      const annotation = this.currentAnnotations[objectId];
       const bone = annotation.bone;
       const isSelecting = OperationStore_Track.selectingObjectId == objectId;
 
@@ -544,8 +572,8 @@ export default class CanvasPane_Track extends Vue {
     let selectingEdge = {top: false, right: false, bottom: false, left: false};
     const edgeWidth = 0.02;
 
-    for (const objectId in this.annotationsOfCurrentFrame) {
-      const bounding = this.annotationsOfCurrentFrame[objectId].bounding;
+    for (const objectId in this.currentAnnotations) {
+      const bounding = this.currentAnnotations[objectId].bounding;
       const x = position.x;
       const y = position.y;
       const insideHorizontal = (bounding.left - edgeWidth < x) && (x < bounding.left + bounding.width + edgeWidth);
@@ -574,8 +602,8 @@ export default class CanvasPane_Track extends Vue {
     let selectingEdge = {top: false, right: false, bottom: false, left: false};
     const edgeWidth = 0.02;
 
-    for (const objectId in this.annotationsOfCurrentFrame) {
-      const bounding = this.annotationsOfCurrentFrame[objectId].neck_mark_bounding;
+    for (const objectId in this.currentAnnotations) {
+      const bounding = this.currentAnnotations[objectId].neck_mark_bounding;
       const x = position.x;
       const y = position.y;
       const insideHorizontal = (bounding.left - edgeWidth < x) && (x < bounding.left + bounding.width + edgeWidth);
@@ -602,9 +630,9 @@ export default class CanvasPane_Track extends Vue {
     let nearestDistance = Number.MAX_VALUE;
     let nearestJoint: { objectId: string, jointName: string } = {objectId: "", jointName: ""};
 
-    for (const objectId in this.annotationsOfCurrentFrame) {
-      for (const jointName in this.annotationsOfCurrentFrame[objectId].bone) {
-        const bonePosition = (<any>this.annotationsOfCurrentFrame[objectId].bone)[jointName];
+    for (const objectId in this.currentAnnotations) {
+      for (const jointName in this.currentAnnotations[objectId].bone) {
+        const bonePosition = (<any>this.currentAnnotations[objectId].bone)[jointName];
         const distance = PointUtil.distance(bonePosition, position);
         if (distance < 0.05 && distance < nearestDistance) {
           nearestDistance = distance;
@@ -633,7 +661,7 @@ export default class CanvasPane_Track extends Vue {
     const fileName = FileUtil.removeExtension(this.currentFileNameFull) + "___" + OperationStore_Track.frame + "___";
     FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
-    const json = JSON.stringify(this.annotationsOfCurrentFrame);
+    const json = JSON.stringify(this.currentAnnotations);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
     EditSequencesStore.setIsDownloaded({frame: OperationStore_Track.frame, isDownloaded: true});

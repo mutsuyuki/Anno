@@ -48,7 +48,7 @@ import {Graphic} from "@/components/Canvas/Graphic";
 import {Point, PointUtil} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
 import {Annotation_Hair, Annotation_HairUtil} from "@/app/hair_annotation/Annotation_Hair";
-import ImageFilesStore from "@/store/ImageFilesStore";
+import ImagePlayerStore from "@/store/ImagePlayerStore";
 import FileUtil from "@/common/utils/FileUtil";
 import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
@@ -87,7 +87,7 @@ export default class CanvasPane_Hair extends Vue {
     private lineColor: Color = {r: 0, g: 0, b: 150, a: 1};
 
     get currentFileNameFull() {
-        return ImageFilesStore.currentItem ? ImageFilesStore.currentItem.name : "";
+        return ImagePlayerStore.currentItem ? ImagePlayerStore.currentItem.name : "";
     }
 
     get currentFileName() {
@@ -95,7 +95,7 @@ export default class CanvasPane_Hair extends Vue {
     }
 
     get isImageSelected() {
-        return ImageFilesStore.numberOfItems > 0;
+        return ImagePlayerStore.numberOfItems > 0;
     }
 
     get isLineWidthMode() {
@@ -122,11 +122,11 @@ export default class CanvasPane_Hair extends Vue {
 
         // 画像読み込み
         this.$watch(
-            () => ImageFilesStore.items,
+            () => ImagePlayerStore.items,
             () => {
                 let annotations: { [fileName: string]: AnnotationContainer<Annotation_Hair[]> } = {};
-                for (let i = 0; i < ImageFilesStore.items.length; i++) {
-                    const fileName = FileUtil.removeExtension(ImageFilesStore.items[i].name);
+                for (let i = 0; i < ImagePlayerStore.items.length; i++) {
+                    const fileName = FileUtil.removeExtension(ImagePlayerStore.items[i].name);
                     annotations[fileName] = new AnnotationContainer<Annotation_Hair[]>([]);
                 }
 
@@ -301,8 +301,8 @@ export default class CanvasPane_Hair extends Vue {
         );
 
         FileDownloader.downloadBlob(
-            ImageFilesStore.currentItem.name,
-            ImageFilesStore.currentItem
+            ImagePlayerStore.currentItem.name,
+            ImagePlayerStore.currentItem
         );
     }
 }

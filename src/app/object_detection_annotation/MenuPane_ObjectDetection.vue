@@ -62,8 +62,8 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileSelector from "@/components/UI/FileSelector/FileSelector.vue";
-import HelpStore from "@/store/HelpStore";
-import VideoFileStore from "@/store/VideoFileStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
@@ -71,8 +71,8 @@ import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import AnnotationsStore_ObjectDetection
   from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-import ClassEditor from "@/components/UI/Button/ClassEditor.vue";
-import ClassesStore from "@/store/ClassesStore";
+import ClassEditor from "@/components/UI_Singleton/ClassEditor/ClassEditor.vue";
+import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 
 @Component({
@@ -88,8 +88,8 @@ import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 })
 export default class MenuPane_ObjectDetection extends Vue {
   mounted() {
-    ClassesStore.addClass({id: "0", text: "piman"});
-    ClassesStore.addClass({id: "1", text: "stem"});
+    ClassEditorStore.addClass({id: "0", text: "piman"});
+    ClassEditorStore.addClass({id: "1", text: "stem"});
 
     document.addEventListener("keydown", (e) => {
       if (e.key == "c") {
@@ -105,7 +105,7 @@ export default class MenuPane_ObjectDetection extends Vue {
   }
 
   get isVideoSelected() {
-    return VideoFileStore.isSelected;
+    return VideoPlayerStore.isSelected;
   }
 
   get selectedClass() {
@@ -122,11 +122,11 @@ export default class MenuPane_ObjectDetection extends Vue {
   }
 
   get classes() {
-    return ClassesStore.classesArray;
+    return ClassEditorStore.classesArray;
   }
 
   private onSelectVideoFile(files: File[]) {
-    VideoFileStore.setFile(files[0]);
+    VideoPlayerStore.setFile(files[0]);
     AnnotationFilesStore.setFiles([]);
   }
 
@@ -163,11 +163,11 @@ export default class MenuPane_ObjectDetection extends Vue {
   }
 
   private onDeleteClass(classNo: number) {
-    ClassesStore.removeClass(classNo.toString());
+    ClassEditorStore.removeClass(classNo.toString());
   }
 
   private onAddClass(className: string) {
-    ClassesStore.addClassByName(className);
+    ClassEditorStore.addClassByName(className);
   }
 
   private addHistory() {

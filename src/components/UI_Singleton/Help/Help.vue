@@ -79,7 +79,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
-import HelpStore from "@/store/HelpStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 
 @Component({

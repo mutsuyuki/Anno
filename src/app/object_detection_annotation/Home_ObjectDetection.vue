@@ -25,8 +25,8 @@ import CanvasPane_ObjectDetection from "@/app/object_detection_annotation/Canvas
 import Help_ObjectDetection from "@/app/object_detection_annotation/Help_ObjectDetection.vue";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/store/HelpStore";
-import VideoFileStore from "@/store/VideoFileStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
 import EditSequencesStore from "@/store/EditSequenceStore";
 import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
@@ -42,7 +42,7 @@ import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 })
 export default class Home_ObjectDetection extends Vue {
   get sizeCheckVideoUrl() {
-    return VideoFileStore.url;
+    return VideoPlayerStore.url;
   }
 
   mounted() {
@@ -61,7 +61,7 @@ export default class Home_ObjectDetection extends Vue {
   }
 
   destroyed() {
-    VideoFileStore.clear();
+    VideoPlayerStore.clear();
     AnnotationFilesStore.clear();
     HistoryStore.clear();
     HelpStore.hide();

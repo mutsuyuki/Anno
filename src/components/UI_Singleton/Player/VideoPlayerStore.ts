@@ -9,7 +9,7 @@ import store from "@/store";
   namespaced: true
 })
 
-class VideoFileStore extends VuexModule {
+class VideoPlayerStore extends VuexModule {
 
   // states
   private file: File = new File([], "");
@@ -29,7 +29,6 @@ class VideoFileStore extends VuexModule {
 
   @Mutation
   public setFile(file: File) {
-    console.log(file)
     this.file = file;
   }
 
@@ -39,4 +38,4 @@ class VideoFileStore extends VuexModule {
   }
 }
 
-export default getModule(VideoFileStore);
+export default getModule(VideoPlayerStore);

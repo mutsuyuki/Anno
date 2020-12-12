@@ -32,9 +32,9 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
-import InlineSvg from "@/components/InlineSvg";
+import InlineSvg from "@/common/utils/InlineSvg";
 import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
-import CanvasSettingsStore from "@/store/CanvasSettingsStore";
+import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 import HistoryStore from "@/store/HistoryStore";
 
 @Component({
@@ -46,8 +46,8 @@ export default class ToolBar extends Vue {
 
   mounted() {
     document.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key == "a") CanvasSettingsStore.setOpacity(0);
-      if (e.key == "s") CanvasSettingsStore.setOpacity(1);
+      if (e.key == "a") this.opacity = 0;
+      if (e.key == "s") this.opacity = 1;
 
       if (e.key == "Control") this.isControlDown = true;
       if (e.key == "z" && this.isControlDown) HistoryStore.undo();

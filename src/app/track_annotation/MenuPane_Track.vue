@@ -117,8 +117,8 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/store/HelpStore";
-import VideoFileStore from "@/store/VideoFileStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
@@ -129,7 +129,7 @@ import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
-import Row from "@/components/UI/Layout/Row.vue";
+import Row from "@/components/Layout/Row.vue";
 import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
 
 @Component({
@@ -148,7 +148,7 @@ import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
 export default class MenuPane_Track extends Vue {
 
   get isVideoSelected() {
-    return VideoFileStore.isSelected;
+    return VideoPlayerStore.isSelected;
   }
 
   get selectedClass() {
@@ -185,7 +185,7 @@ export default class MenuPane_Track extends Vue {
   }
 
   private onSelectVideoFile(files: File[]) {
-    VideoFileStore.setFile(files[0]);
+    VideoPlayerStore.setFile(files[0]);
     AnnotationFilesStore.setFiles([]);
   }
 

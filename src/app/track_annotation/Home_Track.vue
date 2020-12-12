@@ -25,11 +25,11 @@ import {Component, Vue} from "vue-property-decorator";
 import MenuPane_Track from "@/app/track_annotation/MenuPane_Track.vue";
 import CanvasPane_Track from "@/app/track_annotation/CanvasPane_Track.vue";
 import Help_Track from "@/app/track_annotation/Help_Track.vue";
-import ImageFilesStore from "@/store/ImageFilesStore";
+import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/store/HelpStore";
-import VideoFileStore from "@/store/VideoFileStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
 import EditSequencesStore from "@/store/EditSequenceStore";
 import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
@@ -46,7 +46,7 @@ import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 export default class Home_Track extends Vue {
 
   get sizeCheckVideoUrl() {
-    return VideoFileStore.url;
+    return VideoPlayerStore.url;
   }
 
   mounted() {
@@ -65,7 +65,7 @@ export default class Home_Track extends Vue {
   }
 
   destroyed() {
-    ImageFilesStore.clear();
+    ImagePlayerStore.clear();
     AnnotationFilesStore.clear();
     HistoryStore.clear();
     HelpStore.hide();

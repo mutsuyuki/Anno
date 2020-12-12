@@ -1,19 +1,19 @@
 import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
-import store from "@/store/index";
+import store from "@/store";
 import {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Track";
 
 
 @Module({
-  name: "ClassesStore",
+  name: "ClassEditorStore",
   dynamic: true,
   store: store,
   namespaced: true
 })
 
-class ClassesStore extends VuexModule {
+class ClassEditorStore extends VuexModule {
 
-  // states
+  // --- state ------------------------------
   private _classes: { [id: string]: string } = {};
 
   // getters
@@ -46,7 +46,21 @@ class ClassesStore extends VuexModule {
   public removeClass(id: string) {
     Vue.delete(this._classes, id);
   }
+
+  // --- state ------------------------------
+  private _selectId: string = "";
+
+  // getters
+  get selectId() {
+    return this._selectId;
+  }
+
+  @Mutation
+  public setSelectId(id: string) {
+    this._selectId = id
+  }
+
 }
 
 
-export default getModule(ClassesStore);
+export default getModule(ClassEditorStore);

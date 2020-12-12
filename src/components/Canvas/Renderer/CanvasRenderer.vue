@@ -1,11 +1,11 @@
 <template>
-  <canvas ref="canvas" :style="{'opacity':opacity}"></canvas>
+  <canvas ref="canvas"></canvas>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import {Graphic} from "@/components/Canvas/Renderer/Graphic";
-import CanvasSettingsStore from "@/store/CanvasSettingsStore";
+import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 
 @Component({
   components: {}
@@ -15,7 +15,6 @@ export default class CanvasRenderer extends Vue {
 
   private canvas!: HTMLCanvasElement;
   private context!: CanvasRenderingContext2D;
-  @Prop({default: 1}) private opacity!: number;
 
   mounted() {
     this.initVar();

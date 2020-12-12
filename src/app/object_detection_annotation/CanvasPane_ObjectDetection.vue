@@ -35,7 +35,7 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
+import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
 import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
@@ -44,22 +44,22 @@ import FileUtil from "@/common/utils/FileUtil";
 import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
-import ToolBar from "@/components/ToolBar.vue";
+import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
-import VideoFileStore from "@/store/VideoFileStore";
-import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
+import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
 import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
 import AnnotationsStore_ObjectDetection, {Annotation_ObjectDetection} from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
-import MultiLabels from "@/components/Canvas/Overlay/MultiLabels.vue";
+import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
-import ClassesStore from "@/store/ClassesStore";
-import CanvasSettingsStore from "@/store/CanvasSettingsStore";
+import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
+import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
 
 @Component({
   components: {
-    MultiLabels,
+    MultiLabels: TextOverlay,
     VideoPlayer,
     DownloadButton,
     ToolBar,
@@ -82,11 +82,11 @@ export default class CanvasPane_ObjectDetection extends Vue {
   private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
 
   get currentFileNameFull() {
-    return VideoFileStore.name;
+    return VideoPlayerStore.name;
   }
 
   get isVideoSelected() {
-    return VideoFileStore.isSelected;
+    return VideoPlayerStore.isSelected;
   }
 
   get frameForSeek(): number {
@@ -124,7 +124,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
-      const className = ClassesStore.classes[annotation.class] || "???";
+      const className = ClassEditorStore.classes[annotation.class] || "???";
       result.push({
         text: annotation.class + " : " + className,
         position: {x: annotation.bounding.left * 100, y: annotation.bounding.top * 100},

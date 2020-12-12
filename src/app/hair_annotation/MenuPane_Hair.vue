@@ -37,10 +37,10 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ImageFilesStore from "@/store/ImageFilesStore";
+import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileSelector from "@/components/UI/FileSelector/FileSelector.vue";
-import HelpStore from "@/store/HelpStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 
@@ -54,11 +54,11 @@ import MenuFooter from "@/components/Menu/MenuFooter.vue";
 export default class MenuPane_Hair extends Vue {
 
   get isImageSelected() {
-    return ImageFilesStore.numberOfItems > 0;
+    return ImagePlayerStore.numberOfItems > 0;
   }
 
   private onSelectImageFiles(files: File[]) {
-    ImageFilesStore.setFiles(files);
+    ImagePlayerStore.setFiles(files);
     AnnotationFilesStore.setFiles([]);
   }
 

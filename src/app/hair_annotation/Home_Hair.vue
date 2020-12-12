@@ -17,10 +17,10 @@ import {Component, Vue} from "vue-property-decorator";
 import MenuPane_Hair from "@/app/hair_annotation/MenuPane_Hair.vue";
 // import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane_Hair.vue";
 import Help_Hair from "@/app/hair_annotation/Help_Hair.vue";
-import ImageFilesStore from "@/store/ImageFilesStore";
+import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import HistoryStore from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/store/HelpStore";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 
 @Component({
   components: {
@@ -31,7 +31,7 @@ import HelpStore from "@/store/HelpStore";
 })
 export default class Home_Hair extends Vue {
   destroyed() {
-    ImageFilesStore.clear();
+    ImagePlayerStore.clear();
     AnnotationFilesStore.clear();
     HistoryStore.clear();
     HelpStore.hide();

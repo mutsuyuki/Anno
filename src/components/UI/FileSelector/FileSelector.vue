@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import InlineSvg from "@/components/InlineSvg";
+import InlineSvg from "@/common/utils/InlineSvg";
 import {HTMLElementEvent} from "@/common/interface/HTMLElementEvent";
 
 @Component({
