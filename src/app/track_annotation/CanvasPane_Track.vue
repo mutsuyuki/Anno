@@ -1,16 +1,16 @@
 <template>
-  <div v-show="isVideoSelected">
+  <div v-show="isShow">
     <ToolBar/>
 
     <AnnotationStatusBar
         class="annotation-status-bar"
-        :fileName="currentFileNameFull"
+        :fileName="videoFileName"
         :isUseAnnotationFile="isUseAnnotationFile"
         :isDownloaded="isDownloaded"
     />
 
     <VideoPlayer
-        :frameForSeek="frameForSeek"
+        :seekFrame="seekFrame"
         :createBlobSignal="createBlobSignal"
         :markerTimes="[]"
         :overlayOpacity="opacity"
@@ -22,18 +22,26 @@
         @timeupdate="onTimeUpdate"
         @prepareBlob="onPrepareBlob"
     >
-      <!--      <BoundingBoxOverlay-->
-      <!--          :boundngBoxModels="bodyBoundingBoxes"-->
-      <!--          :selectingObjectId="selectingObjectId"-->
-      <!--          :isDeleteMode="isDeleteMode"-->
-      <!--          :dragStartPosition="dragStartPosition"-->
-      <!--          :draggingPosition="draggingPosition"-->
-      <!--          :dragEndPosition="dragEndPosition"-->
-      <!--          :hoverPosition="hoverPosition"-->
-      <!--          :color="{r: 40, g: 80, b: 220, a: 1}"-->
-      <!--      />-->
+      <BoundingBoxOverlay
+          :boundingBoxModels="bodyBoundingBoxes"
+          :selectingObjectId="selectingObjectId"
+          :isDeleteMode="isDeleteMode"
+          :dragStartPosition="dragStartPosition"
+          :draggingPosition="draggingPosition"
+          :dragEndPosition="dragEndPosition"
+          :hoverPosition="hoverPosition"
+          :color="{r: 40, g: 80, b: 220, a: 1}"
+          @resizestart="onBodyBoundingBoxChangeStart"
+          @movestart="onBodyBoundingBoxChangeStart"
+          @resize="onBodyBoundingBoxChange"
+          @move="onBodyBoundingBoxChange"
+          @resizeend="onBodyBoundingBoxChangeEnd"
+          @moveend="onBodyBoundingBoxChangeEnd"
+          @unselect="onBodyBoundingBoxUnselect"
+          @delete="onBodyBoundingBoxDelete"
+      />
 
-      <CanvasRenderer :graphics="graphics"/>
+      <!--      <CanvasRenderer :graphics="graphics"/>-->
       <TextOverlay :labels="objectLabels"/>
       <TextOverlay :labels="pointingJointLabel"/>
 
@@ -51,7 +59,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
 import {Graphic} from "@/components/Canvas/Renderer/Graphic";
-import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
+import {MovingPoint, MovingPointUtil, Point, PointUtil} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
 import FileUtil from "@/common/utils/FileUtil";
 import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
@@ -100,16 +108,25 @@ export default class CanvasPane_Track extends Vue {
   private createBlobSignal: boolean = false;
   private isDeleteMode: boolean = false;
 
+  private dragStartPosition: MovingPoint = MovingPointUtil.zero();
+  private draggingPosition: MovingPoint = MovingPointUtil.zero();
+  private dragEndPosition: MovingPoint = MovingPointUtil.zero();
+  private hoverPosition: Point = PointUtil.zero();
+
   private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
 
   // --- container ---------
-  get isVideoSelected() {
+  get isShow() {
     return VideoPlayerStore.isSelected;
   }
 
   // --- AnnotationStatusBar ---------
-  get currentFileNameFull() {
+  get videoFileName() {
     return VideoPlayerStore.name;
+  }
+
+  get currentEditSequence(): EditSequence {
+    return EditSequencesStore.sequences[OperationStore_Track.frame] || ({} as EditSequence);
   }
 
   get isUseAnnotationFile() {
@@ -121,22 +138,15 @@ export default class CanvasPane_Track extends Vue {
   }
 
   // --- VideoPlayer ---------
-  get frameForSeek(): number {
+  get seekFrame(): number {
     return Number(this.frame == OperationStore_Track.frame ? -1 : OperationStore_Track.frame);
-  }
-
-  get currentEditSequence(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore_Track.frame] || ({} as EditSequence);
-  }
-
-  get currentAnnotations(): { [objectId: string]: Annotation_Track } {
-    return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
   }
 
   get opacity() {
     return CanvasSettingsStore.opacity;
   }
 
+  // --- BondingBoxOverlay (body) ---------
   get bodyBoundingBoxes(): { [objectId: string]: BoundingBoxModel } {
     let result = {} as any;
     const annotations = this.currentAnnotations;
@@ -146,6 +156,7 @@ export default class CanvasPane_Track extends Vue {
     return result;
   }
 
+  // --- TextOverlay (behaviour and neck mark) ---------
   get objectLabels(): { text: string, position: Point, isActive: boolean }[] {
     let result = [];
     const annotations = this.currentAnnotations;
@@ -159,13 +170,14 @@ export default class CanvasPane_Track extends Vue {
           x: annotation.bounding.left * 100,
           y: annotation.bounding.top * 100
         },
-        isActive: objectId == OperationStore_Track.selectingObjectId
+        isActive: objectId == this.selectingObjectId
       })
     }
 
     return result;
   }
 
+  // --- TextOverlay (joint name) ---------
   get pointingJointLabel(): { text: string, position: Point, isActive: boolean }[] {
     const hoveringObjectId = OperationStore_Track.hoveringObjectId;
     const targetAnnotation = this.currentAnnotations[hoveringObjectId];
@@ -189,12 +201,21 @@ export default class CanvasPane_Track extends Vue {
     }]
   }
 
+  // --- Common getter ---------
+  get currentAnnotations(): { [objectId: string]: Annotation_Track } {
+    return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
+  }
+
+  get selectingObjectId() {
+    return OperationStore_Track.selectingObjectId;
+  }
+
   get selectingObject() {
     const frame = OperationStore_Track.frame;
     if (!AnnotationsStore_Track.annotations[frame])
       return null;
 
-    const objectId = OperationStore_Track.selectingObjectId;
+    const objectId = this.selectingObjectId;
     return AnnotationsStore_Track.annotations[frame][objectId];
   }
 
@@ -208,19 +229,19 @@ export default class CanvasPane_Track extends Vue {
   }
 
   created() {
-    // 表示対象のアノテーションたちの状態が変わった
-    this.$watch(
-        () => this.currentAnnotations,
-        () => this.draw(),
-        {deep: true}
-    );
-
-    // 選択対象やモードが変わった
-    this.$watch(
-        () => OperationStore_Track.operation,
-        () => this.draw(),
-        {deep: true}
-    );
+    // // 表示対象のアノテーションたちの状態が変わった
+    // this.$watch(
+    //     () => this.currentAnnotations,
+    //     () => this.draw(),
+    //     {deep: true}
+    // );
+    //
+    // // 選択対象やモードが変わった
+    // this.$watch(
+    //     () => OperationStore_Track.operation,
+    //     () => this.draw(),
+    //     {deep: true}
+    // );
 
     // フレームが変わった
     this.$watch(
@@ -256,21 +277,7 @@ export default class CanvasPane_Track extends Vue {
     for (const objectId in this.currentAnnotations) {
       const annotation = this.currentAnnotations[objectId];
       const bone = annotation.bone;
-      const isSelecting = OperationStore_Track.selectingObjectId == objectId;
-
-      // ------ bounding box --------------------------------------------------
-      this.boundingColor.a = isSelecting ? OperationStore_Track.isBoundingMode ? 1 : 0.8 : 0.4;
-      const boundingBox = new RectangleLine(
-          annotation.bounding.left,
-          annotation.bounding.top,
-          annotation.bounding.width,
-          annotation.bounding.height,
-          2,
-          this.boundingColor
-      );
-      boundingBox.zIndex = 0;
-      this.graphics.push(boundingBox);
-
+      const isSelecting = this.selectingObjectId == objectId;
 
       // ------ bone  --------------------------------------------------
       this.boneColor.a = isSelecting && OperationStore_Track.isBoneMode ? 1 : 0.5;
@@ -364,35 +371,22 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDragStart(e: MovingPoint) {
-    const allFalse = {top: false, right: false, bottom: false, left: false};
-
     // すべての選択状態を一旦解除
+    const allFalse = {top: false, right: false, bottom: false, left: false};
     OperationStore_Track.setSelectingObjectId("");
-    OperationStore_Track.setSelectingEdge(allFalse);
     OperationStore_Track.setSelectingNeckMarkEdge(allFalse);
     OperationStore_Track.setSelectingJointName("");
+
+    this.dragStartPosition = e;
+
+
+
+
 
     // バウンディングを探す
     const clickedBounding = this.searchBounding(e);
 
-    // バウンディングモード
-    if (OperationStore_Track.isBoundingMode) {
-      if (this.isDeleteMode) {
-        if (clickedBounding.objectId) {
-          // 削除
-          AnnotationsStore_Track.deleteObject({
-            frame: OperationStore_Track.frame,
-            objectId: clickedBounding.objectId
-          });
 
-          this.addHistory();
-        }
-      } else {
-        // 選択
-        OperationStore_Track.setSelectingObjectId(clickedBounding.objectId);
-        OperationStore_Track.setSelectingEdge(clickedBounding.selectingEdge);
-      }
-    }
 
     // ボーンモード
     if (OperationStore_Track.isBoneMode) {
@@ -445,65 +439,16 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDrag(e: MovingPoint) {
+    this.draggingPosition = e;
+
     // バウンディング選択
-    if (OperationStore_Track.isBoundingMode) {
-      if (this.selectingObject) {
-        const frame = OperationStore_Track.frame;
-        const objectId = OperationStore_Track.selectingObjectId;
-
-        let bounding = DeepCloner.copy(this.selectingObject.bounding);
-
-        const isEdgeSelect = Object.values(OperationStore_Track.selectingEdge).filter(v => v).length >= 1;
-        if (isEdgeSelect) {
-          // 端のドラッグは矩形の拡大縮小
-          if (OperationStore_Track.selectingEdge.left) {
-            bounding.left += e.deltaX;
-            bounding.width -= e.deltaX;
-          }
-          if (OperationStore_Track.selectingEdge.right) {
-            bounding.width += e.deltaX;
-          }
-          if (OperationStore_Track.selectingEdge.top) {
-            bounding.top += e.deltaY;
-            bounding.height -= e.deltaY;
-          }
-          if (OperationStore_Track.selectingEdge.bottom) {
-            bounding.height += e.deltaY;
-          }
-        } else {
-          // 中心部ドラッグは移動
-          bounding.top += e.deltaY;
-          bounding.left += e.deltaX;
-        }
-
-        AnnotationsStore_Track.setBounding({
-          frame: frame,
-          objectId: objectId,
-          bounding: bounding
-        });
-
-        if (!isEdgeSelect) {
-          // 現在座標にdeltaを足す（deltaだけ移動）
-          AnnotationsStore_Track.moveJointPositions({
-            frame: frame,
-            objectId: objectId,
-            moveAmount: {x: e.deltaX, y: e.deltaY}
-          })
-          AnnotationsStore_Track.moveNeckMarkBounding({
-            frame: frame,
-            objectId: objectId,
-            moveAmount: {x: e.deltaX, y: e.deltaY}
-          })
-        }
-      }
-    }
 
     // ボーン選択
     if (OperationStore_Track.isBoneMode) {
       if (this.selectingJoint) {
         AnnotationsStore_Track.setJointPosition({
           frame: OperationStore_Track.frame,
-          objectId: OperationStore_Track.selectingObjectId,
+          objectId: this.selectingObjectId,
           jointName: OperationStore_Track.selectingJointName,
           position: e
         })
@@ -514,7 +459,7 @@ export default class CanvasPane_Track extends Vue {
     if (OperationStore_Track.isNeckMarkMode) {
       if (this.selectingObject) {
         const frame = OperationStore_Track.frame;
-        const objectId = OperationStore_Track.selectingObjectId;
+        const objectId = this.selectingObjectId;
 
         let bounding = DeepCloner.copy(this.selectingObject.neck_mark_bounding);
         if (bounding.left != -9999) {
@@ -552,12 +497,16 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDragEnd(e: MovingPoint) {
+    this.dragEndPosition = e;
+
     if (this.selectingObject && !this.isDeleteMode) {
       this.addHistory();
     }
   }
 
   private onHover(e: Point) {
+    this.hoverPosition = e;
+
     // ボーン
     if (OperationStore_Track.isBoneMode) {
       const hoveredJoint = this.searchJoint(e);
@@ -644,6 +593,35 @@ export default class CanvasPane_Track extends Vue {
     return nearestJoint;
   }
 
+  private onBodyBoundingBoxChangeStart(objectId: string) {
+    OperationStore_Track.setSelectingObjectId(objectId);
+  }
+
+  private onBodyBoundingBoxChange(objectId: string, bounding: BoundingBoxModel) {
+    const frame = OperationStore_Track.frame;
+    AnnotationsStore_Track.setBounding({
+      frame: frame,
+      objectId: objectId,
+      bounding: bounding
+    });
+  }
+
+  private onBodyBoundingBoxChangeEnd(objectId: string) {
+    this.addHistory();
+  }
+
+  private onBodyBoundingBoxUnselect() {
+    OperationStore_Track.setSelectingObjectId("");
+  }
+
+  private onBodyBoundingBoxDelete(objectId: string) {
+    const frame = OperationStore_Track.frame;
+    AnnotationsStore_Track.deleteObject({
+      frame: frame,
+      objectId: objectId,
+    });
+  }
+
   private addHistory() {
     this.$emit("addHistory")
   }
@@ -658,7 +636,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onPrepareBlob(videoImageBlob: Blob) {
-    const fileName = FileUtil.removeExtension(this.currentFileNameFull) + "___" + OperationStore_Track.frame + "___";
+    const fileName = FileUtil.removeExtension(this.videoFileName) + "___" + OperationStore_Track.frame + "___";
     FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
     const json = JSON.stringify(this.currentAnnotations);

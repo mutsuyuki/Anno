@@ -5,7 +5,6 @@ import store from "@/store";
 export interface Operation_Track {
   frame: string;
   selectingObjectId: string;
-  selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
   selectingNeckMarkEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
   selectingJointName: string;
   hoveringObjectId: string;
@@ -26,7 +25,6 @@ class OperationStore_Track extends VuexModule {
   private _operation: Operation_Track = {
     frame: "0",
     selectingObjectId: "",
-    selectingEdge: {top: false, right: false, bottom: false, left: false},
     selectingNeckMarkEdge: {top: false, right: false, bottom: false, left: false},
     selectingJointName: "",
     hoveringObjectId: "",
@@ -45,10 +43,6 @@ class OperationStore_Track extends VuexModule {
 
   get selectingObjectId(): string {
     return this._operation.selectingObjectId;
-  }
-
-  get selectingEdge(): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
-    return this._operation.selectingEdge;
   }
 
   get selectingJointName(): string {
@@ -98,11 +92,6 @@ class OperationStore_Track extends VuexModule {
   @Mutation
   public setSelectingObjectId(value: string) {
     this._operation.selectingObjectId = value;
-  }
-
-  @Mutation
-  public setSelectingEdge(value: { top: boolean; right: boolean; bottom: boolean; left: boolean }) {
-    this._operation.selectingEdge = value;
   }
 
   @Mutation

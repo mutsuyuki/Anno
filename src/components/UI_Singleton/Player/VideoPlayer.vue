@@ -99,7 +99,7 @@ import FileDownloader from "@/common/utils/FileDownloader";
 export default class VideoPlayer extends Vue {
 
   @Prop() private createBlobSignal!: boolean;
-  @Prop() private frameForSeek!: number;
+  @Prop() private seekFrame!: number;
   @Prop() private markerTimes!: number[];
   @Prop({default:1}) private videoOpacity!: number;
   @Prop({default:1}) private overlayOpacity!: number;
@@ -142,10 +142,10 @@ export default class VideoPlayer extends Vue {
     });
 
     this.$watch(
-        () => this.frameForSeek,
+        () => this.seekFrame,
         () => {
-          if (this.frameForSeek != -1) {
-            this.video.currentTime = this.frameForSeek
+          if (this.seekFrame != -1) {
+            this.video.currentTime = this.seekFrame
           }
         }
     );
