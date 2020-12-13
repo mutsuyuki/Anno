@@ -168,9 +168,7 @@ export default class AnimalBoneOverlay extends Vue {
 
   private hover() {
     const clickedJoint = this.searchJoint(this.hoverPosition);
-    if (clickedJoint.jointName) {
-      this.$emit("hover", clickedJoint.objectId, clickedJoint.jointName);
-    }
+    this.$emit("hover", clickedJoint.objectId, clickedJoint.jointName);
   }
 
   // --- common ----------------------------------

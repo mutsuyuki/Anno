@@ -28,7 +28,6 @@ export default class Polygon implements Graphic {
       this.points[0].y * scale.y
     );
     for (let i = 0; i < this.points.length; i++) {
-      const contextElement = context[i];
       context.lineTo(
         this.points[i].x * scale.x,
         this.points[i].y * scale.y

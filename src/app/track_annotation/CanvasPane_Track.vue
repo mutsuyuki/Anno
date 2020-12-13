@@ -365,10 +365,6 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDragStart(e: MovingPoint) {
-    // すべての選択状態を一旦解除
-    OperationStore_Track.setSelectingObjectId("");
-    OperationStore_Track.setSelectingJointName("");
-
     this.dragStartPosition = e;
   }
 

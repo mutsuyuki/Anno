@@ -63,7 +63,7 @@
           <SubMenu :menuTitle="'クラス設定'">
             <ButtonGrid
                 :data="behaviours"
-                :selectId="selectedClass"
+                :selectId="selectedBehaviourClass"
                 :cols="3"
                 :font-size="11"
                 @select="onSelectBehaviour"
@@ -101,7 +101,7 @@
           <SubMenu v-show="isNeckExist" :menuTitle="'クラス設定'">
             <ButtonGrid
                 :data="neckMarks"
-                :selectId="selectedClass"
+                :selectId="selectedNeckMarkClass"
                 :cols="5"
                 :font-size="11"
                 @select="onSelectNeckMark"
@@ -151,7 +151,7 @@ export default class MenuPane_Track extends Vue {
     return VideoPlayerStore.isSelected;
   }
 
-  get selectedClass() {
+  get selectedBehaviourClass() {
     return this.selectingObject ? this.selectingObject.behaviour_class : -1;
   }
 
@@ -182,6 +182,10 @@ export default class MenuPane_Track extends Vue {
 
   get neckMarks() {
     return Object.keys(NECK_MARK).map(key => ({id: key, text: NECK_MARK[key]})) ;
+  }
+
+  get selectedNeckMarkClass() {
+    return this.selectingObject ? this.selectingObject.neck_mark_class : -1;
   }
 
   private onSelectVideoFile(files: File[]) {
