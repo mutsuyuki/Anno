@@ -63,6 +63,10 @@ export module MovingPointUtil {
   export function zero(): MovingPoint {
     return {x: 0, y: 0, startX: 0, startY: 0, deltaX: 0, deltaY: 0}
   }
+
+  export function toPoint(source: MovingPoint): Point {
+    return {x: source.x, y: source.y}
+  }
 }
 
 export interface PointAndScale extends Point {

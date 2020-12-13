@@ -4,7 +4,7 @@
         v-for="label in labels"
         class="label"
         :class="{'active': label.isActive}"
-        :style="{'left':label.position.x +'%','top':label.position.y + '%'}"
+        :style="{'left':label.position.x,'top':label.position.y}"
     >
       {{ label.text }}
     </div>
@@ -20,7 +20,7 @@ import {Point} from "@/common/interface/Point";
   components: {}
 })
 export default class TextOverlay extends Vue {
-  @Prop() private labels!: { text: string, position: Point, isActive: boolean }[];
+  @Prop() private labels!: { text: string, position: {x:string, y:string}, isActive: boolean }[];
 }
 </script>
 

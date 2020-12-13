@@ -20,8 +20,9 @@ import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 export default class BoundingBoxOverlay extends Vue {
   @Prop() private boundingBoxModels!: { [objectId: string]: BoundingBoxModel };
   @Prop() private selectingObjectId!: string;
-  @Prop() private isDeleteMode!: boolean;
 
+  @Prop({default: true}) private useInteraction!: boolean;
+  @Prop({default: false}) private isDeleteMode!: boolean;
   @Prop() private dragStartPosition!: MovingPoint;
   @Prop() private draggingPosition!: MovingPoint;
   @Prop() private dragEndPosition!: MovingPoint;
@@ -30,28 +31,51 @@ export default class BoundingBoxOverlay extends Vue {
   @Prop({default: {r: 255, g: 0, b: 0, a: 1}}) private color!: Color;
 
   private graphics: Graphic[] = [];
-  private selectingEdge = {top: false, right: false, bottom: false, left: false, isResize:false};
+  private selectingEdge = {top: false, right: false, bottom: false, left: false, isResize: false};
+  private interactionWatchers: (() => void)[] = [];
 
   created() {
     // モデルの状態が変わったら描画
     this.$watch(() => this.boundingBoxModels, () => this.draw(), {deep: true});
     this.$watch(() => this.selectingObjectId, () => this.draw(), {deep: true});
+    this.$watch(() => this.color, () => this.draw(), {deep: true});
 
-    // ドラッグ座標もらった
-    this.$watch(() => this.dragStartPosition, () => this.dragStart(), {deep: true});
-    this.$watch(() => this.draggingPosition, () => this.dragging(), {deep: true});
-    this.$watch(() => this.dragEndPosition, () => this.dragEnd(), {deep: true});
+    // インタラクションの有効無効を監視
+    this.$watch(
+        () => this.useInteraction,
+        () => {
+          if (this.useInteraction) {
+            this.watchInteraction();
+          } else {
+            this.unwatchInteraction();
+          }
+        },
+        {deep: true, immediate: true}
+    );
+  }
 
-    // ホバー座標もらった
-    this.$watch(() => this.hoverPosition, () => this.hover(), {deep: true});
+  private watchInteraction() {
+    this.interactionWatchers.push(...[
+      // ドラッグ座標もらった
+      this.$watch(() => this.dragStartPosition, () => this.dragStart(), {deep: true}),
+      this.$watch(() => this.draggingPosition, () => this.dragging(), {deep: true}),
+      this.$watch(() => this.dragEndPosition, () => this.dragEnd(), {deep: true}),
+
+      // ホバー座標もらった
+      this.$watch(() => this.hoverPosition, () => this.hover(), {deep: true})
+    ]);
+  }
+
+  private unwatchInteraction() {
+    this.interactionWatchers.forEach(f => f());
   }
 
   private draw() {
     const graphics: Graphic[] = [];
 
+    const color = DeepCloner.copy(this.color);
     for (const objectId in this.boundingBoxModels) {
-      this.color.a = (objectId == this.selectingObjectId) ? 1 : 0.5;
-
+      color.a = this.color.a * (objectId == this.selectingObjectId ? 1 : 0.5);
       const boundingBoxModel: BoundingBoxModel = this.boundingBoxModels[objectId];
       const boundingBox = new RectangleLine(
           boundingBoxModel.left,
@@ -71,15 +95,14 @@ export default class BoundingBoxOverlay extends Vue {
     const clickedBounding = this.searchBounding(this.dragStartPosition);
     const objectId = clickedBounding.objectId;
     this.selectingEdge = clickedBounding.selectingEdge;
-    console.log(clickedBounding)
 
     if (objectId) {
       if (this.isDeleteMode) {
         this.$emit("delete", objectId);
       } else {
-        if(this.selectingEdge.isResize){
+        if (this.selectingEdge.isResize) {
           this.$emit("resizestart", objectId);
-        }else{
+        } else {
           this.$emit("movestart", objectId);
         }
       }
@@ -89,7 +112,7 @@ export default class BoundingBoxOverlay extends Vue {
   }
 
   private dragging() {
-    if (!this.selectingObjectId) {
+    if (!this.boundingBoxModels[this.selectingObjectId]) {
       return;
     }
 
@@ -123,13 +146,13 @@ export default class BoundingBoxOverlay extends Vue {
   }
 
   private dragEnd() {
-    if (!this.selectingObjectId) {
+    if (!this.boundingBoxModels[this.selectingObjectId]) {
       return;
     }
 
-    if(this.selectingEdge.isResize){
+    if (this.selectingEdge.isResize) {
       this.$emit("resizeend", this.selectingObjectId);
-    }else{
+    } else {
       this.$emit("moveend", this.selectingObjectId);
     }
   }
@@ -154,19 +177,19 @@ export default class BoundingBoxOverlay extends Vue {
       if (insideHorizontal && insideVertical && area < smallestArea) {
         smallestObjectId = objectId;
 
-        if (Math.abs(boundingBoxModel.left - x) <= edgeWidth){
+        if (Math.abs(boundingBoxModel.left - x) <= edgeWidth) {
           selectingEdge.left = true;
           selectingEdge.isResize = true;
         }
-        if (Math.abs(boundingBoxModel.left + boundingBoxModel.width - x) <= edgeWidth){
+        if (Math.abs(boundingBoxModel.left + boundingBoxModel.width - x) <= edgeWidth) {
           selectingEdge.right = true;
           selectingEdge.isResize = true;
         }
-        if (Math.abs(boundingBoxModel.top - y) <= edgeWidth){
+        if (Math.abs(boundingBoxModel.top - y) <= edgeWidth) {
           selectingEdge.top = true;
           selectingEdge.isResize = true;
         }
-        if (Math.abs(boundingBoxModel.top + boundingBoxModel.height - y) <= edgeWidth){
+        if (Math.abs(boundingBoxModel.top + boundingBoxModel.height - y) <= edgeWidth) {
           selectingEdge.bottom = true;
           selectingEdge.isResize = true;
         }
