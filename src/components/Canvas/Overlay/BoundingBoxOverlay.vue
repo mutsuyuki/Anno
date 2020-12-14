@@ -75,7 +75,7 @@ export default class BoundingBoxOverlay extends Vue {
 
     const color = DeepCloner.copy(this.color);
     for (const objectId in this.boundingBoxModels) {
-      color.a = this.color.a * (objectId == this.selectingObjectId ? 1 : 0.5);
+      color.a = this.color.a * (objectId == this.selectingObjectId ? 1 : 0.6);
       const boundingBoxModel: BoundingBoxModel = this.boundingBoxModels[objectId];
       const boundingBox = new RectangleLine(
           boundingBoxModel.left,
@@ -83,7 +83,7 @@ export default class BoundingBoxOverlay extends Vue {
           boundingBoxModel.width,
           boundingBoxModel.height,
           2,
-          this.color
+          color
       );
       graphics.push(boundingBox)
     }

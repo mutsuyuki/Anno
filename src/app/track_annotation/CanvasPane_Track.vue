@@ -13,11 +13,11 @@
         :seekFrame="seekFrame"
         :createBlobSignal="createBlobSignal"
         :markerTimes="[]"
-        :overlayOpacity="opacity"
-        @dragareastart="onDragStart"
-        @dragarea="onDrag"
-        @dragareaend="onDragEnd"
-        @hover="onHover"
+        :overlayOpacity="overlayOpacity"
+        @dragareastart="dragStartPosition = $event"
+        @dragarea="draggingPosition = $event"
+        @dragareaend="dragEndPosition = $event"
+        @hover="hoverPosition = $event"
         @download="onDownload"
         @timeupdate="onTimeUpdate"
         @prepareBlob="onPrepareBlob"
@@ -145,7 +145,6 @@ import {AnimalBoneModel} from "@/common/model/AnimalBoneModel";
   }
 })
 export default class CanvasPane_Track extends Vue {
-  private createBlobSignal: boolean = false;
   private isDeleteMode: boolean = false;
 
   private dragStartPosition: MovingPoint = MovingPointUtil.zero();
@@ -154,6 +153,7 @@ export default class CanvasPane_Track extends Vue {
   private hoverPosition: Point = PointUtil.zero();
 
   private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
+  private createBlobSignal: boolean = false;  // VideoPlayerに画像のBlobを作成依頼するトリガー用
 
   // --- container ---------
   get isShow() {
@@ -182,7 +182,7 @@ export default class CanvasPane_Track extends Vue {
     return Number(this.frame == OperationStore_Track.frame ? -1 : OperationStore_Track.frame);
   }
 
-  get opacity() {
+  get overlayOpacity() {
     return CanvasSettingsStore.opacity;
   }
 
@@ -197,7 +197,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get bodyOpacity() {
-    return OperationStore_Track.isBoundingMode ? 1 : 0.5;
+    return OperationStore_Track.isBoundingMode ? 1 : 0.7;
   }
 
   // --- AnimalBoneOverlay ---------------------
@@ -215,7 +215,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get boneOpacity() {
-    return OperationStore_Track.isBoneMode ? 1 : 0.5;
+    return OperationStore_Track.isBoneMode ? 1 : 0.7;
   }
 
   // --- BondingBoxOverlay (neck mark) ---------
@@ -235,7 +235,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get neckMarkOpacity() {
-    return OperationStore_Track.isNeckMarkMode ? 1 : 0.5;
+    return OperationStore_Track.isNeckMarkMode ? 1 : 0.7;
   }
 
   // --- TextOverlay (behaviour and neck mark) ---------
@@ -290,15 +290,6 @@ export default class CanvasPane_Track extends Vue {
 
   get selectingObjectId() {
     return OperationStore_Track.selectingObjectId;
-  }
-
-  get selectingObject() {
-    const frame = OperationStore_Track.frame;
-    if (!AnnotationsStore_Track.annotations[frame])
-      return null;
-
-    const objectId = this.selectingObjectId;
-    return AnnotationsStore_Track.annotations[frame][objectId];
   }
 
   get selectingJointName() {
@@ -364,26 +355,6 @@ export default class CanvasPane_Track extends Vue {
     this.addHistory();
   }
 
-  private onDragStart(e: MovingPoint) {
-    this.dragStartPosition = e;
-  }
-
-  private onDrag(e: MovingPoint) {
-    this.draggingPosition = e;
-  }
-
-  private onDragEnd(e: MovingPoint) {
-    this.dragEndPosition = e;
-
-    if (this.selectingObject && !this.isDeleteMode) {
-      this.addHistory();
-    }
-  }
-
-  private onHover(e: Point) {
-    this.hoverPosition = e;
-  }
-
   // --- body bounding box overlay callback ------------------------------------------
   private onChangeStartBodyBoundingBox(objectId: string) {
     // bodyの矩形を押下した場合モード関係なく選択状態にする
@@ -444,6 +415,8 @@ export default class CanvasPane_Track extends Vue {
         frame: frame,
         objectId: objectId,
       });
+
+      this.addHistory();
     }
   }
 
@@ -469,7 +442,7 @@ export default class CanvasPane_Track extends Vue {
 
   private onChangeEndBone(objectId: string, jointName: string) {
     if (OperationStore_Track.isBoneMode) {
-      this.$nextTick(() => this.addHistory());
+      this.addHistory();
     }
   }
 
@@ -485,7 +458,7 @@ export default class CanvasPane_Track extends Vue {
         objectId: objectId,
         jointName: jointName
       });
-      this.$nextTick(() => this.addHistory());
+      this.addHistory();
     }
   }
 
@@ -514,7 +487,7 @@ export default class CanvasPane_Track extends Vue {
 
   private onChangeEndNeckMarkBoundingBox(objectId: string) {
     if (OperationStore_Track.isNeckMarkMode) {
-      this.$nextTick(() => this.addHistory());
+      this.addHistory();
     }
   }
 
@@ -529,7 +502,7 @@ export default class CanvasPane_Track extends Vue {
         frame: frame,
         objectId: objectId,
       });
-      this.$nextTick(() => this.addHistory());
+      this.addHistory();
     }
   }
 

@@ -50,7 +50,7 @@ class HistoryStore extends VuexModule {
   @Mutation
   public addHistory(record: HistoryRecord<any>) {
     this._history.length = this._index + 1;
-    if (this._history.length >= 10) {
+    if (this._history.length >= 20) {
       this._history.shift();
     }
     const clonedRecord = DeepCloner.copy(record);

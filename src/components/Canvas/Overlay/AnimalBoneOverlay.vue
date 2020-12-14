@@ -87,7 +87,7 @@ export default class AnimalBoneOverlay extends Vue {
       const isSelecting = this.selectingObjectId == objectId;
 
       // ------ bone  --------------------------------------------------
-      boneColor.a *= this.boneColor.a * (isSelecting ? 1 : 0.5);
+      boneColor.a *= this.boneColor.a * (isSelecting ? 1 : 0.7);
       const boneLines = new MultiLines(
           [
             {start: bone.mouse, end: bone.head},
