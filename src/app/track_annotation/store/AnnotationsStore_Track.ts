@@ -58,7 +58,7 @@ function makeDefaultAnnotation(frame: string, objectId: string): Annotation_Trac
       width: 0.015 * 2,
       height: 0.015 * 2
     },
-    neck_mark_class: "0"
+    neck_mark_class: ""
   }
 }
 
@@ -246,7 +246,6 @@ class AnnotationsStore_Track extends VuexModule {
       return;
     }
 
-    const defaultBone = makeDefaultAnnotation("", "").bone;
     if (targetAnnotation.bone.cervical_spine.x != -9999) {
       targetAnnotation.neck_mark_bounding = {
         left: targetAnnotation.bone.cervical_spine.x - 0.015,
@@ -259,6 +258,7 @@ class AnnotationsStore_Track extends VuexModule {
       targetAnnotation.neck_mark_bounding.width = 0.015 * 2;
       targetAnnotation.neck_mark_bounding.height = 0.015 * 2;
     }
+    targetAnnotation.neck_mark_class = "0";
 
     Vue.set(
       this._annotations[value.frame],
