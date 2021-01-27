@@ -108,7 +108,7 @@ export default class VideoPlayer extends Vue {
   private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");
 
   private timelineProgress: number = 0;
-  private stepSec: number = 0.033333;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667sec
+  private stepSec: number = 0.1;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667sec
   private isShiftDown: boolean = false;
 
   get videoUrl() {
