@@ -3,32 +3,30 @@ import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decor
 import store from "@/store";
 import DeepCloner from "@/common/utils/DeepCloner";
 
-export interface Bounding_ObjectDetection {
+export interface Bounding {
   left: number,
   top: number
   width: number,
   height: number
 }
 
-export interface Annotation_ObjectDetection {
+export interface Annotation_MovieCrop {
   frame: string;
   objectId: string;
-  class: string;
-  bounding: Bounding_ObjectDetection;
+  bounding: Bounding;
 }
 
-
 @Module({
-  name: "AnnotationsStore_ObjectDetection",
+  name: "AnnotationsStore_MovieCrop",
   dynamic: true,
   store: store,
   namespaced: true
 })
 
-class AnnotationsStore_ObjectDetection extends VuexModule {
+class AnnotationsStore_MovieCrop extends VuexModule {
 
   // states
-  private _annotations: { [frame: string]: { [objectId: string]: Annotation_ObjectDetection } } = {};
+  private _annotations: { [frame: string]: { [objectId: string]: Annotation_MovieCrop } } = {};
 
   // getters
   get annotations() {
@@ -40,12 +38,12 @@ class AnnotationsStore_ObjectDetection extends VuexModule {
   }
 
   @Mutation
-  public setAnnotation(value: { [frame: string]: { [objectId: string]: Annotation_ObjectDetection } }) {
+  public setAnnotation(value: { [frame: string]: { [objectId: string]: Annotation_MovieCrop } }) {
     this._annotations = value;
   }
 
   @Mutation
-  public setAnnotationsOfFrame(value: { frame: string, data: { [objectId: string]: Annotation_ObjectDetection } }) {
+  public setAnnotationsOfFrame(value: { frame: string, data: { [objectId: string]: Annotation_MovieCrop } }) {
     if (!this._annotations[value.frame])
       Vue.set(this._annotations, value.frame, {});
 
@@ -95,17 +93,47 @@ class AnnotationsStore_ObjectDetection extends VuexModule {
     );
   }
 
-  @Mutation
-  public setClass(value: { frame: string, objectId: string, class: number }) {
-    Vue.set(
-      this._annotations[value.frame][value.objectId],
-      "class",
-      value.class
-    );
-  }
 
   @Mutation
-  public setBounding(value: { frame: string, objectId: string, bounding: Bounding_ObjectDetection }) {
+  public copyPrevFrameObjects(currentFrame: string) {
+    const currentFrameAsNumber = Number(currentFrame);
+    const allFrames = Object.keys(this._annotations);
+    const prevFrames = allFrames.filter(v => {
+      const frameAsNumber = Number(v)
+      const objectNumInFrame = Object.keys(this._annotations[v]).length;
+      return frameAsNumber < currentFrameAsNumber && objectNumInFrame > 0;
+    });
+    if (prevFrames.length <= 0) {
+      alert("現在フレームより前にアノテーションがありません。");
+      return;
+    }
+
+    prevFrames.sort((a, b) => {
+      const aa = Number(a);
+      const bb = Number(b);
+      if (aa > bb) return 1;
+      if (aa < bb) return -1;
+      return 0;
+    });
+
+    const prevFrame = prevFrames[prevFrames.length - 1];
+    if (!this._annotations[currentFrame])
+      Vue.set(this._annotations, currentFrame, {});
+
+    for (const objectId in this._annotations[prevFrame]) {
+      let copiedAnnotation = DeepCloner.copy(this._annotations[prevFrame][objectId]);
+      copiedAnnotation.frame = currentFrame;
+      Vue.set(
+        this._annotations[currentFrame],
+        objectId,
+        copiedAnnotation
+      );
+    }
+  }
+
+
+  @Mutation
+  public setBounding(value: { frame: string, objectId: string, bounding: Bounding }) {
     Vue.set(
       this._annotations[value.frame][value.objectId],
       "bounding",
@@ -134,14 +162,13 @@ class AnnotationsStore_ObjectDetection extends VuexModule {
   }
 }
 
-export default getModule(AnnotationsStore_ObjectDetection);
+export default getModule(AnnotationsStore_MovieCrop);
 
 
-function makeAnnotationInstance(frame: string, objectId: string): Annotation_ObjectDetection {
+function makeAnnotationInstance(frame: string, objectId: string): Annotation_MovieCrop {
   return {
     frame: frame,
     objectId: objectId,
-    class: "0",
     bounding: {
       left: 0.38,
       top: 0.38,
@@ -151,7 +178,7 @@ function makeAnnotationInstance(frame: string, objectId: string): Annotation_Obj
   }
 }
 
-function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation_ObjectDetection } }): string {
+function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation_MovieCrop } }): string {
   const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
   const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
   const newestIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));

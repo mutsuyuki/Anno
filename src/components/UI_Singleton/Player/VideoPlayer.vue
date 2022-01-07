@@ -101,8 +101,8 @@ export default class VideoPlayer extends Vue {
   @Prop() private createBlobSignal!: boolean;
   @Prop() private seekFrame!: number;
   @Prop() private markerTimes!: number[];
-  @Prop({default:1}) private videoOpacity!: number;
-  @Prop({default:1}) private overlayOpacity!: number;
+  @Prop({default: 1}) private videoOpacity!: number;
+  @Prop({default: 1}) private overlayOpacity!: number;
 
   private video: HTMLVideoElement = document.createElement("video");
   private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");
@@ -261,6 +261,7 @@ export default class VideoPlayer extends Vue {
     }
 
     context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight);
+    this.$emit("prepareContext", context);
     const blob = FileDownloader.editImageBlobFromCanvas(this.videoTextureCanvas);
     this.$emit("prepareBlob", blob);
   }
@@ -333,6 +334,7 @@ export default class VideoPlayer extends Vue {
         height: 16px;
         width: 1px;
         background-color: skyblue;
+        pointer-events: none;
       }
     }
 

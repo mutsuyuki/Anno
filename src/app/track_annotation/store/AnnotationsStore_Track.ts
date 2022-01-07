@@ -389,6 +389,13 @@ class AnnotationsStore_Track extends VuexModule {
       this._annotations[value.frame],
       value.objectId
     );
+
+    if (Object.keys(this._annotations[value.frame]).length <= 0) {
+      Vue.delete(
+        this._annotations,
+        value.frame
+      );
+    }
   }
 
 

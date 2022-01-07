@@ -32,7 +32,7 @@ export default class MenuSubTitle extends Vue {
 
   p {
     padding: 0 8px;
-    font-size: 9px;
+    font-size: 10px;
     color: var(--darkgray);
   }
 
