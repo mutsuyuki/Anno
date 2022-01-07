@@ -232,35 +232,54 @@ export default class CanvasPane_MovieCrop extends Vue {
     const cropWidth = Math.round(bbox.width * videoContext.canvas.width);
     const cropHeight = Math.round(bbox.height * videoContext.canvas.height);
 
-    // 出力サイズを計算
-    const longEdge = Math.max(cropWidth, cropHeight);
-    const outEdge = longEdge * OperationStore_MovieCrop.scale;
 
     // 出力サイズでキャンバスを初期化
-    this.outputTextureCanvas.setAttribute("width", outEdge.toString());
-    this.outputTextureCanvas.setAttribute("height", outEdge.toString());
+    this.outputTextureCanvas.setAttribute("width", cropWidth.toString());
+    this.outputTextureCanvas.setAttribute("height", cropHeight.toString());
     const context = this.outputTextureCanvas.getContext("2d");
     if (context == null) {
       alert("出力キャンバスの初期化に失敗しました")
       return;
     }
 
+    // ビデオから選択領域をクロップ
+    const croppedImageData = videoContext.getImageData(cropLeft, cropTop, cropWidth, cropHeight);
+    context.putImageData(croppedImageData, 0, 0);
+
+    // 出力
+    const date = moment().format('YYYYMMDD_hhmmss');
+    const fileName = FileUtil.removeExtension(VideoPlayerStore.name) + "___" + OperationStore_MovieCrop.frame + "___" + date;
+    FileDownloader.downloadBlob(
+        "ori_" + fileName + ".png",
+        FileDownloader.editImageBlobFromCanvas(this.outputTextureCanvas)
+    );
+
+    EditSequencesStore.setIsDownloaded({frame: OperationStore_MovieCrop.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore_MovieCrop.frame, isDirty: false});
+
+    // ------ パディングあり ---------------------------------
+    // パディングありの出力サイズを計算
+    const longEdge = Math.max(cropWidth, cropHeight);
+    const outEdge = longEdge * OperationStore_MovieCrop.scale;
+
+    // パディングありの出力サイズでキャンバスを初期化
+    this.outputTextureCanvas.setAttribute("width", outEdge.toString());
+    this.outputTextureCanvas.setAttribute("height", outEdge.toString());
+
     // 背景を塗りつぶす
     context.fillStyle = "rgb(0, 255, 0)";
     context.fillRect(0, 0, outEdge, outEdge)
 
-    // ビデオから選択領域をクロップ
-    const croppedImageData = videoContext.getImageData(cropLeft, cropTop, cropWidth, cropHeight);
+    // ペースト位置を決定
     const pasteX = (outEdge - cropWidth) / 2;
     const pasteY = (outEdge - cropHeight) / 2;
     context.putImageData(croppedImageData, pasteX, pasteY);
 
     // 出力
-    const date = moment().format('YYYYMMDD_hhmmss');
-    const fileName = FileUtil.removeExtension(VideoPlayerStore.name) + "___" + OperationStore_MovieCrop.frame + "___" + date;
-    const blob = FileDownloader.editImageBlobFromCanvas(this.outputTextureCanvas);
-    FileDownloader.downloadBlob(fileName + ".png", blob);
-
+    FileDownloader.downloadBlob(
+        fileName + ".png",
+        FileDownloader.editImageBlobFromCanvas(this.outputTextureCanvas)
+    );
     EditSequencesStore.setIsDownloaded({frame: OperationStore_MovieCrop.frame, isDownloaded: true});
     EditSequencesStore.setIsDirty({frame: OperationStore_MovieCrop.frame, isDirty: false});
   }
