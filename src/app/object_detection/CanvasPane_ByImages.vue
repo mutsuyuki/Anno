@@ -46,7 +46,7 @@ import AnnotationsStore, {Annotation} from "@/app/object_detection/store/Annotat
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
-import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
+import EditStateStore, {EditState} from "@/store/EditStateStore";
 import ClassListStore from "@/components/UI/ClassEditor/ClassListStore";
 import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
@@ -88,8 +88,8 @@ export default class CanvasPane_ByImages extends Vue {
     return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
   }
 
-  get operationOfCurrentFrame(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore.frame] || {};
+  get operationOfCurrentFrame(): EditState {
+    return EditStateStore.states[OperationStore.frame] || {};
   }
 
   get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
@@ -142,7 +142,7 @@ export default class CanvasPane_ByImages extends Vue {
     // フレームが変わった
     this.$watch(
         () => OperationStore.frame,
-        () => EditSequencesStore.createIfNothing(OperationStore.frame),
+        () => EditStateStore.createIfNothing(OperationStore.frame),
         {deep: true, immediate: true}
     );
 
@@ -216,7 +216,7 @@ export default class CanvasPane_ByImages extends Vue {
         data: JSON.parse(fileText as string)
       });
 
-      EditSequencesStore.setIsUseAnnotationFile({
+      EditStateStore.setIsUseAnnotationFile({
         frame: frame,
         isUseAnnotationFile: true
       });
@@ -340,8 +340,8 @@ export default class CanvasPane_ByImages extends Vue {
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(OperationStore.frame + ".json", json);
 
-    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
-    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
+    EditStateStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditStateStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
 
   private addHistory() {

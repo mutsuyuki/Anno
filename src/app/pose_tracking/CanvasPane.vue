@@ -115,7 +115,7 @@ import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import OperationStore from "@/app/pose_tracking/store/OperationStore";
 import AnnotationsStore, {Annotation} from "@/app/pose_tracking/store/AnnotationsStore";
-import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
+import EditStateStore, {EditState} from "@/store/EditStateStore";
 import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
@@ -159,8 +159,8 @@ export default class CanvasPane extends Vue {
     return VideoPlayerStore.name;
   }
 
-  get currentEditSequence(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore.frame] || ({} as EditSequence);
+  get currentEditSequence(): EditState {
+    return EditStateStore.states[OperationStore.frame] || ({} as EditState);
   }
 
   get isUseAnnotationFile() {
@@ -300,7 +300,7 @@ export default class CanvasPane extends Vue {
     // フレームが変わった
     this.$watch(
         () => OperationStore.frame,
-        () => EditSequencesStore.createIfNothing(OperationStore.frame),
+        () => EditStateStore.createIfNothing(OperationStore.frame),
         {deep: true, immediate: true}
     );
 
@@ -346,7 +346,7 @@ export default class CanvasPane extends Vue {
         data: JSON.parse(fileText as string)
       });
 
-      EditSequencesStore.setIsUseAnnotationFile({
+      EditStateStore.setIsUseAnnotationFile({
         frame: frame,
         isUseAnnotationFile: true
       });
@@ -528,8 +528,8 @@ export default class CanvasPane extends Vue {
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
-    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
-    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
+    EditStateStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditStateStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
 }
 

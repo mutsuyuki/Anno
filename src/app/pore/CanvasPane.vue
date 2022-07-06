@@ -48,7 +48,7 @@ import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
-import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
+import EditStateStore, {EditState} from "@/store/EditStateStore";
 import OperationStore from "@/app/pore/store/OperationStore";
 import AnnotationsStore, {Annotation} from "@/app/pore/store/AnnotationsStore";
 import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
@@ -103,8 +103,8 @@ export default class CanvasPane extends Vue {
     return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
   }
 
-  get operationOfCurrentFrame(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore.frame] || {};
+  get operationOfCurrentFrame(): EditState {
+    return EditStateStore.states[OperationStore.frame] || {};
   }
 
   get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
@@ -142,7 +142,7 @@ export default class CanvasPane extends Vue {
     // フレームが変わった
     this.$watch(
         () => OperationStore.frame,
-        () => EditSequencesStore.createIfNothing(OperationStore.frame),
+        () => EditStateStore.createIfNothing(OperationStore.frame),
         {deep: true, immediate: true}
     );
 
@@ -209,7 +209,7 @@ export default class CanvasPane extends Vue {
         data: JSON.parse(fileText as string)
       });
 
-      EditSequencesStore.setIsUseAnnotationFile({
+      EditStateStore.setIsUseAnnotationFile({
         frame: frame,
         isUseAnnotationFile: true
       });
@@ -315,8 +315,8 @@ export default class CanvasPane extends Vue {
         ImagePlayerStore.currentItem
     );
 
-    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
-    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
+    EditStateStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditStateStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
 
   private addHistory() {

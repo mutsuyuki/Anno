@@ -28,7 +28,7 @@ import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
-import EditSequencesStore from "@/store/EditSequenceStore";
+import EditStateStore from "@/store/EditStateStore";
 import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
@@ -55,7 +55,7 @@ export default class Home extends Vue {
         () => {
           const current = HistoryStore.current;
           OperationStore.setOperation(current.value.operation);
-          EditSequencesStore.setSequences(current.value.editSequence);
+          EditStateStore.setSequences(current.value.editSequence);
           ClassListStore.setClassList(current.value.classList);
           AnnotationsStore.setAnnotation(current.value.annotation);
         }
@@ -72,7 +72,7 @@ export default class Home extends Vue {
   private makeHistoryRecord() {
     return new HistoryRecord({
       operation: OperationStore.operation,
-      editSequence: EditSequencesStore.sequences,
+      editSequence: EditStateStore.states,
       classList: ClassListStore.classList,
       annotation: AnnotationsStore.annotations,
     });
@@ -80,7 +80,7 @@ export default class Home extends Vue {
 
   private addHistory() {
     HistoryStore.addHistory(this.makeHistoryRecord());
-    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: true});
+    EditStateStore.setIsDirty({frame: OperationStore.frame, isDirty: true});
   }
 }
 </script>
