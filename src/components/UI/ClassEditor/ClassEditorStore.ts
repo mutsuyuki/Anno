@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Track";
+import {Annotation} from "@/app/pose_tracking/store/AnnotationsStore";
 
 
 @Module({

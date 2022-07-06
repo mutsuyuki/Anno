@@ -14,9 +14,9 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane_Hair from "@/app/hair_annotation/MenuPane_Hair.vue";
-// import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane_Hair.vue";
-import Help_Hair from "@/app/hair_annotation/Help_Hair.vue";
+import MenuPane from "@/app/hair_annotation/MenuPane.vue";
+// import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane.vue";
+import Help from "@/app/hair_annotation/Help.vue";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import HistoryStore from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
@@ -25,11 +25,11 @@ import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 @Component({
   components: {
     // CanvasPane_Hair,
-    MenuPane_Hair,
-    Help_Hair,
+    MenuPane_Hair: MenuPane,
+    Help_Hair: Help,
   },
 })
-export default class Home_Hair extends Vue {
+export default class Home extends Vue {
   destroyed() {
     ImagePlayerStore.clear();
     AnnotationFilesStore.clear();

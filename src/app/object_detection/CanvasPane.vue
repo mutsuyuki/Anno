@@ -48,8 +48,8 @@ import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-import AnnotationsStore_ObjectDetection, {Annotation_ObjectDetection} from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
+import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/object_detection_annotation/store/AnnotationsStore";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
@@ -68,7 +68,7 @@ import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorS
     ImagePlayer,
   }
 })
-export default class CanvasPane_ObjectDetection extends Vue {
+export default class CanvasPane extends Vue {
   private graphics: Graphic[] = [];
 
   private lineColors: { [id: string]: Color } = {
@@ -90,17 +90,17 @@ export default class CanvasPane_ObjectDetection extends Vue {
   }
 
   get frameForSeek(): number {
-    return Number(this.frame == OperationStore_ObjectDetection.frame ? -1 : OperationStore_ObjectDetection.frame);
+    return Number(this.frame == OperationStore.frame ? -1 : OperationStore.frame);
   }
 
   get annotatedFrames(): number[] {
-    return Object.keys(AnnotationsStore_ObjectDetection.annotations)
+    return Object.keys(AnnotationsStore.annotations)
         .map(v => Number(v))
         .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
   }
 
   get operationOfCurrentFrame(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore_ObjectDetection.frame] || {};
+    return EditSequencesStore.sequences[OperationStore.frame] || {};
   }
 
   get isUseAnnotationFile() {
@@ -111,8 +111,8 @@ export default class CanvasPane_ObjectDetection extends Vue {
     return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
   }
 
-  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation_ObjectDetection } {
-    return AnnotationsStore_ObjectDetection.annotations[OperationStore_ObjectDetection.frame] || {};
+  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
+    return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
   get opacity() {
@@ -128,19 +128,19 @@ export default class CanvasPane_ObjectDetection extends Vue {
       result.push({
         text: annotation.class + " : " + className,
         position: {x: annotation.bounding.left * 100, y: annotation.bounding.top * 100},
-        isActive: objectId == OperationStore_ObjectDetection.selectingObjectId
+        isActive: objectId == OperationStore.selectingObjectId
       })
     }
     return result;
   }
 
   get selectingObject() {
-    const frame = OperationStore_ObjectDetection.frame;
-    if (!AnnotationsStore_ObjectDetection.annotations[frame])
+    const frame = OperationStore.frame;
+    if (!AnnotationsStore.annotations[frame])
       return null;
 
-    const objectId = OperationStore_ObjectDetection.selectingObjectId;
-    return AnnotationsStore_ObjectDetection.annotations[frame][objectId];
+    const objectId = OperationStore.selectingObjectId;
+    return AnnotationsStore.annotations[frame][objectId];
   }
 
   created() {
@@ -153,15 +153,15 @@ export default class CanvasPane_ObjectDetection extends Vue {
 
     // 選択対象やモードが変わった
     this.$watch(
-        () => OperationStore_ObjectDetection.operation,
+        () => OperationStore.operation,
         () => this.draw(),
         {deep: true}
     );
 
     // フレームが変わった
     this.$watch(
-        () => OperationStore_ObjectDetection.frame,
-        () => EditSequencesStore.createIfNothing(OperationStore_ObjectDetection.frame),
+        () => OperationStore.frame,
+        () => EditSequencesStore.createIfNothing(OperationStore.frame),
         {deep: true, immediate: true}
     );
 
@@ -191,7 +191,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
 
     for (const objectId in this.annotationsOfCurrentFrame) {
       const annotation = this.annotationsOfCurrentFrame[objectId];
-      const isSelecting = OperationStore_ObjectDetection.selectingObjectId == objectId;
+      const isSelecting = OperationStore.selectingObjectId == objectId;
 
       const classId = annotation.class;
       const boundingColor = Object.assign({}, this.lineColors[classId], {a: isSelecting ? 1 : 0.5});
@@ -209,7 +209,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
   }
 
   private async restoreAnnotation() {
-    AnnotationsStore_ObjectDetection.clear();
+    AnnotationsStore.clear();
 
     for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
       const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
@@ -224,7 +224,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
         reader.readAsText(AnnotationFilesStore.items[i]);
       });
 
-      AnnotationsStore_ObjectDetection.setAnnotationsOfFrame({
+      AnnotationsStore.setAnnotationsOfFrame({
         frame: frame,
         data: JSON.parse(fileText as string)
       });
@@ -247,13 +247,13 @@ export default class CanvasPane_ObjectDetection extends Vue {
       // 削除
       if (clickedBounding.objectId) {
 
-        AnnotationsStore_ObjectDetection.deleteObject({
-          frame: OperationStore_ObjectDetection.frame,
+        AnnotationsStore.deleteObject({
+          frame: OperationStore.frame,
           objectId: clickedBounding.objectId
         });
 
-        OperationStore_ObjectDetection.setSelectingObjectId("");
-        OperationStore_ObjectDetection.setSelectingEdge({
+        OperationStore.setSelectingObjectId("");
+        OperationStore.setSelectingEdge({
           top: false,
           right: false,
           bottom: false,
@@ -264,34 +264,34 @@ export default class CanvasPane_ObjectDetection extends Vue {
       }
     } else {
       // 選択
-      OperationStore_ObjectDetection.setSelectingObjectId(clickedBounding.objectId);
-      OperationStore_ObjectDetection.setSelectingEdge(clickedBounding.selectingEdge);
+      OperationStore.setSelectingObjectId(clickedBounding.objectId);
+      OperationStore.setSelectingEdge(clickedBounding.selectingEdge);
     }
 
   }
 
   private onDrag(e: MovingPoint) {
     if (this.selectingObject) {
-      const frame = OperationStore_ObjectDetection.frame;
-      const objectId = OperationStore_ObjectDetection.selectingObjectId;
+      const frame = OperationStore.frame;
+      const objectId = OperationStore.selectingObjectId;
 
       let bounding = DeepCloner.copy(this.selectingObject.bounding);
 
-      const isEdgeSelect = Object.values(OperationStore_ObjectDetection.selectingEdge).filter(v => v).length >= 1;
+      const isEdgeSelect = Object.values(OperationStore.selectingEdge).filter(v => v).length >= 1;
       if (isEdgeSelect) {
         // 端のドラッグは矩形の拡大縮小
-        if (OperationStore_ObjectDetection.selectingEdge.left) {
+        if (OperationStore.selectingEdge.left) {
           bounding.left += e.deltaX;
           bounding.width -= e.deltaX;
         }
-        if (OperationStore_ObjectDetection.selectingEdge.right) {
+        if (OperationStore.selectingEdge.right) {
           bounding.width += e.deltaX;
         }
-        if (OperationStore_ObjectDetection.selectingEdge.top) {
+        if (OperationStore.selectingEdge.top) {
           bounding.top += e.deltaY;
           bounding.height -= e.deltaY;
         }
-        if (OperationStore_ObjectDetection.selectingEdge.bottom) {
+        if (OperationStore.selectingEdge.bottom) {
           bounding.height += e.deltaY;
         }
       } else {
@@ -300,7 +300,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
         bounding.left += e.deltaX;
       }
 
-      AnnotationsStore_ObjectDetection.setBounding({
+      AnnotationsStore.setBounding({
         frame: frame,
         objectId: objectId,
         bounding: bounding
@@ -355,7 +355,7 @@ export default class CanvasPane_ObjectDetection extends Vue {
 
   private onFrameUpdate(frame: number): void {
     this.frame = frame.toString();
-    OperationStore_ObjectDetection.setFrame(this.frame);
+    OperationStore.setFrame(this.frame);
   }
 
   private async onDownload() {
@@ -363,14 +363,14 @@ export default class CanvasPane_ObjectDetection extends Vue {
   }
 
   private onPrepareBlob(videoImageBlob: Blob) {
-    const fileName = FileUtil.removeExtension(this.currentFileNameFull) + "___" + OperationStore_ObjectDetection.frame + "___";
+    const fileName = FileUtil.removeExtension(this.currentFileNameFull) + "___" + OperationStore.frame + "___";
     FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
-    EditSequencesStore.setIsDownloaded({frame: OperationStore_ObjectDetection.frame, isDownloaded: true});
-    EditSequencesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: false});
+    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
 }
 

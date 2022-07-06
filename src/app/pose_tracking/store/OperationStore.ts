@@ -2,7 +2,7 @@ import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decor
 import store from "@/store";
 
 // ----- interfaces -------------------------------
-export interface Operation_Track {
+export interface Operation {
   frame: string;
   selectingObjectId: string;
   selectingJointName: string;
@@ -18,10 +18,10 @@ export interface Operation_Track {
   namespaced: true
 })
 
-class OperationStore_Track extends VuexModule {
+class OperationStore extends VuexModule {
 
   // states
-  private _operation: Operation_Track = {
+  private _operation: Operation = {
     frame: "0",
     selectingObjectId: "",
     selectingJointName: "",
@@ -31,7 +31,7 @@ class OperationStore_Track extends VuexModule {
   };
 
   // getters
-  get operation(): Operation_Track {
+  get operation(): Operation {
     return this._operation;
   }
 
@@ -74,7 +74,7 @@ class OperationStore_Track extends VuexModule {
 
 
   @Mutation
-  public setOperation(value: Operation_Track) {
+  public setOperation(value: Operation) {
     this._operation = value;
   }
 
@@ -120,4 +120,4 @@ class OperationStore_Track extends VuexModule {
 
 }
 
-export default getModule(OperationStore_Track);
+export default getModule(OperationStore);

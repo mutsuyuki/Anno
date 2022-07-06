@@ -20,28 +20,28 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane_ObjectDetection_ByImages from "@/app/object_detection_annotation/MenuPane_ObjectDetection_ByImages.vue";
-import CanvasPane_ObjectDetection_ByImages
-  from "@/app/object_detection_annotation/CanvasPane_ObjectDetection_ByImages.vue";
-import Help_ObjectDetection from "@/app/object_detection_annotation/Help_ObjectDetection.vue";
+import MenuPane_ByImages from "@/app/object_detection_annotation/MenuPane_ByImages.vue";
+import CanvasPane_ByImages
+  from "@/app/object_detection_annotation/CanvasPane_ByImages.vue";
+import Help_ObjectDetection from "@/app/object_detection_annotation/Help.vue";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
+import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
 import EditSequencesStore from "@/store/EditSequenceStore";
-import AnnotationsStore_ObjectDetection from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
+import AnnotationsStore from "@/app/object_detection_annotation/store/AnnotationsStore";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
 @Component({
   components: {
     AnnotationPageLayout,
-    CanvasPane_ObjectDetection_ByImages,
-    MenuPane_ObjectDetection_ByImages,
+    CanvasPane_ObjectDetection_ByImages: CanvasPane_ByImages,
+    MenuPane_ObjectDetection_ByImages: MenuPane_ByImages,
     Help_ObjectDetection,
   },
 })
-export default class Home_ObjectDetection_ByImages extends Vue {
+export default class Home_ByImages extends Vue {
 
   get sizeCheckVideoUrl() {
     return ImagePlayerStore.currentItemUrl;
@@ -55,9 +55,9 @@ export default class Home_ObjectDetection_ByImages extends Vue {
         () => HistoryStore.index,
         () => {
           const current = HistoryStore.current;
-          OperationStore_ObjectDetection.setOperation(current.value.operation);
+          OperationStore.setOperation(current.value.operation);
           EditSequencesStore.setSequences(current.value.editSequence);
-          AnnotationsStore_ObjectDetection.setAnnotation(current.value.annotation);
+          AnnotationsStore.setAnnotation(current.value.annotation);
         }
     );
   }
@@ -71,15 +71,15 @@ export default class Home_ObjectDetection_ByImages extends Vue {
 
   private makeHistoryRecord() {
     return new HistoryRecord({
-      operation: OperationStore_ObjectDetection.operation,
+      operation: OperationStore.operation,
       editSequence: EditSequencesStore.sequences,
-      annotation: AnnotationsStore_ObjectDetection.annotations,
+      annotation: AnnotationsStore.annotations,
     });
   }
 
   private addHistory() {
     HistoryStore.addHistory(this.makeHistoryRecord());
-    EditSequencesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: true});
   }
 }
 </script>

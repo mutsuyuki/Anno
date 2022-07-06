@@ -7,7 +7,7 @@ import {AnimalBoneModel} from "@/common/model/AnimalBoneModel";
 import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 
 // ----- interfaces -------------------------------
-export interface Annotation_Track {
+export interface Annotation {
   frame: string;
   objectId: string;
   behaviour_class: string;
@@ -19,7 +19,7 @@ export interface Annotation_Track {
 
 
 // ----- common function -------------------------------
-function makeDefaultAnnotation(frame: string, objectId: string): Annotation_Track {
+function makeDefaultAnnotation(frame: string, objectId: string): Annotation {
   return {
     frame: frame,
     objectId: objectId,
@@ -62,7 +62,7 @@ function makeDefaultAnnotation(frame: string, objectId: string): Annotation_Trac
   }
 }
 
-function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation_Track } }): string {
+function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation } }): string {
   const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
   const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
   const newestIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
@@ -78,10 +78,10 @@ function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]:
   namespaced: true
 })
 
-class AnnotationsStore_Track extends VuexModule {
+class AnnotationsStore extends VuexModule {
 
   // states
-  private _annotations: { [frame: string]: { [objectId: string]: Annotation_Track } } = {};
+  private _annotations: { [frame: string]: { [objectId: string]: Annotation } } = {};
 
   // getters
   get annotations() {
@@ -94,12 +94,12 @@ class AnnotationsStore_Track extends VuexModule {
 
 
   @Mutation
-  public setAnnotation(value: { [frame: string]: { [objectId: string]: Annotation_Track } }) {
+  public setAnnotation(value: { [frame: string]: { [objectId: string]: Annotation } }) {
     this._annotations = value;
   }
 
   @Mutation
-  public setAnnotationsOfFrame(value: { frame: string, data: { [objectId: string]: Annotation_Track } }) {
+  public setAnnotationsOfFrame(value: { frame: string, data: { [objectId: string]: Annotation } }) {
     if (!this._annotations[value.frame])
       Vue.set(this._annotations, value.frame, {});
 
@@ -424,4 +424,4 @@ class AnnotationsStore_Track extends VuexModule {
   }
 }
 
-export default getModule(AnnotationsStore_Track);
+export default getModule(AnnotationsStore);

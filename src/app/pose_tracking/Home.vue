@@ -22,28 +22,28 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane_Track from "@/app/track_annotation/MenuPane_Track.vue";
-import CanvasPane_Track from "@/app/track_annotation/CanvasPane_Track.vue";
-import Help_Track from "@/app/track_annotation/Help_Track.vue";
+import MenuPane from "@/app/track_annotation/MenuPane.vue";
+import CanvasPane from "@/app/track_annotation/CanvasPane.vue";
+import Help from "@/app/track_annotation/Help.vue";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
-import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
+import OperationStore from "@/app/track_annotation/store/OperationStore";
 import EditSequencesStore from "@/store/EditSequenceStore";
-import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
+import AnnotationsStore from "@/app/track_annotation/store/AnnotationsStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
 @Component({
   components: {
     AnnotationPageLayout,
-    CanvasPane_Track,
-    MenuPane_Track,
-    Help_Track,
+    CanvasPane_Track: CanvasPane,
+    MenuPane_Track: MenuPane,
+    Help_Track: Help,
   },
 })
-export default class Home_Track extends Vue {
+export default class Home extends Vue {
 
   get sizeCheckVideoUrl() {
     return VideoPlayerStore.url;
@@ -57,9 +57,9 @@ export default class Home_Track extends Vue {
         () => HistoryStore.index,
         () => {
           const current = HistoryStore.current;
-          OperationStore_Track.setOperation(current.value.operation);
+          OperationStore.setOperation(current.value.operation);
           EditSequencesStore.setSequences(current.value.editSequence);
-          AnnotationsStore_Track.setAnnotation(current.value.annotation);
+          AnnotationsStore.setAnnotation(current.value.annotation);
         }
     );
   }
@@ -74,14 +74,14 @@ export default class Home_Track extends Vue {
   private makeHistoryRecord() {
     return new HistoryRecord({
       editSequence: EditSequencesStore.sequences,
-      operation: OperationStore_Track.operation,
-      annotation: AnnotationsStore_Track.annotations,
+      operation: OperationStore.operation,
+      annotation: AnnotationsStore.annotations,
     });
   }
 
   private addHistory() {
     HistoryStore.addHistory(this.makeHistoryRecord());
-    EditSequencesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: true});
   }
 }
 </script>

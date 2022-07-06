@@ -1,6 +1,6 @@
 <template>
 
-  <Help :descriptions="[
+  <HelpBase :descriptions="[
         {
             title: 'アノテーションの追加方法',
             body: '<span>c キー</span> or「新しいデータを作る」ボタンを押す',
@@ -27,12 +27,12 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
-import Help from "@/components/UI_Singleton/Help/Help.vue";
+import HelpBase from "@/components/UI_Singleton/Help/HelpBase.vue";
 
 @Component({
-  components: {Help},
+  components: {HelpBase},
 })
-export default class Help_ObjectDetection extends Vue {
+export default class Help extends Vue {
 
 }
 </script>

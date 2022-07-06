@@ -51,7 +51,7 @@ import MenuFooter from "@/components/Menu/MenuFooter.vue";
     FileSelector
   }
 })
-export default class MenuPane_Hair extends Vue {
+export default class MenuPane extends Vue {
 
   get isImageSelected() {
     return ImagePlayerStore.numberOfItems > 0;

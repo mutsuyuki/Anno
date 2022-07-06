@@ -41,8 +41,8 @@ import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import OperationStore_ObjectDetection from "@/app/object_detection_annotation/store/OperationStore_ObjectDetection";
-import AnnotationsStore_ObjectDetection, {Annotation_ObjectDetection} from "@/app/object_detection_annotation/store/AnnotationsStore_ObjectDetection";
+import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/object_detection_annotation/store/AnnotationsStore";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
@@ -62,7 +62,7 @@ import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore"
     ImagePlayer,
   }
 })
-export default class CanvasPane_ObjectDetection_ByImages extends Vue {
+export default class CanvasPane_ByImages extends Vue {
   private graphics: Graphic[] = [];
 
   private lineColors: { [id: string]: Color } = {
@@ -89,11 +89,11 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
   }
 
   get operationOfCurrentFrame(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore_ObjectDetection.frame] || {};
+    return EditSequencesStore.sequences[OperationStore.frame] || {};
   }
 
-  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation_ObjectDetection } {
-    return AnnotationsStore_ObjectDetection.annotations[OperationStore_ObjectDetection.frame] || {};
+  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
+    return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
   get opacity() {
@@ -109,19 +109,19 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
       result.push({
         text: annotation.class + " : " + className,
         position: {x: annotation.bounding.left * 100, y: annotation.bounding.top * 100},
-        isActive: objectId == OperationStore_ObjectDetection.selectingObjectId
+        isActive: objectId == OperationStore.selectingObjectId
       })
     }
     return result;
   }
 
   get selectingObject() {
-    const frame = OperationStore_ObjectDetection.frame;
-    if (!AnnotationsStore_ObjectDetection.annotations[frame])
+    const frame = OperationStore.frame;
+    if (!AnnotationsStore.annotations[frame])
       return null;
 
-    const objectId = OperationStore_ObjectDetection.selectingObjectId;
-    return AnnotationsStore_ObjectDetection.annotations[frame][objectId];
+    const objectId = OperationStore.selectingObjectId;
+    return AnnotationsStore.annotations[frame][objectId];
   }
 
   created() {
@@ -134,15 +134,15 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
 
     // 選択対象やモードが変わった
     this.$watch(
-        () => OperationStore_ObjectDetection.operation,
+        () => OperationStore.operation,
         () => this.draw(),
         {deep: true}
     );
 
     // フレームが変わった
     this.$watch(
-        () => OperationStore_ObjectDetection.frame,
-        () => EditSequencesStore.createIfNothing(OperationStore_ObjectDetection.frame),
+        () => OperationStore.frame,
+        () => EditSequencesStore.createIfNothing(OperationStore.frame),
         {deep: true, immediate: true}
     );
 
@@ -156,7 +156,7 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
     // 画像が切り替わった
     this.$watch(
         () => ImagePlayerStore.currentName,
-        () => OperationStore_ObjectDetection.setFrame(FileUtil.removeExtension(ImagePlayerStore.currentName)),
+        () => OperationStore.setFrame(FileUtil.removeExtension(ImagePlayerStore.currentName)),
         {deep: true}
     );
 
@@ -180,7 +180,7 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
 
     for (const objectId in this.annotationsOfCurrentFrame) {
       const annotation = this.annotationsOfCurrentFrame[objectId];
-      const isSelecting = OperationStore_ObjectDetection.selectingObjectId == objectId;
+      const isSelecting = OperationStore.selectingObjectId == objectId;
 
       const classId = annotation.class;
       const boundingColor = Object.assign({}, this.lineColors[classId], {a: isSelecting ? 1 : 0.5});
@@ -198,7 +198,7 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
   }
 
   private async restoreAnnotation() {
-    AnnotationsStore_ObjectDetection.clear();
+    AnnotationsStore.clear();
 
     for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
       const frame = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
@@ -211,7 +211,7 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
         reader.readAsText(AnnotationFilesStore.items[i]);
       });
 
-      AnnotationsStore_ObjectDetection.setAnnotationsOfFrame({
+      AnnotationsStore.setAnnotationsOfFrame({
         frame: frame,
         data: JSON.parse(fileText as string)
       });
@@ -234,13 +234,13 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
       // 削除
       if (clickedBounding.objectId) {
 
-        AnnotationsStore_ObjectDetection.deleteObject({
-          frame: OperationStore_ObjectDetection.frame,
+        AnnotationsStore.deleteObject({
+          frame: OperationStore.frame,
           objectId: clickedBounding.objectId
         });
 
-        OperationStore_ObjectDetection.setSelectingObjectId("");
-        OperationStore_ObjectDetection.setSelectingEdge({
+        OperationStore.setSelectingObjectId("");
+        OperationStore.setSelectingEdge({
           top: false,
           right: false,
           bottom: false,
@@ -251,34 +251,34 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
       }
     } else {
       // 選択
-      OperationStore_ObjectDetection.setSelectingObjectId(clickedBounding.objectId);
-      OperationStore_ObjectDetection.setSelectingEdge(clickedBounding.selectingEdge);
+      OperationStore.setSelectingObjectId(clickedBounding.objectId);
+      OperationStore.setSelectingEdge(clickedBounding.selectingEdge);
     }
 
   }
 
   private onDrag(e: MovingPoint) {
     if (this.selectingObject) {
-      const frame = OperationStore_ObjectDetection.frame;
-      const objectId = OperationStore_ObjectDetection.selectingObjectId;
+      const frame = OperationStore.frame;
+      const objectId = OperationStore.selectingObjectId;
 
       let bounding = DeepCloner.copy(this.selectingObject.bounding);
 
-      const isEdgeSelect = Object.values(OperationStore_ObjectDetection.selectingEdge).filter(v => v).length >= 1;
+      const isEdgeSelect = Object.values(OperationStore.selectingEdge).filter(v => v).length >= 1;
       if (isEdgeSelect) {
         // 端のドラッグは矩形の拡大縮小
-        if (OperationStore_ObjectDetection.selectingEdge.left) {
+        if (OperationStore.selectingEdge.left) {
           bounding.left += e.deltaX;
           bounding.width -= e.deltaX;
         }
-        if (OperationStore_ObjectDetection.selectingEdge.right) {
+        if (OperationStore.selectingEdge.right) {
           bounding.width += e.deltaX;
         }
-        if (OperationStore_ObjectDetection.selectingEdge.top) {
+        if (OperationStore.selectingEdge.top) {
           bounding.top += e.deltaY;
           bounding.height -= e.deltaY;
         }
-        if (OperationStore_ObjectDetection.selectingEdge.bottom) {
+        if (OperationStore.selectingEdge.bottom) {
           bounding.height += e.deltaY;
         }
       } else {
@@ -287,7 +287,7 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
         bounding.left += e.deltaX;
       }
 
-      AnnotationsStore_ObjectDetection.setBounding({
+      AnnotationsStore.setBounding({
         frame: frame,
         objectId: objectId,
         bounding: bounding
@@ -342,10 +342,10 @@ export default class CanvasPane_ObjectDetection_ByImages extends Vue {
 
   private async onDownload() {
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
-    FileDownloader.downloadJsonFile(OperationStore_ObjectDetection.frame + ".json", json);
+    FileDownloader.downloadJsonFile(OperationStore.frame + ".json", json);
 
-    EditSequencesStore.setIsDownloaded({frame: OperationStore_ObjectDetection.frame, isDownloaded: true});
-    EditSequencesStore.setIsDirty({frame: OperationStore_ObjectDetection.frame, isDirty: false});
+    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
 }
 

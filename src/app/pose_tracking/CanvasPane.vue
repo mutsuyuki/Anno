@@ -114,8 +114,8 @@ import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
-import AnnotationsStore_Track, {Annotation_Track} from "@/app/track_annotation/store/AnnotationsStore_Track";
+import OperationStore from "@/app/track_annotation/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/track_annotation/store/AnnotationsStore";
 import MultiLines from "@/components/Canvas/Renderer/MultiLines";
 import MultiCircles from "@/components/Canvas/Renderer/MultiCircles";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
@@ -144,7 +144,7 @@ import {AnimalBoneModel} from "@/common/model/AnimalBoneModel";
     ImagePlayer,
   }
 })
-export default class CanvasPane_Track extends Vue {
+export default class CanvasPane extends Vue {
   private isDeleteMode: boolean = false;
 
   private dragStartPosition: MovingPoint = MovingPointUtil.zero();
@@ -166,7 +166,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get currentEditSequence(): EditSequence {
-    return EditSequencesStore.sequences[OperationStore_Track.frame] || ({} as EditSequence);
+    return EditSequencesStore.sequences[OperationStore.frame] || ({} as EditSequence);
   }
 
   get isUseAnnotationFile() {
@@ -179,7 +179,7 @@ export default class CanvasPane_Track extends Vue {
 
   // --- VideoPlayer ---------
   get seekFrame(): number {
-    return Number(this.frame == OperationStore_Track.frame ? -1 : OperationStore_Track.frame);
+    return Number(this.frame == OperationStore.frame ? -1 : OperationStore.frame);
   }
 
   get overlayOpacity() {
@@ -197,12 +197,12 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get bodyOpacity() {
-    return OperationStore_Track.isBoundingMode ? 1 : 0.7;
+    return OperationStore.isBoundingMode ? 1 : 0.7;
   }
 
   // --- AnimalBoneOverlay ---------------------
   get useBoneInteraction() {
-    return OperationStore_Track.isBoneMode;
+    return OperationStore.isBoneMode;
   }
 
   get animalBones(): { [objectId: string]: AnimalBoneModel } {
@@ -215,12 +215,12 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get boneOpacity() {
-    return OperationStore_Track.isBoneMode ? 1 : 0.7;
+    return OperationStore.isBoneMode ? 1 : 0.7;
   }
 
   // --- BondingBoxOverlay (neck mark) ---------
   get useNeckMarkInteraction() {
-    return OperationStore_Track.isNeckMarkMode;
+    return OperationStore.isNeckMarkMode;
   }
 
   get neckMarkBoundingBoxes(): { [objectId: string]: BoundingBoxModel } {
@@ -235,7 +235,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   get neckMarkOpacity() {
-    return OperationStore_Track.isNeckMarkMode ? 1 : 0.7;
+    return OperationStore.isNeckMarkMode ? 1 : 0.7;
   }
 
   // --- TextOverlay (behaviour and neck mark) ---------
@@ -261,13 +261,13 @@ export default class CanvasPane_Track extends Vue {
 
   // --- TextOverlay (joint name) ---------
   get pointingJointLabel(): { text: string, position: { x: string, y: string }, isActive: boolean }[] {
-    const hoveringObjectId = OperationStore_Track.hoveringObjectId;
+    const hoveringObjectId = OperationStore.hoveringObjectId;
     const targetAnnotation = this.currentAnnotations[hoveringObjectId];
     if (!targetAnnotation) {
       return [];
     }
 
-    const hoveringJointName = OperationStore_Track.hoveringJointName;
+    const hoveringJointName = OperationStore.hoveringJointName;
     const targetJoint = (<any>targetAnnotation).bone[hoveringJointName];
     if (!targetJoint) {
       return [];
@@ -284,23 +284,23 @@ export default class CanvasPane_Track extends Vue {
   }
 
   // --- Common getter ---------
-  get currentAnnotations(): { [objectId: string]: Annotation_Track } {
-    return AnnotationsStore_Track.annotations[OperationStore_Track.frame] || {};
+  get currentAnnotations(): { [objectId: string]: Annotation } {
+    return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
   get selectingObjectId() {
-    return OperationStore_Track.selectingObjectId;
+    return OperationStore.selectingObjectId;
   }
 
   get selectingJointName() {
-    return OperationStore_Track.selectingJointName;
+    return OperationStore.selectingJointName;
   }
 
   created() {
     // フレームが変わった
     this.$watch(
-        () => OperationStore_Track.frame,
-        () => EditSequencesStore.createIfNothing(OperationStore_Track.frame),
+        () => OperationStore.frame,
+        () => EditSequencesStore.createIfNothing(OperationStore.frame),
         {deep: true, immediate: true}
     );
 
@@ -326,7 +326,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private async restoreAnnotation() {
-    AnnotationsStore_Track.clear();
+    AnnotationsStore.clear();
 
     for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
       const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
@@ -341,7 +341,7 @@ export default class CanvasPane_Track extends Vue {
         reader.readAsText(AnnotationFilesStore.items[i]);
       });
 
-      AnnotationsStore_Track.setAnnotationsOfFrame({
+      AnnotationsStore.setAnnotationsOfFrame({
         frame: frame,
         data: JSON.parse(fileText as string)
       });
@@ -358,25 +358,25 @@ export default class CanvasPane_Track extends Vue {
   // --- body bounding box overlay callback ------------------------------------------
   private onChangeStartBodyBoundingBox(objectId: string) {
     // bodyの矩形を押下した場合モード関係なく選択状態にする
-    OperationStore_Track.setSelectingObjectId(objectId);
+    OperationStore.setSelectingObjectId(objectId);
   }
 
   private onMoveBodyBoundingBox(objectId: string, bounding: BoundingBoxModel) {
-    if (OperationStore_Track.isBoundingMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.setBounding({
+    if (OperationStore.isBoundingMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.setBounding({
         frame: frame,
         objectId: objectId,
         bounding: bounding
       });
 
-      AnnotationsStore_Track.moveJointPositions({
+      AnnotationsStore.moveJointPositions({
         frame: frame,
         objectId: objectId,
         moveAmount: {x: this.draggingPosition.deltaX, y: this.draggingPosition.deltaY}
       })
 
-      AnnotationsStore_Track.moveNeckMarkBounding({
+      AnnotationsStore.moveNeckMarkBounding({
         frame: frame,
         objectId: objectId,
         moveAmount: {x: this.draggingPosition.deltaX, y: this.draggingPosition.deltaY}
@@ -386,9 +386,9 @@ export default class CanvasPane_Track extends Vue {
 
 
   private onResizeBodyBoundingBox(objectId: string, bounding: BoundingBoxModel) {
-    if (OperationStore_Track.isBoundingMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.setBounding({
+    if (OperationStore.isBoundingMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.setBounding({
         frame: frame,
         objectId: objectId,
         bounding: bounding
@@ -397,21 +397,21 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onChangeEndBodyBoundingBox(objectId: string) {
-    if (OperationStore_Track.isBoundingMode) {
+    if (OperationStore.isBoundingMode) {
       this.addHistory();
     }
   }
 
   private onUnselectBodyBoundingBox() {
-    if (OperationStore_Track.isBoundingMode) {
-      OperationStore_Track.setSelectingObjectId("");
+    if (OperationStore.isBoundingMode) {
+      OperationStore.setSelectingObjectId("");
     }
   }
 
   private onDeleteBodyBoundingBox(objectId: string) {
-    if (OperationStore_Track.isBoundingMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.deleteObject({
+    if (OperationStore.isBoundingMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.deleteObject({
         frame: frame,
         objectId: objectId,
       });
@@ -422,16 +422,16 @@ export default class CanvasPane_Track extends Vue {
 
   // --- bone overlay callback ------------------------------------------
   private onChangeStartBone(objectId: string, jointName: string) {
-    if (OperationStore_Track.isBoneMode) {
-      OperationStore_Track.setSelectingObjectId(objectId);
-      OperationStore_Track.setSelectingJointName(jointName);
+    if (OperationStore.isBoneMode) {
+      OperationStore.setSelectingObjectId(objectId);
+      OperationStore.setSelectingJointName(jointName);
     }
   }
 
   private onChangeBone(objectId: string, jointName: string, position: Point) {
-    if (OperationStore_Track.isBoneMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.setJointPosition({
+    if (OperationStore.isBoneMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.setJointPosition({
         frame: frame,
         objectId: objectId,
         jointName: jointName,
@@ -441,7 +441,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onChangeEndBone(objectId: string, jointName: string) {
-    if (OperationStore_Track.isBoneMode) {
+    if (OperationStore.isBoneMode) {
       this.addHistory();
     }
   }
@@ -451,9 +451,9 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDeleteBone(objectId: string, jointName: string) {
-    if (OperationStore_Track.isBoneMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.deleteJoint({
+    if (OperationStore.isBoneMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.deleteJoint({
         frame: frame,
         objectId: objectId,
         jointName: jointName
@@ -463,21 +463,21 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onHoverBone(objectId: string, jointName: string) {
-    OperationStore_Track.setHoveringObjectId(objectId);
-    OperationStore_Track.setHoveringJointName(jointName);
+    OperationStore.setHoveringObjectId(objectId);
+    OperationStore.setHoveringJointName(jointName);
   }
 
   // --- neck mark overlay callback ------------------------------------------
   private onChangeStartNeckMarkBoundingBox(objectId: string) {
-    if (OperationStore_Track.isNeckMarkMode) {
-      OperationStore_Track.setSelectingObjectId(objectId)
+    if (OperationStore.isNeckMarkMode) {
+      OperationStore.setSelectingObjectId(objectId)
     }
   }
 
   private onChangeNeckMarkBoundingBox(objectId: string, bounding: BoundingBoxModel) {
-    if (OperationStore_Track.isNeckMarkMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.setNeckMarkBounding({
+    if (OperationStore.isNeckMarkMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.setNeckMarkBounding({
         frame: frame,
         objectId: objectId,
         neck_mark_bounding: bounding
@@ -486,7 +486,7 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onChangeEndNeckMarkBoundingBox(objectId: string) {
-    if (OperationStore_Track.isNeckMarkMode) {
+    if (OperationStore.isNeckMarkMode) {
       this.addHistory();
     }
   }
@@ -496,9 +496,9 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onDeleteNeckMarkBoundingBox(objectId: string) {
-    if (OperationStore_Track.isNeckMarkMode) {
-      const frame = OperationStore_Track.frame;
-      AnnotationsStore_Track.deleteNeckMark({
+    if (OperationStore.isNeckMarkMode) {
+      const frame = OperationStore.frame;
+      AnnotationsStore.deleteNeckMark({
         frame: frame,
         objectId: objectId,
       });
@@ -514,7 +514,7 @@ export default class CanvasPane_Track extends Vue {
 
   private onTimeUpdate(frame: number): void {
     this.frame = frame.toString();
-    OperationStore_Track.setFrame(this.frame);
+    OperationStore.setFrame(this.frame);
   }
 
   private async onDownload() {
@@ -522,14 +522,14 @@ export default class CanvasPane_Track extends Vue {
   }
 
   private onPrepareBlob(videoImageBlob: Blob) {
-    const fileName = FileUtil.removeExtension(this.videoFileName) + "___" + OperationStore_Track.frame + "___";
+    const fileName = FileUtil.removeExtension(this.videoFileName) + "___" + OperationStore.frame + "___";
     FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
     const json = JSON.stringify(this.currentAnnotations);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
-    EditSequencesStore.setIsDownloaded({frame: OperationStore_Track.frame, isDownloaded: true});
-    EditSequencesStore.setIsDirty({frame: OperationStore_Track.frame, isDirty: false});
+    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
 }
 

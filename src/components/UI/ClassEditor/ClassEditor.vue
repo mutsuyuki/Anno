@@ -69,17 +69,21 @@ export default class ClassEditor extends Vue {
 
   private onSelect(id: string) {
     ClassEditorStore.setSelectId(id);
+    this.$emit("select", id)
   }
 
   private onDelete(id: string) {
     const deleteTarget = this.classes.filter(v => v.id == id)[0];
     const isDeleteOK = confirm(deleteTarget.id + " : " + deleteTarget.text + "を削除して良いですか？");
-    if (isDeleteOK)
+    if (isDeleteOK){
       ClassEditorStore.removeClass(id)
+      this.$emit("delete", id)
+    }
   }
 
   private onClickAdd() {
     ClassEditorStore.addClassByName(this.newClassName)
+    this.$emit("add", this.newClassName)
   }
 
 }

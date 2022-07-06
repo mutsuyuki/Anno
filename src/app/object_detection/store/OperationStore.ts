@@ -15,7 +15,7 @@ export interface Operation_ObjectDetection {
   namespaced: true
 })
 
-class OperationStore_ObjectDetection extends VuexModule {
+class OperationStore extends VuexModule {
 
   // states
   private _operation: Operation_ObjectDetection = {
@@ -74,4 +74,4 @@ class OperationStore_ObjectDetection extends VuexModule {
 
 }
 
-export default getModule(OperationStore_ObjectDetection);
+export default getModule(OperationStore);

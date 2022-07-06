@@ -1,6 +1,6 @@
 <template>
 
-  <Help :descriptions="[
+  <HelpBase :descriptions="[
 
         {
             title: '毛穴+毛の方向指定',
@@ -32,12 +32,12 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
-import Help from "@/components/UI_Singleton/Help/Help.vue";
+import HelpBase from "@/components/UI_Singleton/Help/HelpBase.vue";
 
 @Component({
-  components: {Help},
+  components: {HelpBase},
 })
-export default class Help_Hair extends Vue {
+export default class Help extends Vue {
 
 }
 </script>

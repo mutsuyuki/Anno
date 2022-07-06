@@ -123,8 +123,8 @@ import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
-import AnnotationsStore_Track from "@/app/track_annotation/store/AnnotationsStore_Track";
-import OperationStore_Track from "@/app/track_annotation/store/OperationStore_Track";
+import AnnotationsStore from "@/app/track_annotation/store/AnnotationsStore";
+import OperationStore from "@/app/track_annotation/store/OperationStore";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
@@ -145,7 +145,7 @@ import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
     MenuHeader,
   }
 })
-export default class MenuPane_Track extends Vue {
+export default class MenuPane extends Vue {
 
   get isVideoSelected() {
     return VideoPlayerStore.isSelected;
@@ -156,20 +156,20 @@ export default class MenuPane_Track extends Vue {
   }
 
   get selectedMode() {
-    return OperationStore_Track.annotationMode;
+    return OperationStore.annotationMode;
   }
 
   get selectingObject() {
-    const frame = OperationStore_Track.frame;
-    if (!AnnotationsStore_Track.annotations[frame])
+    const frame = OperationStore.frame;
+    if (!AnnotationsStore.annotations[frame])
       return null;
 
-    const objectId = OperationStore_Track.selectingObjectId;
-    return AnnotationsStore_Track.annotations[frame][objectId];
+    const objectId = OperationStore.selectingObjectId;
+    return AnnotationsStore.annotations[frame][objectId];
   }
 
   get isFirstFrame() {
-    return Number(OperationStore_Track.frame) <= 0;
+    return Number(OperationStore.frame) <= 0;
   }
 
   get isNeckExist() {
@@ -201,27 +201,27 @@ export default class MenuPane_Track extends Vue {
   }
 
   private onSelectCreateData(_: number) {
-    AnnotationsStore_Track.create(OperationStore_Track.frame);
-    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
-    OperationStore_Track.setModeToBounding();
+    AnnotationsStore.create(OperationStore.frame);
+    OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
+    OperationStore.setModeToBounding();
     this.addHistory();
   }
 
   private onSelectCopyData(_: string) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
+    const frame = OperationStore.frame;
+    const objectId = OperationStore.selectingObjectId;
 
-    AnnotationsStore_Track.copyObject({frame: frame, objectId: objectId});
-    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
-    OperationStore_Track.setModeToBounding();
+    AnnotationsStore.copyObject({frame: frame, objectId: objectId});
+    OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
+    OperationStore.setModeToBounding();
 
     this.addHistory();
   }
 
   private onSelectCopyFrame(_: string) {
-    AnnotationsStore_Track.copyPrevFrameObjects(OperationStore_Track.frame);
-    OperationStore_Track.setSelectingObjectId(AnnotationsStore_Track.newestObjectId);
-    OperationStore_Track.setModeToBounding();
+    AnnotationsStore.copyPrevFrameObjects(OperationStore.frame);
+    OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
+    OperationStore.setModeToBounding();
 
     this.addHistory();
   }
@@ -229,53 +229,53 @@ export default class MenuPane_Track extends Vue {
   private onSelectMode(mode: string) {
     switch (mode) {
       case "bounding":
-        OperationStore_Track.setModeToBounding();
+        OperationStore.setModeToBounding();
         break;
       case "bone":
-        OperationStore_Track.setModeToBone();
+        OperationStore.setModeToBone();
         break;
       case "neck_mark":
-        OperationStore_Track.setModeToNeckMark();
+        OperationStore.setModeToNeckMark();
         break;
     }
   }
 
   private onSelectBehaviour(classNo: string) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.setBehaviour({frame: frame, objectId: objectId, behaviour_class: classNo});
+    const frame = OperationStore.frame;
+    const objectId = OperationStore.selectingObjectId;
+    AnnotationsStore.setBehaviour({frame: frame, objectId: objectId, behaviour_class: classNo});
 
     this.addHistory();
   }
 
   private onClickFlipJoint(_: number) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.flipJoint({frame: frame, objectId: objectId});
+    const frame = OperationStore.frame;
+    const objectId = OperationStore.selectingObjectId;
+    AnnotationsStore.flipJoint({frame: frame, objectId: objectId});
 
     this.addHistory();
   }
 
   private onClickRebirthJoint(_: number) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.rebirthJoint({frame: frame, objectId: objectId});
+    const frame = OperationStore.frame;
+    const objectId = OperationStore.selectingObjectId;
+    AnnotationsStore.rebirthJoint({frame: frame, objectId: objectId});
 
     this.addHistory();
   }
 
   private onClickCreateNeckMark(_: number) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.createNeckMark({frame: frame, objectId: objectId});
+    const frame = OperationStore.frame;
+    const objectId = OperationStore.selectingObjectId;
+    AnnotationsStore.createNeckMark({frame: frame, objectId: objectId});
 
     this.addHistory();
   }
 
   private onSelectNeckMark(classNo: string) {
-    const frame = OperationStore_Track.frame;
-    const objectId = OperationStore_Track.selectingObjectId;
-    AnnotationsStore_Track.setNeckMarkClass({frame: frame, objectId: objectId, neck_mark_class: classNo});
+    const frame = OperationStore.frame;
+    const objectId = OperationStore.selectingObjectId;
+    AnnotationsStore.setNeckMarkClass({frame: frame, objectId: objectId, neck_mark_class: classNo});
 
     this.addHistory();
   }
