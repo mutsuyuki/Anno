@@ -49,16 +49,16 @@ class AnnotationsStore extends VuexModule {
   }
 
   @Mutation
-  public create(frame: string, annotation: Annotation) {
-    if (!this._annotations[frame])
-      Vue.set(this._annotations, frame, {});
+  public create(value: {frame: string, annotation: Annotation}) {
+    if (!this._annotations[value.frame])
+      Vue.set(this._annotations, value.frame, {});
 
     const newObjectId = (Number(getNewestObjectId(this._annotations)) + 1).toString();
 
     Vue.set(
-      this._annotations[frame],
+      this._annotations[value.frame],
       newObjectId,
-      annotation
+      value.annotation
     );
   }
 

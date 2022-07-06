@@ -1,40 +1,85 @@
 <template>
-  <div>
+  <AnnotationPageLayout>
+    <template v-slot:menu>
+      <MenuPane @addHistory="addHistory"/>
+    </template>
 
-    <div class="main_container">
-      <MenuPane_Hair class="menu_pane"/>
-      <div class="canvas_pane_container">
-        <!--                <CanvasPane_Hair class="canvas_pane"/>-->
-      </div>
-    </div>
+    <template v-slot:editor>
+      <CanvasPane @addHistory="addHistory"/>
+    </template>
 
-    <Help_Hair/>
-  </div>
+    <template v-slot:size-check-target>
+      <img :src="sizeCheckVideoUrl">
+    </template>
+
+    <template v-slot:help>
+      <Help/>
+    </template>
+  </AnnotationPageLayout>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane from "@/app/hair_annotation/MenuPane.vue";
-// import CanvasPane_Hair from "@/app/hair_annotation/CanvasPane.vue";
-import Help from "@/app/hair_annotation/Help.vue";
+import MenuPane from "@/app/pore/MenuPane.vue";
+import CanvasPane from "@/app/pore/CanvasPane.vue";
+import Help from "@/app/pore/Help.vue";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
-import HistoryStore from "@/store/HistoryStore";
+import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
+import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
+import EditSequencesStore from "@/store/EditSequenceStore";
+import AnnotationsStore from "@/app/pore/store/AnnotationsStore";
+import OperationStore from "@/app/pore/store/OperationStore";
 
 @Component({
   components: {
-    // CanvasPane_Hair,
-    MenuPane_Hair: MenuPane,
-    Help_Hair: Help,
+    AnnotationPageLayout,
+    CanvasPane,
+    MenuPane,
+    Help,
   },
 })
 export default class Home extends Vue {
+  get sizeCheckVideoUrl() {
+    return ImagePlayerStore.currentItemUrl;
+  }
+
+  mounted() {
+    HistoryStore.init(this.makeHistoryRecord());
+
+    // ヒストリが変わった
+    this.$watch(
+        () => HistoryStore.index,
+        () => {
+          const current = HistoryStore.current;
+          console.log("change", current.value.annotation)
+          OperationStore.setOperation(current.value.operation);
+          EditSequencesStore.setSequences(current.value.editSequence);
+          AnnotationsStore.setAnnotation(current.value.annotation);
+        }
+    );
+  }
+
   destroyed() {
     ImagePlayerStore.clear();
     AnnotationFilesStore.clear();
     HistoryStore.clear();
     HelpStore.hide();
+  }
+
+  private makeHistoryRecord() {
+    console.log("make", AnnotationsStore.annotations)
+    return new HistoryRecord({
+      operation: OperationStore.operation,
+      editSequence: EditSequencesStore.sequences,
+      annotation: AnnotationsStore.annotations,
+    });
+  }
+
+  private addHistory() {
+    HistoryStore.addHistory(this.makeHistoryRecord());
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: true});
   }
 }
 </script>

@@ -38,12 +38,11 @@
           <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
           <ClassEditor
               :classes="classes"
-              :selectId="selectedClass"
+              :selectedId="selectedClass"
               @select="onSelectClass"
               @delete="onDeleteClass"
               @add="onAddClass"
           />
-
         </div>
 
       </div>
@@ -60,20 +59,19 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileSelector from "@/components/UI/FileSelector/FileSelector.vue";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
-import AnnotationsStore
-  from "@/app/object_detection_annotation/store/AnnotationsStore";
-import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
-import ClassEditor from "@/components/UI_Singleton/ClassEditor/ClassEditor.vue";
-import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
+import ClassEditor from "@/components/UI/ClassEditor/ClassEditor.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
+import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
+import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
+import AnnotationFilesStore from "@/store/AnnotationFilesStore";
+import ClassListStore from "@/app/object_detection/store/ClassListStore";
 
 @Component({
   components: {
@@ -88,24 +86,22 @@ import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 })
 export default class MenuPane extends Vue {
   mounted() {
-    ClassEditorStore.addClass({id: "0", text: "piman"});
-    ClassEditorStore.addClass({id: "1", text: "stem"});
-
     document.addEventListener("keydown", (e) => {
       if (e.key == "c") {
         this.onSelectCreateData(-1);
       }
-      if (e.key == "0") {
-        this.onSelectClass("0" as any);
-      }
-      if (e.key == "1") {
-        this.onSelectClass("1" as any);
+      if (parseInt(e.key)) {
+        this.onSelectClass(e.key);
       }
     });
   }
 
   get isVideoSelected() {
     return VideoPlayerStore.isSelected;
+  }
+
+  get classes(){
+    return ClassListStore.classList
   }
 
   get selectedClass() {
@@ -119,10 +115,6 @@ export default class MenuPane extends Vue {
 
     const objectId = OperationStore.selectingObjectId;
     return AnnotationsStore.annotations[frame][objectId];
-  }
-
-  get classes() {
-    return ClassEditorStore.classesArray;
   }
 
   private onSelectVideoFile(files: File[]) {
@@ -144,31 +136,34 @@ export default class MenuPane extends Vue {
   }
 
   private onSelectCopyData() {
-    const frame = OperationStore.frame;
-    const objectId = OperationStore.selectingObjectId;
-
-    AnnotationsStore.copyObject({frame: frame, objectId: objectId});
+    AnnotationsStore.copyObject({
+      frame: OperationStore.frame,
+      objectId: OperationStore.selectingObjectId
+    });
     OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
 
     this.addHistory();
   }
 
-  private onSelectClass(classNo: number) {
-    console.log("class is ", classNo);
-    const frame = OperationStore.frame;
-    const objectId = OperationStore.selectingObjectId;
-    AnnotationsStore.setClass({frame: frame, objectId: objectId, class: classNo});
-
+  private onSelectClass(classNo: string) {
+    AnnotationsStore.setClass({
+      frame: OperationStore.frame,
+      objectId: OperationStore.selectingObjectId,
+      class: classNo
+    });
     this.addHistory();
   }
 
-  private onDeleteClass(classNo: number) {
-    ClassEditorStore.removeClass(classNo.toString());
+  private onDeleteClass(classNo: string) {
+    ClassListStore.deleteClass(classNo)
+    this.addHistory();
   }
 
   private onAddClass(className: string) {
-    ClassEditorStore.addClassByName(className);
+    ClassListStore.addClassByName(className)
+    this.addHistory();
   }
+
 
   private addHistory() {
     this.$emit("addHistory")

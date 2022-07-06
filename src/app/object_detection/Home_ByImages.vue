@@ -1,11 +1,11 @@
 <template>
   <AnnotationPageLayout>
     <template v-slot:menu>
-      <MenuPane_ObjectDetection_ByImages @addHistory="addHistory"/>
+      <MenuPane_ByImages @addHistory="addHistory"/>
     </template>
 
     <template v-slot:editor>
-      <CanvasPane_ObjectDetection_ByImages @addHistory="addHistory"/>
+      <CanvasPane_ByImages @addHistory="addHistory"/>
     </template>
 
     <template v-slot:size-check-target>
@@ -13,32 +13,31 @@
     </template>
 
     <template v-slot:help>
-      <Help_ObjectDetection/>
+      <Help/>
     </template>
   </AnnotationPageLayout>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane_ByImages from "@/app/object_detection_annotation/MenuPane_ByImages.vue";
-import CanvasPane_ByImages
-  from "@/app/object_detection_annotation/CanvasPane_ByImages.vue";
-import Help_ObjectDetection from "@/app/object_detection_annotation/Help.vue";
+import MenuPane_ByImages from "@/app/object_detection/MenuPane_ByImages.vue";
+import CanvasPane_ByImages from "@/app/object_detection/CanvasPane_ByImages.vue";
+import Help from "@/app/object_detection/Help.vue";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
 import EditSequencesStore from "@/store/EditSequenceStore";
-import AnnotationsStore from "@/app/object_detection_annotation/store/AnnotationsStore";
+import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
 @Component({
   components: {
     AnnotationPageLayout,
-    CanvasPane_ObjectDetection_ByImages: CanvasPane_ByImages,
-    MenuPane_ObjectDetection_ByImages: MenuPane_ByImages,
-    Help_ObjectDetection,
+    CanvasPane_ByImages,
+    MenuPane_ByImages,
+    Help,
   },
 })
 export default class Home_ByImages extends Vue {

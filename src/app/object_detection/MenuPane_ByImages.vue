@@ -67,10 +67,10 @@ import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import AnnotationsStore
-  from "@/app/object_detection_annotation/store/AnnotationsStore";
-import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
-import ClassEditor from "@/components/UI_Singleton/ClassEditor/ClassEditor.vue";
-import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
+  from "@/app/object_detection/store/AnnotationsStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
+import ClassEditor from "@/components/UI/ClassEditor/ClassEditor.vue";
+import ClassListStore from "@/components/UI/ClassEditor/ClassListStore";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 
@@ -105,12 +105,12 @@ export default class MenuPane_ByImages extends Vue {
   }
 
   get classes() {
-    return ClassEditorStore.classesArray;
+    return ClassListStore.classesArray;
   }
 
   mounted() {
-    ClassEditorStore.addClass({id: "0", text: "piman"});
-    ClassEditorStore.addClass({id: "1", text: "stem"});
+    ClassListStore.addClass({id: "0", text: "piman"});
+    ClassListStore.addClass({id: "1", text: "stem"});
 
     document.addEventListener("keydown", (e) => {
       if (e.key == "c") {
@@ -163,11 +163,11 @@ export default class MenuPane_ByImages extends Vue {
   }
 
   private onDeleteClass(classNo: number) {
-    ClassEditorStore.removeClass(classNo.toString());
+    ClassListStore.removeClass(classNo.toString());
   }
 
   private onAddClass(className: string) {
-    ClassEditorStore.addClassByName(className);
+    ClassListStore.addClassByName(className);
   }
 
   private addHistory() {

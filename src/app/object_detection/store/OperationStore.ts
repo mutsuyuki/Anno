@@ -1,7 +1,7 @@
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
 
-export interface Operation_ObjectDetection {
+export interface Operation {
   frame: string;
   selectingObjectId: string;
   selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
@@ -9,7 +9,7 @@ export interface Operation_ObjectDetection {
 }
 
 @Module({
-  name: "OperationStore_ObjectDetection",
+  name: "OperationStore_" + Math.random().toString(),
   dynamic: true,
   store: store,
   namespaced: true
@@ -18,7 +18,7 @@ export interface Operation_ObjectDetection {
 class OperationStore extends VuexModule {
 
   // states
-  private _operation: Operation_ObjectDetection = {
+  private _operation: Operation = {
     frame: "0",
     selectingObjectId: "",
     selectingEdge: {top: false, right: false, bottom: false, left: false},
@@ -26,7 +26,7 @@ class OperationStore extends VuexModule {
   };
 
   // getters
-  get operation(): Operation_ObjectDetection {
+  get operation(): Operation {
     return this._operation;
   }
 
@@ -48,7 +48,7 @@ class OperationStore extends VuexModule {
 
 
   @Mutation
-  public setOperation(value: Operation_ObjectDetection) {
+  public setOperation(value: Operation) {
     this._operation = value;
   }
 

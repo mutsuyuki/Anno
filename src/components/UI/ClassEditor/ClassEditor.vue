@@ -4,7 +4,7 @@
       <div class="class_list">
         <ButtonGrid
             :data="labels"
-            :selectId="selectId"
+            :selectId="selectedId"
             :cols="1"
             :showTooltip="true"
             @select="onSelect"
@@ -39,50 +39,46 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
-import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
 
 @Component({
   components: {ButtonGrid}
 })
 export default class ClassEditor extends Vue {
+  @Prop({default: {"0": "dummy"}})  classes!: { [id: string]: string };
+  @Prop({default: "0"}) selectedId!: string;
   private newClassName: string = "";
 
-  get classes(){
-    return ClassEditorStore.classesArray;
-  }
-
-  get selectId(){
-    return ClassEditorStore.selectId
-  }
-
   get labels() {
-    return this.classes.map(v => {
+    return this.classArray.map(v => {
       return {id: v.id, text: v.id + " : " + v.text}
     })
   }
 
+  get classArray(): { id: string, text: string }[] {
+    return Object.entries(this.classes).map(v => {
+      return {id: v[0], text: v[1]}
+    });
+  }
+
   get deleteList() {
-    return this.classes.map(v => {
+    return this.classArray.map(v => {
       return {id: v.id, text: "削除"}
     })
   }
 
   private onSelect(id: string) {
-    ClassEditorStore.setSelectId(id);
     this.$emit("select", id)
   }
 
   private onDelete(id: string) {
-    const deleteTarget = this.classes.filter(v => v.id == id)[0];
+    const deleteTarget = this.classArray.filter(v => v.id == id)[0];
     const isDeleteOK = confirm(deleteTarget.id + " : " + deleteTarget.text + "を削除して良いですか？");
     if (isDeleteOK){
-      ClassEditorStore.removeClass(id)
       this.$emit("delete", id)
     }
   }
 
   private onClickAdd() {
-    ClassEditorStore.addClassByName(this.newClassName)
     this.$emit("add", this.newClassName)
   }
 

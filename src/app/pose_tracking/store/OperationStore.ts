@@ -12,7 +12,7 @@ export interface Operation {
 }
 
 @Module({
-  name: "OperationStore_Track",
+  name: "OperationStore_" + Math.random().toString(),
   dynamic: true,
   store: store,
   namespaced: true

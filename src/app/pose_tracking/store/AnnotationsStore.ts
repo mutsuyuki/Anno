@@ -72,7 +72,7 @@ function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]:
 
 
 @Module({
-  name: "AnnotationsStore_Track",
+  name: "AnnotationsStore_" + Math.random().toString(),
   dynamic: true,
   store: store,
   namespaced: true

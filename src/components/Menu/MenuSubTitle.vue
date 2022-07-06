@@ -23,6 +23,7 @@ export default class MenuSubTitle extends Vue {
   display: flex;
   justify-content: left;
   align-items: center;
+  margin: 8px 0;
 
   .line_short {
     height: 1px;

@@ -1,11 +1,11 @@
 <template>
   <AnnotationPageLayout>
     <template v-slot:menu>
-      <MenuPane_ObjectDetection @addHistory="addHistory"/>
+      <MenuPane @addHistory="addHistory"/>
     </template>
 
     <template v-slot:editor>
-      <CanvasPane_ObjectDetection @addHistory="addHistory"/>
+      <CanvasPane @addHistory="addHistory"/>
     </template>
 
     <template v-slot:size-check-target>
@@ -13,31 +13,32 @@
     </template>
 
     <template v-slot:help>
-      <Help_ObjectDetection/>
+      <Help/>
     </template>
   </AnnotationPageLayout>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane from "@/app/object_detection_annotation/MenuPane.vue";
-import CanvasPane from "@/app/object_detection_annotation/CanvasPane.vue";
-import Help_ObjectDetection from "@/app/object_detection_annotation/Help.vue";
+import MenuPane from "@/app/object_detection/MenuPane.vue";
+import CanvasPane from "@/app/object_detection/CanvasPane.vue";
+import Help from "@/app/object_detection/Help.vue";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
-import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
 import EditSequencesStore from "@/store/EditSequenceStore";
-import AnnotationsStore from "@/app/object_detection_annotation/store/AnnotationsStore";
+import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
+import ClassListStore from "@/app/object_detection/store/ClassListStore";
 
 @Component({
   components: {
     AnnotationPageLayout,
-    CanvasPane_ObjectDetection: CanvasPane,
-    MenuPane_ObjectDetection: MenuPane,
-    Help_ObjectDetection,
+    CanvasPane,
+    MenuPane,
+    Help,
   },
 })
 export default class Home extends Vue {
@@ -55,6 +56,7 @@ export default class Home extends Vue {
           const current = HistoryStore.current;
           OperationStore.setOperation(current.value.operation);
           EditSequencesStore.setSequences(current.value.editSequence);
+          ClassListStore.setClassList(current.value.classList);
           AnnotationsStore.setAnnotation(current.value.annotation);
         }
     );
@@ -71,6 +73,7 @@ export default class Home extends Vue {
     return new HistoryRecord({
       operation: OperationStore.operation,
       editSequence: EditSequencesStore.sequences,
+      classList: ClassListStore.classList,
       annotation: AnnotationsStore.annotations,
     });
   }

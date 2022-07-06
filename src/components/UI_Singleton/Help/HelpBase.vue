@@ -85,7 +85,7 @@ import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 @Component({
   components: {ScrollableArea},
 })
-export default class Help extends Vue {
+export default class HelpBase extends Vue {
   @Prop() descriptions!: { title: string, body: string }[];
 
   get isShow(): boolean {

@@ -12,7 +12,7 @@
     <VideoPlayer
         :seekFrame="seekFrame"
         :createBlobSignal="createBlobSignal"
-        :markerTimes="[]"
+        :markerTimes="annotatedFrames"
         :overlayOpacity="overlayOpacity"
         @dragareastart="dragStartPosition = $event"
         @dragarea="draggingPosition = $event"
@@ -103,32 +103,26 @@
 import {Component, Vue} from 'vue-property-decorator';
 import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
-import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {MovingPoint, MovingPointUtil, Point, PointUtil} from "@/common/interface/Point";
-import {Color} from "@/common/interface/Color";
 import FileUtil from "@/common/utils/FileUtil";
-import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import OperationStore from "@/app/track_annotation/store/OperationStore";
-import AnnotationsStore, {Annotation} from "@/app/track_annotation/store/AnnotationsStore";
-import MultiLines from "@/components/Canvas/Renderer/MultiLines";
-import MultiCircles from "@/components/Canvas/Renderer/MultiCircles";
-import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
-import DeepCloner from "@/common/utils/DeepCloner";
-import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
+import ScrollableArea from "@/components/UI/ScrollableArea.vue";
+import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
+import AnnotationFilesStore from "@/store/AnnotationFilesStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
+import OperationStore from "@/app/pose_tracking/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/pose_tracking/store/AnnotationsStore";
 import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
 import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
-import ScrollableArea from "@/components/UI/ScrollableArea.vue";
-import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
+import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
-import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 import AnimalBoneOverlay from "@/components/Canvas/Overlay/AnimalBoneOverlay.vue";
+import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 import {AnimalBoneModel} from "@/common/model/AnimalBoneModel";
+import {BEHAVIOUR, NECK_MARK} from "@/app/pose_tracking/const/Constants";
 
 @Component({
   components: {
@@ -186,10 +180,16 @@ export default class CanvasPane extends Vue {
     return CanvasSettingsStore.opacity;
   }
 
+  get annotatedFrames(): number[] {
+    return Object.keys(AnnotationsStore.annotations)
+        .map(v => Number(v))
+        .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
+  }
+
   // --- BondingBoxOverlay (body) ---------
   get bodyBoundingBoxes(): { [objectId: string]: BoundingBoxModel } {
     let result = {} as any;
-    const annotations = this.currentAnnotations;
+    const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       result[objectId] = annotations[objectId].bounding;
     }
@@ -207,7 +207,7 @@ export default class CanvasPane extends Vue {
 
   get animalBones(): { [objectId: string]: AnimalBoneModel } {
     let result = {} as any;
-    const annotations = this.currentAnnotations;
+    const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       result[objectId] = annotations[objectId].bone;
     }
@@ -225,7 +225,7 @@ export default class CanvasPane extends Vue {
 
   get neckMarkBoundingBoxes(): { [objectId: string]: BoundingBoxModel } {
     let result = {} as any;
-    const annotations = this.currentAnnotations;
+    const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       if (annotations[objectId].neck_mark_bounding.left != -9999) {
         result[objectId] = annotations[objectId].neck_mark_bounding;
@@ -241,7 +241,7 @@ export default class CanvasPane extends Vue {
   // --- TextOverlay (behaviour and neck mark) ---------
   get objectLabels(): { text: string, position: { x: string, y: string }, isActive: boolean }[] {
     let result = [];
-    const annotations = this.currentAnnotations;
+    const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
       const behaviour = BEHAVIOUR[annotation.behaviour_class];
@@ -262,7 +262,7 @@ export default class CanvasPane extends Vue {
   // --- TextOverlay (joint name) ---------
   get pointingJointLabel(): { text: string, position: { x: string, y: string }, isActive: boolean }[] {
     const hoveringObjectId = OperationStore.hoveringObjectId;
-    const targetAnnotation = this.currentAnnotations[hoveringObjectId];
+    const targetAnnotation = this.annotationsOfCurrentFrame[hoveringObjectId];
     if (!targetAnnotation) {
       return [];
     }
@@ -284,7 +284,7 @@ export default class CanvasPane extends Vue {
   }
 
   // --- Common getter ---------
-  get currentAnnotations(): { [objectId: string]: Annotation } {
+  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
     return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
@@ -525,7 +525,7 @@ export default class CanvasPane extends Vue {
     const fileName = FileUtil.removeExtension(this.videoFileName) + "___" + OperationStore.frame + "___";
     FileDownloader.downloadBlob(fileName + ".png", videoImageBlob);
 
-    const json = JSON.stringify(this.currentAnnotations);
+    const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(fileName + ".json", json);
 
     EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});

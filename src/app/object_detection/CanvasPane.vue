@@ -1,5 +1,5 @@
 <template>
-  <div v-show="isVideoSelected" >
+  <div v-show="isVideoSelected">
     <ToolBar/>
 
     <AnnotationStatusBar
@@ -10,19 +10,38 @@
     />
 
     <VideoPlayer
-        :frameForSeek="frameForSeek"
-        :markerTimes="annotatedFrames"
+        :frameForSeek="seekFrame"
         :createBlobSignal="createBlobSignal"
-        @dragareastart="onDragStart"
-        @dragarea="onDrag"
-        @dragareaend="onDragEnd"
-        @hover="onHover"
+        :markerTimes="annotatedFrames"
+        :overlayOpacity="overlayOpacity"
+        @dragareastart="dragStartPosition = $event"
+        @dragarea="draggingPosition = $event"
+        @dragareaend="dragEndPosition = $event"
+        @hover="hoverPosition = $event"
         @download="onDownload"
         @timeupdate="onFrameUpdate"
         @prepareBlob="onPrepareBlob"
     >
-      <CanvasRenderer :graphics="graphics" :opacity="opacity"/>
-      <MultiLabels :labels="objectLabels" :opacity="opacity"/>
+      <BoundingBoxOverlay
+          :boundingBoxModels="boundingBoxes"
+          :selectingObjectId="selectingObjectId"
+          :useInteraction="true"
+          :isDeleteMode="isDeleteMode"
+          :dragStartPosition="dragStartPosition"
+          :draggingPosition="draggingPosition"
+          :dragEndPosition="dragEndPosition"
+          :hoverPosition="hoverPosition"
+          :color="{r: 40, g: 80, b: 220, a: 1}"
+          @resizestart="selectBoundingBox"
+          @movestart="selectBoundingBox"
+          @resize="updateBoundingBox"
+          @move="updateBoundingBox"
+          @resizeend="addHistory"
+          @moveend="addHistory"
+          @unselect="unselectBoundingBox"
+          @delete="deleteBoundingBox"
+      />
+      <TextOverlay :labels="objectLabels" :opacity="opacity"/>
     </VideoPlayer>
 
     <DownloadButton
@@ -37,29 +56,28 @@
 import {Component, Vue} from 'vue-property-decorator';
 import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
-import {Graphic} from "@/components/Canvas/Renderer/Graphic";
-import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
-import {Color} from "@/common/interface/Color";
+import {MovingPoint, MovingPointUtil, Point, PointUtil} from "@/common/interface/Point";
 import FileUtil from "@/common/utils/FileUtil";
 import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
-import AnnotationsStore, {Annotation} from "@/app/object_detection_annotation/store/AnnotationsStore";
-import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
-import DeepCloner from "@/common/utils/DeepCloner";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
+import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
+import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
+import AnnotationFilesStore from "@/store/AnnotationFilesStore";
+import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/object_detection/store/AnnotationsStore";
 import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
 import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
-import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
+import ClassListStore from "@/app/object_detection/store/ClassListStore";
 
 @Component({
   components: {
-    MultiLabels: TextOverlay,
+    BoundingBoxOverlay,
+    TextOverlay,
     VideoPlayer,
     DownloadButton,
     ToolBar,
@@ -69,17 +87,15 @@ import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorS
   }
 })
 export default class CanvasPane extends Vue {
-  private graphics: Graphic[] = [];
-
-  private lineColors: { [id: string]: Color } = {
-    "0": {r: 220, g: 60, b: 0, a: 1},
-    "1": {r: 60, g: 0, b: 220, a: 1}
-  };
-
-  private createBlobSignal: boolean = false;
   private isDeleteMode: boolean = false;
 
+  private dragStartPosition: MovingPoint = MovingPointUtil.zero();
+  private draggingPosition: MovingPoint = MovingPointUtil.zero();
+  private dragEndPosition: MovingPoint = MovingPointUtil.zero();
+  private hoverPosition: Point = PointUtil.zero();
+
   private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
+  private createBlobSignal: boolean = false;
 
   get currentFileNameFull() {
     return VideoPlayerStore.name;
@@ -89,7 +105,7 @@ export default class CanvasPane extends Vue {
     return VideoPlayerStore.isSelected;
   }
 
-  get frameForSeek(): number {
+  get seekFrame(): number {
     return Number(this.frame == OperationStore.frame ? -1 : OperationStore.frame);
   }
 
@@ -97,6 +113,23 @@ export default class CanvasPane extends Vue {
     return Object.keys(AnnotationsStore.annotations)
         .map(v => Number(v))
         .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
+  }
+
+  get overlayOpacity() {
+    return CanvasSettingsStore.opacity;
+  }
+
+  get boundingBoxes(): { [objectId: string]: BoundingBoxModel } {
+    let result = {} as any;
+    const annotations = this.annotationsOfCurrentFrame;
+    for (const objectId in annotations) {
+      result[objectId] = annotations[objectId].bounding;
+    }
+    return result;
+  }
+
+  get selectingObjectId() {
+    return OperationStore.selectingObjectId;
   }
 
   get operationOfCurrentFrame(): EditSequence {
@@ -119,45 +152,25 @@ export default class CanvasPane extends Vue {
     return CanvasSettingsStore.opacity;
   }
 
-  get objectLabels(): { text: string, position: Point, isActive: boolean }[] {
+  get objectLabels(): { text: string, position: { x: string, y: string }, isActive: boolean }[] {
     let result = [];
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
-      const className = ClassEditorStore.classes[annotation.class] || "???";
+      const className = ClassListStore.classList[annotation.class] || "???";
       result.push({
         text: annotation.class + " : " + className,
-        position: {x: annotation.bounding.left * 100, y: annotation.bounding.top * 100},
+        position: {
+          x: annotation.bounding.left * 100 + "%",
+          y: annotation.bounding.top * 100 + "%"
+        },
         isActive: objectId == OperationStore.selectingObjectId
       })
     }
     return result;
   }
 
-  get selectingObject() {
-    const frame = OperationStore.frame;
-    if (!AnnotationsStore.annotations[frame])
-      return null;
-
-    const objectId = OperationStore.selectingObjectId;
-    return AnnotationsStore.annotations[frame][objectId];
-  }
-
   created() {
-    // 表示対象のアノテーションたちの状態が変わった
-    this.$watch(
-        () => this.annotationsOfCurrentFrame,
-        () => this.draw(),
-        {deep: true}
-    );
-
-    // 選択対象やモードが変わった
-    this.$watch(
-        () => OperationStore.operation,
-        () => this.draw(),
-        {deep: true}
-    );
-
     // フレームが変わった
     this.$watch(
         () => OperationStore.frame,
@@ -184,28 +197,6 @@ export default class CanvasPane extends Vue {
         this.isDeleteMode = false;
       }
     })
-  }
-
-  private draw() {
-    this.graphics = [];
-
-    for (const objectId in this.annotationsOfCurrentFrame) {
-      const annotation = this.annotationsOfCurrentFrame[objectId];
-      const isSelecting = OperationStore.selectingObjectId == objectId;
-
-      const classId = annotation.class;
-      const boundingColor = Object.assign({}, this.lineColors[classId], {a: isSelecting ? 1 : 0.5});
-      const boundingBox = new RectangleLine(
-          annotation.bounding.left,
-          annotation.bounding.top,
-          annotation.bounding.width,
-          annotation.bounding.height,
-          2,
-          boundingColor
-      );
-      boundingBox.zIndex = 0;
-      this.graphics.push(boundingBox);
-    }
   }
 
   private async restoreAnnotation() {
@@ -240,113 +231,29 @@ export default class CanvasPane extends Vue {
     }
   }
 
-  private onDragStart(e: MovingPoint) {
-    // バウンディング
-    const clickedBounding = this.searchBounding(e);
-    if (this.isDeleteMode) {
-      // 削除
-      if (clickedBounding.objectId) {
-
-        AnnotationsStore.deleteObject({
-          frame: OperationStore.frame,
-          objectId: clickedBounding.objectId
-        });
-
-        OperationStore.setSelectingObjectId("");
-        OperationStore.setSelectingEdge({
-          top: false,
-          right: false,
-          bottom: false,
-          left: false
-        });
-
-        this.addHistory();
-      }
-    } else {
-      // 選択
-      OperationStore.setSelectingObjectId(clickedBounding.objectId);
-      OperationStore.setSelectingEdge(clickedBounding.selectingEdge);
-    }
-
+  private selectBoundingBox(objectId: string) {
+    OperationStore.setSelectingObjectId(objectId)
   }
 
-  private onDrag(e: MovingPoint) {
-    if (this.selectingObject) {
-      const frame = OperationStore.frame;
-      const objectId = OperationStore.selectingObjectId;
-
-      let bounding = DeepCloner.copy(this.selectingObject.bounding);
-
-      const isEdgeSelect = Object.values(OperationStore.selectingEdge).filter(v => v).length >= 1;
-      if (isEdgeSelect) {
-        // 端のドラッグは矩形の拡大縮小
-        if (OperationStore.selectingEdge.left) {
-          bounding.left += e.deltaX;
-          bounding.width -= e.deltaX;
-        }
-        if (OperationStore.selectingEdge.right) {
-          bounding.width += e.deltaX;
-        }
-        if (OperationStore.selectingEdge.top) {
-          bounding.top += e.deltaY;
-          bounding.height -= e.deltaY;
-        }
-        if (OperationStore.selectingEdge.bottom) {
-          bounding.height += e.deltaY;
-        }
-      } else {
-        // 中心部ドラッグは移動
-        bounding.top += e.deltaY;
-        bounding.left += e.deltaX;
-      }
-
-      AnnotationsStore.setBounding({
-        frame: frame,
-        objectId: objectId,
-        bounding: bounding
-      });
-    }
-
+  private unselectBoundingBox() {
+    OperationStore.setSelectingObjectId("")
   }
 
-  private onDragEnd(e: MovingPoint) {
-    if (this.selectingObject && !this.isDeleteMode) {
-      this.addHistory();
-    }
+  private updateBoundingBox(objectId: string, bounding: BoundingBoxModel) {
+    AnnotationsStore.setBounding({
+      frame: OperationStore.frame,
+      objectId: objectId,
+      bounding: bounding
+    });
   }
 
-  private onHover(e: Point) {
-    // do nothing
-  }
+  private deleteBoundingBox(objectId: string) {
+    AnnotationsStore.deleteObject({
+      frame: OperationStore.frame,
+      objectId: objectId,
+    });
 
-  private searchBounding(position: Point) {
-    let smallestArea = Number.MAX_VALUE;
-    let smallestObjectId: string = "";
-    let selectingEdge = {top: false, right: false, bottom: false, left: false};
-    const edgeWidth = 0.02;
-
-    for (const objectId in this.annotationsOfCurrentFrame) {
-      const bounding = this.annotationsOfCurrentFrame[objectId].bounding;
-      const x = position.x;
-      const y = position.y;
-      const insideHorizontal = (bounding.left - edgeWidth < x) && (x < bounding.left + bounding.width + edgeWidth);
-      const insideVertical = (bounding.top - edgeWidth < y) && (y < bounding.top + bounding.height + edgeWidth);
-      const area = bounding.width * bounding.height;
-      if (insideHorizontal && insideVertical && area < smallestArea) {
-        smallestObjectId = objectId;
-
-        if (Math.abs(bounding.left - x) <= edgeWidth)
-          selectingEdge.left = true;
-        if (Math.abs(bounding.left + bounding.width - x) <= edgeWidth)
-          selectingEdge.right = true;
-        if (Math.abs(bounding.top - y) <= edgeWidth)
-          selectingEdge.top = true;
-        if (Math.abs(bounding.top + bounding.height - y) <= edgeWidth)
-          selectingEdge.bottom = true;
-      }
-    }
-
-    return {objectId: smallestObjectId, selectingEdge: selectingEdge};
+    this.addHistory();
   }
 
   private addHistory() {

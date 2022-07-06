@@ -1,13 +1,11 @@
 <template>
-  <div class="canvas-pane"
-       v-show="isImageSelected"
-  >
+  <div v-show="isImagesSelected">
     <ToolBar/>
 
     <AnnotationStatusBar
         class="annotation-status-bar"
         :fileName="currentFileNameFull"
-        :isSetByFile="isSetByFile"
+        :isUseAnnotationFile="isUseAnnotationFile"
         :isDownloaded="isDownloaded"
     />
 
@@ -17,8 +15,7 @@
         @dragareaend="onDragEnd"
         @download="onDownload"
     >
-      <CanvasRenderer style="position: absolute; top:0; left:0;" :graphics="graphics"/>
-      <CanvasRenderer style="position: absolute; top:0; left:0;" :graphics="newGraphics"/>
+      <CanvasRenderer :graphics="graphics" :opacity="opacity"/>
     </ImagePlayer>
 
     <DownloadButton
@@ -37,276 +34,295 @@
 </template>
 
 <script lang="ts">
-/*
 
 import {Component, Vue} from 'vue-property-decorator';
-import ImagePlayer from "@/components/Player/ImagePlayer.vue";
-import CanvasRenderer from "@/components/Canvas/CanvasRenderer.vue";
-import Circle from "@/components/Canvas/Circle";
-import ScaleLine from "@/components/Canvas/ScaleLine";
-import {Graphic} from "@/components/Canvas/Graphic";
-import {Point, PointUtil} from "@/common/interface/Point";
+import Circle from "@/components/Canvas/Renderer/Circle";
+import ScaleLine from "@/components/Canvas/Renderer/ScaleLine";
+import {Graphic} from "@/components/Canvas/Renderer/Graphic";
+import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
-import {Annotation_Hair, Annotation_HairUtil} from "@/app/hair_annotation/Annotation_Hair";
-import ImagePlayerStore from "@/store/ImagePlayerStore";
 import FileUtil from "@/common/utils/FileUtil";
 import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import FileDownloader from "@/common/utils/FileDownloader";
-import ToolBar from "@/components/ToolBar.vue";
-import DownloadButton from "@/components/DownloadButton.vue";
-import HistoryStore from "@/store/HistoryStore";
+import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
+import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
+import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
+import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
+import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
+import OperationStore from "@/app/pore/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/pore/store/AnnotationsStore";
+import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
+import AnnotationFilesStore from "@/store/AnnotationFilesStore";
+import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
+
 
 enum MODE {
-    LINE_DIRECTION,
-    LINE_WIDTH,
-    END
+  IDLE,
+  LINE_DIRECTION,
+  LINE_WIDTH,
 }
 
 @Component({
-    components: {
-        DownloadButton,
-        ToolBar,
-        AnnotationStatusBar,
-        CanvasRenderer,
-        ImagePlayer,
-    }
+  components: {
+    DownloadButton,
+    ToolBar,
+    AnnotationStatusBar,
+    CanvasRenderer,
+    ImagePlayer,
+  }
 })
-export default class CanvasPane_Hair extends Vue {
 
-    private graphics: Graphic[] = [];
-    private newAnnotation: { value: Annotation_Hair } = {value: <any>{}};
-    private newGraphics: Graphic[] = [];
+export default class CanvasPane extends Vue {
+  private graphics: Graphic[] = [];
 
-    private mode: MODE = MODE.END;
-    private isCtrlKeyDown: boolean = false;
-    private widthValue: number = 0.1;
-    private unWatchWidthValue!: Function;
+  private circleColor: Color = {r: 150, g: 0, b: 0, a: 1};
+  private lineColor: Color = {r: 0, g: 0, b: 150, a: 1};
 
-    private circleColor: Color = {r: 150, g: 0, b: 0, a: 1};
-    private lineColor: Color = {r: 0, g: 0, b: 150, a: 1};
+  private mode: MODE = MODE.IDLE;
+  private isDeleteMode: boolean = false;
+  private widthValue: number = 0.1;
+  private unWatchWidthValue!: Function;
 
-    get currentFileNameFull() {
-        return ImagePlayerStore.currentItem ? ImagePlayerStore.currentItem.name : "";
+  get isImagesSelected() {
+    return ImagePlayerStore.isSelected;
+  }
+
+  get isLineWidthMode() {
+    return this.mode == MODE.LINE_WIDTH;
+  }
+
+  get currentFileNameFull() {
+    return ImagePlayerStore.currentName
+  }
+
+  get isUseAnnotationFile() {
+    return this.operationOfCurrentFrame.isUseAnnotationFile;
+  }
+
+  get isDownloaded() {
+    return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
+  }
+
+  get operationOfCurrentFrame(): EditSequence {
+    return EditSequencesStore.sequences[OperationStore.frame] || {};
+  }
+
+  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
+    return AnnotationsStore.annotations[OperationStore.frame] || {};
+  }
+
+  get opacity() {
+    return CanvasSettingsStore.opacity;
+  }
+
+  get selectingObject() {
+    const frame = OperationStore.frame;
+    if (!AnnotationsStore.annotations[frame])
+      return null;
+
+    const objectId = OperationStore.selectingObjectId;
+    return AnnotationsStore.annotations[frame][objectId];
+  }
+
+  created() {
+    // 表示対象のアノテーションたちの状態が変わった
+    this.$watch(
+        () => this.annotationsOfCurrentFrame,
+        () => this.draw(),
+        {deep: true}
+    );
+
+    // 選択対象やモードが変わった
+    this.$watch(
+        () => OperationStore.operation,
+        () => this.draw(),
+        {deep: true}
+    );
+
+    // フレームが変わった
+    this.$watch(
+        () => OperationStore.frame,
+        () => EditSequencesStore.createIfNothing(OperationStore.frame),
+        {deep: true, immediate: true}
+    );
+
+    // 教師データ読み込み
+    this.$watch(
+        () => AnnotationFilesStore.items,
+        () => this.restoreAnnotation(),
+        {deep: true}
+    );
+
+    // 画像が切り替わった
+    this.$watch(
+        () => ImagePlayerStore.currentName,
+        () => OperationStore.setFrame(FileUtil.removeExtension(ImagePlayerStore.currentName)),
+        {deep: true}
+    );
+
+    // 移動用のCtrlキー検出
+    document.addEventListener("keydown", (e) => {
+      if (e.key == "Control") {
+        this.isDeleteMode = true;
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (e.key == "Control") {
+        this.isDeleteMode = false;
+      }
+    })
+  }
+
+  private draw() {
+    this.graphics = [];
+    for (const objectId in this.annotationsOfCurrentFrame) {
+      const annotation = this.annotationsOfCurrentFrame[objectId];
+      const isSelecting = OperationStore.selectingObjectId == objectId;
+
+      const circle = new Circle(annotation.start, 2, this.circleColor);
+      circle.zIndex = 1;
+      this.graphics.push(circle);
+
+      const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
+      line.zIndex = 0;
+      this.graphics.push(line);
+    }
+  }
+
+  private async restoreAnnotation() {
+    AnnotationsStore.clear();
+
+    for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
+      const frame = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
+
+      const fileText = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve(reader.result || "");
+        };
+        reader.readAsText(AnnotationFilesStore.items[i]);
+      });
+
+      AnnotationsStore.setAnnotationsOfFrame({
+        frame: frame,
+        data: JSON.parse(fileText as string)
+      });
+
+      EditSequencesStore.setIsUseAnnotationFile({
+        frame: frame,
+        isUseAnnotationFile: true
+      });
     }
 
-    get currentFileName() {
-        return FileUtil.removeExtension(this.currentFileNameFull)
+    if (AnnotationFilesStore.items.length > 0) {
+      this.addHistory();
     }
+  }
 
-    get isImageSelected() {
-        return ImagePlayerStore.numberOfItems > 0;
-    }
+  private onDragStart(e: MovingPoint) {
+    if (this.mode != MODE.IDLE)
+      return;
 
-    get isLineWidthMode() {
-        return this.mode == MODE.LINE_WIDTH;
-    }
+    if (!this.isDeleteMode) {
+      // 点を追加
+      this.mode = MODE.LINE_DIRECTION;
 
-    get isSetByFile() {
-        return this.currentAnnotation.isSetByFile;
-    }
+      AnnotationsStore.create({
+        frame: OperationStore.frame,
+        annotation: {
+          start: {x: e.x, y: e.y},
+          end: {x: e.x, y: e.y},
+          width: 0.001
+        },
+      })
 
-    get isDownloaded() {
-        return this.currentAnnotation.isDownloaded;
-    }
+      OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
+    } else {
+      // 削除
+      const threshold = 0.05;
+      let nearestPointId = "";
+      let nearestDistance = Number.MAX_VALUE;
+      for (const objectId in this.annotationsOfCurrentFrame) {
+        const annotation = this.annotationsOfCurrentFrame[objectId];
+        const distance = PointUtil.distance(annotation.start, e);
+        if (distance < threshold && distance < nearestDistance) {
+          nearestPointId = objectId;
+          nearestDistance = distance;
+        }
+      }
 
-    get currentAnnotation() {
-        return this.currentHistory[this.currentFileName] || {};
-    }
-
-    get currentHistory(): { [fileName: string]: AnnotationContainer<Annotation_Hair[]> } {
-        return HistoryStore.current;
-    }
-
-    created() {
-
-        // 画像読み込み
-        this.$watch(
-            () => ImagePlayerStore.items,
-            () => {
-                let annotations: { [fileName: string]: AnnotationContainer<Annotation_Hair[]> } = {};
-                for (let i = 0; i < ImagePlayerStore.items.length; i++) {
-                    const fileName = FileUtil.removeExtension(ImagePlayerStore.items[i].name);
-                    annotations[fileName] = new AnnotationContainer<Annotation_Hair[]>([]);
-                }
-
-                HistoryStore.init(annotations);
-            },
-            {deep: true}
-        );
-
-        // 教師データ読み込み
-        this.$watch(
-            () => AnnotationFilesStore.items,
-            async () => {
-                let annotations = this.currentHistory;
-                for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
-                    const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
-                    if (!annotations[fileName])
-                        continue;
-
-                    annotations[fileName].isSetByFile = true;
-
-                    const fileText = await new Promise(resolve => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            resolve(reader.result);
-                        };
-                        reader.readAsText(AnnotationFilesStore.items[i]);
-                    });
-                    const models = Annotation_HairUtil.fileToModels(fileText as string);
-                    annotations[fileName].annotation = models;
-                }
-
-                if (AnnotationFilesStore.items.length > 0)
-                    HistoryStore.addHistory(annotations);
-            },
-            {deep: true}
-        );
-
-        // 新規編集中のアノテーションの状態が変わった
-        this.$watch(
-            () => this.newAnnotation,
-            () => {
-                this.newGraphics = [];
-                const annotation = this.newAnnotation.value;
-
-                const circle = new Circle(annotation.start, 2, this.circleColor);
-                circle.zIndex = 1;
-                this.newGraphics.push(circle);
-
-                const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
-                line.zIndex = 0;
-                this.newGraphics.push(line);
-            },
-            {deep: true}
-        );
-
-        // 表示対象のアノテーションたちの状態が変わった
-        this.$watch(
-            () => this.currentAnnotation,
-            () => {
-                this.graphics = [];
-
-                for (let i = 0; i < this.currentAnnotation.annotation.length; i++) {
-                    const annotation = this.currentAnnotation.annotation[i];
-
-                    const circle = new Circle(annotation.start, 2, this.circleColor);
-                    circle.zIndex = 1;
-                    this.graphics.push(circle);
-
-                    const line = new ScaleLine(annotation.start, annotation.end, annotation.width, this.lineColor);
-                    line.zIndex = 0;
-                    this.graphics.push(line);
-                }
-            },
-            {deep: true}
-        );
-
-        // 削除用のCtrlキー検出
-        document.addEventListener("keydown", (e) => {
-            if (e.key == "Control") {
-                this.isCtrlKeyDown = true;
-            }
+      if (nearestPointId != "") {
+        AnnotationsStore.deleteObject({
+          frame: OperationStore.frame,
+          objectId: nearestPointId
         });
-        document.addEventListener("keyup", (e) => {
-            if (e.key == "Control") {
-                this.isCtrlKeyDown = false;
-            }
-        })
+
+      }
     }
+  }
 
-    private onDragStart(e: Point) {
-        // ドラッグ開始
-        if (this.mode == MODE.END && !this.isCtrlKeyDown) {
-            this.mode = MODE.LINE_DIRECTION;
+  private onDrag(e: MovingPoint) {
+    if (this.mode != MODE.LINE_DIRECTION)
+      return;
 
-            Vue.set(this.newAnnotation, "value", {
-                start: {x: e.x, y: e.y},
-                end: {x: e.x, y: e.y},
-                width: 0.001
-            });
+    AnnotationsStore.setEnd({
+      frame: OperationStore.frame,
+      objectId: OperationStore.selectingObjectId,
+      end: {x: e.x, y: e.y}
+    });
+  }
 
-            return;
-        }
+  private onDragEnd(e: MovingPoint) {
+    if (this.mode != MODE.LINE_DIRECTION)
+      return;
 
-        // 削除
-        if (this.mode == MODE.END && this.isCtrlKeyDown) {
-            let nearestDistance = Number.MAX_VALUE;
-            let nearestAnnotation: Annotation_Hair;
-            let annotations = this.currentHistory;
-            for (const annotation of annotations[this.currentFileName].annotation) {
-                const distance = PointUtil.distance(annotation.start, e);
-                if (distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestAnnotation = annotation;
-                }
-            }
+    this.mode = MODE.LINE_WIDTH;
 
-            if (nearestDistance < 0.1) {
-                annotations[this.currentFileName].annotation = annotations[this.currentFileName].annotation.filter(v => v !== nearestAnnotation);
-                HistoryStore.addHistory(annotations);
-            }
-        }
+    const selectingObject = this.selectingObject;
+    if (!selectingObject)
+      return;
 
-    }
+    this.widthValue = selectingObject.width;
 
-    private onDrag(e: Point) {
-        if (this.mode == MODE.LINE_DIRECTION) {
-            this.newAnnotation.value.end = e;
-            return;
-        }
-    }
+    this.unWatchWidthValue = this.$watch(
+        () => this.widthValue,
+        () => this.onChangeWidthValue(),
+        {immediate: true}
+    );
+  }
 
-    private onDragEnd(e: Point) {
-        if (this.mode == MODE.LINE_DIRECTION) {
-            let annotations = this.currentHistory;
-            annotations[this.currentFileName].annotation.push(this.newAnnotation.value);
-            HistoryStore.addHistory(annotations);
-            Vue.set(this.newAnnotation, "value", {
-                start: {x: -9999, y: -9999},
-                end: {x: -9999, y: -9999},
-                width: 0
-            });
+  private onChangeWidthValue() {
+    AnnotationsStore.setWidth({
+      frame: OperationStore.frame,
+      objectId: OperationStore.selectingObjectId,
+      width: this.widthValue
+    });
+  }
 
-            this.mode = MODE.LINE_WIDTH;
-            this.widthValue = this.newAnnotation.value.width;
+  private onClickOverlay(e: MouseEvent) {
+    this.unWatchWidthValue();
+    this.mode = MODE.IDLE;
+    this.addHistory();
+  }
 
-            this.unWatchWidthValue = this.$watch(
-                () => this.widthValue,
-                () => this.onChangeWidthValue(),
-                {immediate: true}
-            );
-            return;
-        }
-    }
+  private async onDownload() {
+    const json = JSON.stringify(this.annotationsOfCurrentFrame);
+    FileDownloader.downloadJsonFile(OperationStore.frame + ".json", json);
 
-    private onChangeWidthValue() {
-        this.newAnnotation.value.width = this.widthValue;
-    }
+    FileDownloader.downloadBlob(
+        OperationStore.frame,
+        ImagePlayerStore.currentItem
+    );
 
-    private onClickOverlay(e: MouseEvent) {
-        this.unWatchWidthValue();
-        this.mode = MODE.END;
-    }
+    EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
+    EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
+  }
 
-    private async onDownload() {
-        let annotations = this.currentHistory;
-        annotations[this.currentFileName].isDownloaded = true;
-        HistoryStore.updateCurrent(annotations);
-
-        FileDownloader.downloadTextFile(
-            this.currentFileName + ".txt",
-            Annotation_HairUtil.modelsToFile(this.currentAnnotation.annotation)
-        );
-
-        FileDownloader.downloadBlob(
-            ImagePlayerStore.currentItem.name,
-            ImagePlayerStore.currentItem
-        );
-    }
+  private addHistory() {
+    this.$emit("addHistory")
+  }
 }
- */
 
 </script>
 

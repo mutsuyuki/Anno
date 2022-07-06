@@ -1,30 +1,27 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home_Hair from '../app/hair_annotation/Home_Hair.vue'
-import Home_Track from "@/app/track_annotation/Home_Track.vue";
-import Home_ObjectDetection from "@/app/object_detection_annotation/Home_ObjectDetection.vue";
-import Home_ObjectDetection_ByImages from "@/app/object_detection_annotation/Home_ObjectDetection_ByImages.vue";
-import Home_MovieCrop from "@/app/movie_crop/Home_MovieCrop.vue";
+import * as PoreHome from '@/app/pore/Home.vue'
+import * as PoseTrackingHome from "@/app/pose_tracking/Home.vue";
+import * as ObjectDetectionHome from "@/app/object_detection/Home.vue";
+// import * as ObjectDetectionHome_ByImages from "@/app/object_detection/Home_ByImages.vue";
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    // name: 'Home_Hair',
-    // component: Home_Hair
 
-    name: 'Home_MovieCrop',
-    component: Home_MovieCrop
+    // name: 'PoreHome',
+    // component: PoreHome.default,
 
-    // name: 'Home_Track',
-    // component: Home_Track
+    // name: 'PoseTrackingHome',
+    // component: PoseTrackingHome.default,
 
-    // name: 'Home_ObjectDetection',
-    // component: Home_ObjectDetection
+    name: 'ObjectDetectionHome',
+    component: ObjectDetectionHome.default,
 
-    // name: 'Home_ObjectDetection_ByImage',
-    // component: Home_ObjectDetection_ByImages
+    // name: 'ObjectDetectionHome_ByImages',
+    // component: ObjectDetectionHome_ByImages.default,
   },
 
 ];

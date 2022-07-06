@@ -2,28 +2,17 @@
   <div class="control_pane">
 
     <MenuHeader
-        :text="'Hair direction'"
+        :text="'Pore'"
     />
 
     <div class="container">
-      <div class="container_above">
-        <FileSelector
-            :iconPath="require('@/assets/img/icons/image_multi.svg')"
-            :message="'画像を選択'"
-            :accept="'image/*'"
-            :isMultiple="true"
-            @change="onSelectImageFiles"
-        />
-
-        <FileSelector
-            v-show="isImageSelected"
-            :iconPath="require('@/assets/img/icons/text_multi.svg')"
-            :message="'教師データを選択'"
-            :accept="'text/*'"
-            :isMultiple="true"
-            @change="onSelectAnnotationFiles"
-        />
-      </div>
+      <MenuSubTitle :text="'ファイル'"/>
+      <FileSelectorSet
+          :useImagesSelector="true"
+          :useAnnotationSelector="isImagesSelected"
+          @selectImageFiles="onSelectImageFiles"
+          @selectAnnotationFiles="onSelectAnnotationFiles"
+      />
     </div>
 
     <MenuFooter
@@ -39,22 +28,24 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import FileSelector from "@/components/UI/FileSelector/FileSelector.vue";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
+import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
+import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 
 @Component({
   components: {
+    MenuSubTitle,
+    FileSelectorSet,
     MenuFooter,
     MenuHeader,
-    FileSelector
   }
 })
 export default class MenuPane extends Vue {
 
-  get isImageSelected() {
-    return ImagePlayerStore.numberOfItems > 0;
+  get isImagesSelected() {
+    return ImagePlayerStore.isSelected;
   }
 
   private onSelectImageFiles(files: File[]) {
@@ -63,6 +54,9 @@ export default class MenuPane extends Vue {
   }
 
   private onSelectAnnotationFiles(files: File[]) {
+    if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
+      return;
+
     AnnotationFilesStore.setFiles(files);
   }
 

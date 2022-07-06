@@ -3,13 +3,6 @@ import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decor
 import store from "@/store";
 import DeepCloner from "@/common/utils/DeepCloner";
 
-export interface Bounding {
-  left: number,
-  top: number
-  width: number,
-  height: number
-}
-
 export interface Annotation {
   frame: string;
   objectId: string;
@@ -17,9 +10,15 @@ export interface Annotation {
   bounding: Bounding;
 }
 
+export interface Bounding {
+  left: number,
+  top: number
+  width: number,
+  height: number
+}
 
 @Module({
-  name: "AnnotationsStore_ObjectDetection",
+  name: "AnnotationsStore_" + Math.random().toString(),
   dynamic: true,
   store: store,
   namespaced: true
@@ -96,7 +95,7 @@ class AnnotationsStore extends VuexModule {
   }
 
   @Mutation
-  public setClass(value: { frame: string, objectId: string, class: number }) {
+  public setClass(value: { frame: string, objectId: string, class: string }) {
     Vue.set(
       this._annotations[value.frame][value.objectId],
       "class",

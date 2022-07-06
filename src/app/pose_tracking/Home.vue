@@ -2,11 +2,11 @@
   <div>
     <AnnotationPageLayout>
       <template v-slot:menu>
-        <MenuPane_Track @addHistory="addHistory"/>
+        <MenuPane @addHistory="addHistory"/>
       </template>
 
       <template v-slot:editor>
-        <CanvasPane_Track @addHistory="addHistory"/>
+        <CanvasPane @addHistory="addHistory"/>
       </template>
 
       <template v-slot:size-check-target>
@@ -14,7 +14,7 @@
       </template>
 
       <template v-slot:help>
-        <Help_Track/>
+        <Help/>
       </template>
     </AnnotationPageLayout>
   </div>
@@ -22,25 +22,25 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane from "@/app/track_annotation/MenuPane.vue";
-import CanvasPane from "@/app/track_annotation/CanvasPane.vue";
-import Help from "@/app/track_annotation/Help.vue";
+import MenuPane from "@/app/pose_tracking/MenuPane.vue";
+import CanvasPane from "@/app/pose_tracking/CanvasPane.vue";
+import Help from "@/app/pose_tracking/Help.vue";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
-import OperationStore from "@/app/track_annotation/store/OperationStore";
+import OperationStore from "@/app/pose_tracking/store/OperationStore";
 import EditSequencesStore from "@/store/EditSequenceStore";
-import AnnotationsStore from "@/app/track_annotation/store/AnnotationsStore";
+import AnnotationsStore from "@/app/pose_tracking/store/AnnotationsStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 
 @Component({
   components: {
     AnnotationPageLayout,
-    CanvasPane_Track: CanvasPane,
-    MenuPane_Track: MenuPane,
-    Help_Track: Help,
+    CanvasPane,
+    MenuPane,
+    Help,
   },
 })
 export default class Home extends Vue {

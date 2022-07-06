@@ -1,7 +1,7 @@
 <template>
 
   <MenuLayout
-      :headerText="'Tracking'"
+      :headerText="'Pose Tracking'"
       @help="onHelp"
   >
     <SubMenu :menuTitle="'ファイル'">
@@ -123,14 +123,14 @@ import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
-import AnnotationsStore from "@/app/track_annotation/store/AnnotationsStore";
-import OperationStore from "@/app/track_annotation/store/OperationStore";
+import AnnotationsStore from "@/app/pose_tracking/store/AnnotationsStore";
+import OperationStore from "@/app/pose_tracking/store/OperationStore";
 import ScrollableArea from "@/components/UI/ScrollableArea.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
 import Row from "@/components/Layout/Row.vue";
-import {BEHAVIOUR, NECK_MARK} from "@/app/track_annotation/const/TrackConst";
+import {BEHAVIOUR, NECK_MARK} from "@/app/pose_tracking/const/Constants";
 
 @Component({
   components: {

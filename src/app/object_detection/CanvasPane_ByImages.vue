@@ -15,8 +15,8 @@
         @dragareaend="onDragEnd"
         @download="onDownload"
     >
-      <CanvasRenderer class="canvas_renderer" :graphics="graphics" :opacity="opacity"/>
-      <MultiLabels :labels="objectLabels" :opacity="opacity"/>
+      <CanvasRenderer :graphics="graphics" :opacity="opacity"/>
+      <TextOverlay :labels="objectLabels" :opacity="opacity"/>
     </ImagePlayer>
 
     <DownloadButton
@@ -41,19 +41,19 @@ import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import OperationStore from "@/app/object_detection_annotation/store/OperationStore";
-import AnnotationsStore, {Annotation} from "@/app/object_detection_annotation/store/AnnotationsStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/object_detection/store/AnnotationsStore";
 import RectangleLine from "@/components/Canvas/Renderer/RectangleLine";
 import DeepCloner from "@/common/utils/DeepCloner";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import EditSequencesStore, {EditSequence} from "@/store/EditSequenceStore";
-import ClassEditorStore from "@/components/UI_Singleton/ClassEditor/ClassEditorStore";
+import ClassListStore from "@/components/UI/ClassEditor/ClassListStore";
 import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 
 @Component({
   components: {
-    MultiLabels: TextOverlay,
+    TextOverlay,
     VideoPlayer,
     DownloadButton,
     ToolBar,
@@ -105,7 +105,7 @@ export default class CanvasPane_ByImages extends Vue {
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
-      const className = ClassEditorStore.classes[annotation.class] || "???";
+      const className = ClassListStore.classes[annotation.class] || "???";
       result.push({
         text: annotation.class + " : " + className,
         position: {x: annotation.bounding.left * 100, y: annotation.bounding.top * 100},
@@ -336,10 +336,6 @@ export default class CanvasPane_ByImages extends Vue {
     return {objectId: smallestObjectId, selectingEdge: selectingEdge};
   }
 
-  private addHistory() {
-    this.$emit("addHistory")
-  }
-
   private async onDownload() {
     const json = JSON.stringify(this.annotationsOfCurrentFrame);
     FileDownloader.downloadJsonFile(OperationStore.frame + ".json", json);
@@ -347,6 +343,11 @@ export default class CanvasPane_ByImages extends Vue {
     EditSequencesStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
     EditSequencesStore.setIsDirty({frame: OperationStore.frame, isDirty: false});
   }
+
+  private addHistory() {
+    this.$emit("addHistory")
+  }
+
 }
 
 </script>
@@ -359,12 +360,6 @@ export default class CanvasPane_ByImages extends Vue {
 
 .annotation-status-bar {
   margin-top: 16px;
-}
-
-.canvas_renderer {
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .download-button {
