@@ -10,7 +10,9 @@
             @select="onSelect"
         />
       </div>
-      <div class="button_list">
+      <div class="button_list"
+           v-if="enableDelete"
+      >
         <ButtonGrid
             :data="deleteList"
             :selectId="-1"
@@ -21,7 +23,9 @@
       </div>
     </div>
 
-    <div class="add_form">
+    <div class="add_form"
+         v-if="enableAdd"
+    >
       <input type="text" placeholder="class name"
              v-model="newClassName"
       >
@@ -46,6 +50,8 @@ import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 export default class ClassEditor extends Vue {
   @Prop({default: {"0": "dummy"}})  classes!: { [id: string]: string };
   @Prop({default: "0"}) selectedId!: string;
+  @Prop({default: true}) enableDelete!: boolean;
+  @Prop({default: true}) enableAdd!: boolean;
   private newClassName: string = "";
 
   get labels() {
@@ -93,7 +99,6 @@ export default class ClassEditor extends Vue {
 
 .class_list {
   width: 100%;
-  max-width: 130px;
 
   ::v-deep button {
     text-align: left;

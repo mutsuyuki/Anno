@@ -16,7 +16,7 @@ class ClassListStore extends VuexModule {
   // --- state ------------------------------
   private _classList: { [id: string]: string } = {
     "0": "piman",
-    "1": "stem"
+    "1": "stem",
   };
 
   // getters

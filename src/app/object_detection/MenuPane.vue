@@ -39,6 +39,8 @@
           <ClassEditor
               :classes="classes"
               :selectedId="selectedClass"
+              :enableAdd="true"
+              :enableDelete="true"
               @select="onSelectClass"
               @delete="onDeleteClass"
               @add="onAddClass"
