@@ -23,6 +23,10 @@ export default class ListManager<T> {
     return this._items.length;
   }
 
+  get isEnable(): boolean {
+    return this.numberOfItems > 1;
+  }
+
   public setIndex(value: number) {
     if (isNaN(value))
       return;
@@ -49,6 +53,5 @@ export default class ListManager<T> {
   public prev(): void {
     this.setIndex(this._currentIndex - 1);
   }
-
 
 }

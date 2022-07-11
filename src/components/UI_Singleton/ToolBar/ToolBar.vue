@@ -22,7 +22,8 @@
     <div class="alpha_changer ui-unit">
       <span>教師データ透明度</span>
       <input type="range" min="0" max="1" step="0.000001"
-             v-model="opacity"
+             :value="annotationOpacity"
+             @input="$emit('annotationOpacity', $event.target.value)"
       >
     </div>
 
@@ -31,23 +32,23 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
+import ScalableArea from "@/components/UI/Area/ScalableArea.vue";
 import InlineSvg from "@/common/utils/InlineSvg";
-import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
-import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
+import NormalizedScalableArea from "@/components/UI/Area/NormalizedScalableArea.vue";
 import HistoryStore from "@/store/HistoryStore";
 
 @Component({
   components: {NormalizedScalableArea, InlineSvg, ScalableArea}
 })
 export default class ToolBar extends Vue {
+  @Prop({default: 1}) annotationOpacity!;
 
   private isControlDown: boolean = false;
 
   mounted() {
     document.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key == "a") this.opacity = 0;
-      if (e.key == "s") this.opacity = 1;
+      if (e.key == "a") this.$emit('annotationOpacity', 0);
+      if (e.key == "s") this.$emit('annotationOpacity', 1);
 
       if (e.key == "Control") this.isControlDown = true;
       if (e.key == "z" && this.isControlDown) HistoryStore.undo();
@@ -72,14 +73,6 @@ export default class ToolBar extends Vue {
 
   get enableRedo() {
     return HistoryStore.enableRedo;
-  }
-
-  get opacity() {
-    return CanvasSettingsStore.opacity;
-  }
-
-  set opacity(opacity: number) {
-    CanvasSettingsStore.setOpacity(opacity);
   }
 
 }

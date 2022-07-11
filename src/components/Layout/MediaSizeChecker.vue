@@ -14,11 +14,10 @@ export default class MediaSizeChecker extends Vue {
   @Prop() private heightPadding!: number;
 
   mounted() {
-    const mediaElement = this.$el.children[0] as HTMLElement;
-
     let prevWidth = 0;
     setInterval(() => {
-      if (!this.containerElement) {
+      const mediaElement = this.$el.children[0] as HTMLElement;
+      if (!mediaElement || !this.containerElement) {
         return;
       }
 

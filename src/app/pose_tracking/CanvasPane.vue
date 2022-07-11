@@ -1,6 +1,9 @@
 <template>
   <div v-show="isShow">
-    <ToolBar/>
+    <ToolBar
+        :annotationOpacity="annotationOpacity"
+        @annotationOpacity="annotationOpacity = $event"
+    />
 
     <AnnotationStatusBar
         class="annotation-status-bar"
@@ -10,10 +13,11 @@
     />
 
     <VideoPlayer
+        :srcUrl="videoUrl"
         :seekFrame="seekFrame"
-        :createBlobSignal="createBlobSignal"
         :markerTimes="annotatedFrames"
-        :overlayOpacity="overlayOpacity"
+        :overlayOpacity="annotationOpacity"
+        :createBlobSignal="createBlobSignal"
         @dragareastart="dragStartPosition = $event"
         @dragarea="draggingPosition = $event"
         @dragareaend="dragEndPosition = $event"
@@ -101,28 +105,26 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
+import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
 import {MovingPoint, MovingPointUtil, Point, PointUtil} from "@/common/interface/Point";
 import FileUtil from "@/common/utils/FileUtil";
 import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
-import VideoPlayer from "@/components/UI_Singleton/Player/VideoPlayer.vue";
-import ScrollableArea from "@/components/UI/ScrollableArea.vue";
-import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
-import OperationStore from "@/app/pose_tracking/store/OperationStore";
-import AnnotationsStore, {Annotation} from "@/app/pose_tracking/store/AnnotationsStore";
-import EditStateStore, {EditState} from "@/store/EditStateStore";
-import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
+import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
+import ScrollableArea from "@/components/UI/Area/ScrollableArea.vue";
+import AnnotationStatusBar from "@/components/UI/AnnotationStatusBar/AnnotationStatusBar.vue";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
 import AnimalBoneOverlay from "@/components/Canvas/Overlay/AnimalBoneOverlay.vue";
 import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 import {AnimalBoneModel} from "@/common/model/AnimalBoneModel";
-import {BEHAVIOUR, NECK_MARK} from "@/app/pose_tracking/const/Constants";
+import OperationStore from "@/app/pose_tracking/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/pose_tracking/store/AnnotationsStore";
+import EditStateStore, {EditState} from "@/store/EditStateStore";
+import FileStore from "@/app/pose_tracking/store/FileStore";
+import ClassListStore from "@/app/pose_tracking/store/ClassListStore";
 
 @Component({
   components: {
@@ -139,24 +141,26 @@ import {BEHAVIOUR, NECK_MARK} from "@/app/pose_tracking/const/Constants";
   }
 })
 export default class CanvasPane extends Vue {
-  private isDeleteMode: boolean = false;
+  private annotationOpacity: number = 1;
 
   private dragStartPosition: MovingPoint = MovingPointUtil.zero();
   private draggingPosition: MovingPoint = MovingPointUtil.zero();
   private dragEndPosition: MovingPoint = MovingPointUtil.zero();
   private hoverPosition: Point = PointUtil.zero();
 
+  private isDeleteMode: boolean = false;
+
   private frame: string = "";       // ビデオのフレームと、OperationStore上の現在フレームに差分検知用
   private createBlobSignal: boolean = false;  // VideoPlayerに画像のBlobを作成依頼するトリガー用
 
   // --- container ---------
   get isShow() {
-    return VideoPlayerStore.isSelected;
+    return FileStore.isVideoFileSelected;
   }
 
   // --- AnnotationStatusBar ---------
   get videoFileName() {
-    return VideoPlayerStore.name;
+    return FileStore.videoName;
   }
 
   get currentEditSequence(): EditState {
@@ -172,12 +176,12 @@ export default class CanvasPane extends Vue {
   }
 
   // --- VideoPlayer ---------
-  get seekFrame(): number {
-    return Number(this.frame == OperationStore.frame ? -1 : OperationStore.frame);
+  get videoUrl() {
+    return FileStore.videoUrl;
   }
 
-  get overlayOpacity() {
-    return CanvasSettingsStore.opacity;
+  get seekFrame(): number {
+    return Number(this.frame == OperationStore.frame ? -1 : OperationStore.frame);
   }
 
   get annotatedFrames(): number[] {
@@ -244,8 +248,8 @@ export default class CanvasPane extends Vue {
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
-      const behaviour = BEHAVIOUR[annotation.behaviour_class];
-      const neckMark = annotation.neck_mark_bounding.left != -9999 ? NECK_MARK[annotation.neck_mark_class] : '';
+      const behaviour = ClassListStore.behaviours[annotation.behaviour_class];
+      const neckMark = annotation.neck_mark_bounding.left != -9999 ? ClassListStore.neckMarks[annotation.neck_mark_class] : '';
       result.push({
         text: objectId + " : " + behaviour + " : " + neckMark,
         position: {
@@ -306,7 +310,7 @@ export default class CanvasPane extends Vue {
 
     // 教師データ読み込み
     this.$watch(
-        () => AnnotationFilesStore.items,
+        () => FileStore.annotationFiles,
         () => this.restoreAnnotation(),
         {deep: true}
     );
@@ -328,8 +332,8 @@ export default class CanvasPane extends Vue {
   private async restoreAnnotation() {
     AnnotationsStore.clear();
 
-    for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
-      const fileName = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
+    for (let i = 0; i < FileStore.annotationFiles.length; i++) {
+      const fileName = FileUtil.removeExtension(FileStore.annotationFiles[i].name);
       const fileNameParts = fileName.split("___");
       const frame = fileNameParts[fileNameParts.length - 2];
 
@@ -338,7 +342,7 @@ export default class CanvasPane extends Vue {
         reader.onload = () => {
           resolve(reader.result || "");
         };
-        reader.readAsText(AnnotationFilesStore.items[i]);
+        reader.readAsText(FileStore.annotationFiles[i]);
       });
 
       AnnotationsStore.setAnnotationsOfFrame({

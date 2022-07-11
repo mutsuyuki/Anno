@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
-import {Annotation} from "@/app/object_detection/store/AnnotationsStore";
 
 
 @Module({

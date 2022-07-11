@@ -21,7 +21,7 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
-import ScrollableArea from "@/components/UI/ScrollableArea.vue";
+import ScrollableArea from "@/components/UI/Area/ScrollableArea.vue";
 
 @Component({
   components: {
@@ -31,8 +31,8 @@ import ScrollableArea from "@/components/UI/ScrollableArea.vue";
   }
 })
 export default class MenuLayout extends Vue {
-  @Prop({default: "Annotation Tool"}) private headerText!: string;
-  @Prop({default: "Enjoy Annotation!"}) private footerText!: string;
+  @Prop({default: ""}) private headerText!: string;
+  @Prop({default: ""}) private footerText!: string;
 
 }
 </script>

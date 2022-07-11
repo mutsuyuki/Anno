@@ -82,9 +82,9 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
+import ScalableArea from "@/components/UI/Area/ScalableArea.vue";
 import InlineSvg from "@/common/utils/InlineSvg";
-import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
+import NormalizedScalableArea from "@/components/UI/Area/NormalizedScalableArea.vue";
 import FileDownloader from "@/common/utils/FileDownloader";
 
 @Component({

@@ -70,6 +70,11 @@ class EditStateStore extends VuexModule {
 
     Vue.set(this._states[value.frame], "isDownloaded", value.isDownloaded);
   }
+
+  @Mutation
+  public clear(){
+    this._states = {};
+  }
 }
 
 export default getModule(EditStateStore);

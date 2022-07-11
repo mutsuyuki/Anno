@@ -9,11 +9,15 @@
     </template>
 
     <template v-slot:size-check-target>
-      <img :src="sizeCheckVideoUrl">
+      <img :src="sizeCheckImageUrl">
     </template>
 
     <template v-slot:help>
-      <Help/>
+      <Help
+          :isShow="isShowHelp"
+          :descriptions="helpDescriptions"
+          @close="isShowHelp = false"
+      />
     </template>
   </AnnotationPageLayout>
 </template>
@@ -22,27 +26,32 @@
 import {Component, Vue} from "vue-property-decorator";
 import MenuPane from "@/app/pore/MenuPane.vue";
 import CanvasPane from "@/app/pore/CanvasPane.vue";
-import Help from "@/app/pore/Help.vue";
-import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
-import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
+import Help from "@/components/UI/Help/Help.vue";
+import HelpMessage from "@/app/pore/HelpMessages";
+import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import EditStateStore from "@/store/EditStateStore";
 import AnnotationsStore from "@/app/pore/store/AnnotationsStore";
 import OperationStore from "@/app/pore/store/OperationStore";
+import FileStore from "@/app/pore/store/FileStore";
 
 @Component({
   components: {
     AnnotationPageLayout,
     CanvasPane,
     MenuPane,
-    Help,
+    Help
   },
 })
 export default class Home extends Vue {
-  get sizeCheckVideoUrl() {
-    return ImagePlayerStore.currentItemUrl;
+  private isShowHelp: boolean = false;
+
+  get sizeCheckImageUrl() {
+    return FileStore.imageUrls[OperationStore.frame];
+  }
+
+  get helpDescriptions() {
+    return HelpMessage.descriptions;
   }
 
   mounted() {
@@ -53,7 +62,6 @@ export default class Home extends Vue {
         () => HistoryStore.index,
         () => {
           const current = HistoryStore.current;
-          console.log("change", current.value.annotation)
           OperationStore.setOperation(current.value.operation);
           EditStateStore.setSequences(current.value.editSequence);
           AnnotationsStore.setAnnotation(current.value.annotation);
@@ -61,15 +69,7 @@ export default class Home extends Vue {
     );
   }
 
-  destroyed() {
-    ImagePlayerStore.clear();
-    AnnotationFilesStore.clear();
-    HistoryStore.clear();
-    HelpStore.hide();
-  }
-
   private makeHistoryRecord() {
-    console.log("make", AnnotationsStore.annotations)
     return new HistoryRecord({
       operation: OperationStore.operation,
       editSequence: EditStateStore.states,

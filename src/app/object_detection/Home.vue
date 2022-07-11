@@ -1,7 +1,10 @@
 <template>
   <AnnotationPageLayout>
     <template v-slot:menu>
-      <MenuPane @addHistory="addHistory"/>
+      <MenuPane
+          @addHistory="addHistory"
+          @help="isShowHelp = !isShowHelp"
+      />
     </template>
 
     <template v-slot:editor>
@@ -9,29 +12,33 @@
     </template>
 
     <template v-slot:size-check-target>
-      <video :src="sizeCheckVideoUrl"></video>
+      <video v-if="sizeCheckVideoUrl" :src="sizeCheckVideoUrl"></video>
+      <img v-if="sizeCheckImageUrl" :src="sizeCheckImageUrl"/>
     </template>
 
     <template v-slot:help>
-      <Help/>
+      <Help
+          :isShow="isShowHelp"
+          :descriptions="helpDescriptions"
+          @close="isShowHelp = false"
+      />
     </template>
   </AnnotationPageLayout>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
+import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 import MenuPane from "@/app/object_detection/MenuPane.vue";
 import CanvasPane from "@/app/object_detection/CanvasPane.vue";
-import Help from "@/app/object_detection/Help.vue";
+import Help from "@/components/UI/Help/Help.vue";
+import HelpMessage from "@/app/object_detection/HelpMessages";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
 import EditStateStore from "@/store/EditStateStore";
 import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
-import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
+import FileStore from "@/app/object_detection/store/FileStore";
 
 @Component({
   components: {
@@ -42,8 +49,18 @@ import ClassListStore from "@/app/object_detection/store/ClassListStore";
   },
 })
 export default class Home extends Vue {
+  private isShowHelp: boolean = false;
+
   get sizeCheckVideoUrl() {
-    return VideoPlayerStore.url;
+    return FileStore.videoUrl;
+  }
+
+  get sizeCheckImageUrl() {
+    return FileStore.imageUrls[OperationStore.frame];
+  }
+
+  get helpDescriptions() {
+    return HelpMessage.descriptions;
   }
 
   mounted() {
@@ -60,13 +77,6 @@ export default class Home extends Vue {
           AnnotationsStore.setAnnotation(current.value.annotation);
         }
     );
-  }
-
-  destroyed() {
-    VideoPlayerStore.clear();
-    AnnotationFilesStore.clear();
-    HistoryStore.clear();
-    HelpStore.hide();
   }
 
   private makeHistoryRecord() {

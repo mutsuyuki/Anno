@@ -48,6 +48,14 @@ class FileStore extends VuexModule {
     return this._loadedFiles.imageFiles.length > 0;
   }
 
+  get imageUrls(): string[] {
+    return this._loadedFiles.imageFiles.map(v => URL.createObjectURL(v));
+  }
+
+  get imageNames(): string[] {
+    return this._loadedFiles.imageFiles.map(v => v.name);
+  }
+
   get isAnnotationFilesSelected(): boolean {
     return this._loadedFiles.annotationFiles.length > 0;
   }

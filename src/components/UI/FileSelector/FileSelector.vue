@@ -44,6 +44,7 @@ export default class FileSelector extends Vue {
 
     if (files.length > 0) {
       this.$emit("change", files);
+      e.target.value = "";  // クリア
     } else {
       this.$emit("cancel");
     }

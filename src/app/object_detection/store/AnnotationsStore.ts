@@ -95,6 +95,43 @@ class AnnotationsStore extends VuexModule {
   }
 
   @Mutation
+  public copyPrevFrameObjects(currentFrame: string) {
+    const currentFrameAsNumber = Number(currentFrame);
+    const allFrames = Object.keys(this._annotations);
+    const prevFrames = allFrames.filter(v => {
+      const frameAsNumber = Number(v)
+      const objectNumInFrame = Object.keys(this._annotations[v]).length;
+      return frameAsNumber < currentFrameAsNumber && objectNumInFrame > 0;
+    });
+    if (prevFrames.length <= 0) {
+      alert("現在フレームより前にアノテーションがありません。");
+      return;
+    }
+
+    prevFrames.sort((a, b) => {
+      const aa = Number(a);
+      const bb = Number(b);
+      if (aa > bb) return 1;
+      if (aa < bb) return -1;
+      return 0;
+    });
+
+    const prevFrame = prevFrames[prevFrames.length - 1];
+    if (!this._annotations[currentFrame])
+      Vue.set(this._annotations, currentFrame, {});
+
+    for (const objectId in this._annotations[prevFrame]) {
+      let copiedAnnotation = DeepCloner.copy(this._annotations[prevFrame][objectId]);
+      copiedAnnotation.frame = currentFrame;
+      Vue.set(
+        this._annotations[currentFrame],
+        objectId,
+        copiedAnnotation
+      );
+    }
+  }
+
+  @Mutation
   public setClass(value: { frame: string, objectId: string, class: string }) {
     Vue.set(
       this._annotations[value.frame][value.objectId],

@@ -10,7 +10,6 @@ export class HistoryRecord<T> {
   }
 }
 
-
 @Module({
   name: "HistoryStore",
   dynamic: true,
@@ -22,6 +21,7 @@ class HistoryStore extends VuexModule {
 
   // states
   private _history: HistoryRecord<any>[] = [];
+  private _initialHistoryRecord: HistoryRecord<any> = new HistoryRecord({});
   private _index: number = 0;
 
   // getters
@@ -44,6 +44,7 @@ class HistoryStore extends VuexModule {
   @Mutation
   public init(record: HistoryRecord<any>) {
     this._history = [record];
+    this._initialHistoryRecord = DeepCloner.copy(record);
     this._index = 0;
   }
 
@@ -71,7 +72,7 @@ class HistoryStore extends VuexModule {
 
   @Mutation
   public clear() {
-    this._history = [];
+    this._history = [DeepCloner.copy(this._initialHistoryRecord)];
     this._index = 0;
   }
 }

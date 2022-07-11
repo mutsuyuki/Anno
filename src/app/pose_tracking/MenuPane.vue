@@ -2,7 +2,8 @@
 
   <MenuLayout
       :headerText="'Pose Tracking'"
-      @help="onHelp"
+      :footerText="'Enjoy Annotation!'"
+      @help="$emit('help')"
   >
     <SubMenu :menuTitle="'ファイル'">
       <FileSelectorSet
@@ -13,100 +14,99 @@
       />
     </SubMenu>
 
-    <SubMenu v-show="isVideoSelected">
-      <SubMenu :menuTitle="'データ作成'">
-        <Row>
-          <ButtonGrid
-              :data="[{id:0,text:'新しいデータを作る'}]"
-              :selectId="-1"
-              :cols="1"
-              @select="onSelectCreateData"
-          />
+    <SubMenu v-show="isVideoSelected"
+             :menuTitle="'データ作成'">
+      <Row>
+        <ButtonGrid
+            :data="[{id:0,text:'新しいデータを作る'}]"
+            :selectId="-1"
+            :cols="1"
+            @select="onSelectCreateData"
+        />
 
-          <ButtonGrid
-              class="copy_button"
-              :class="{'disable': !selectingObject}"
-              :data="[{id:'_',text:'選択中データを複製'}]"
-              :selectId="-1"
-              :cols="1"
-              @select="onSelectCopyData"
-          />
+        <ButtonGrid
+            class="copy_button"
+            :class="{'disable': !selectingObject}"
+            :data="[{id:'_',text:'選択中データを複製'}]"
+            :selectId="-1"
+            :cols="1"
+            @select="onSelectCopyData"
+        />
 
-          <ButtonGrid
-              class="copy_button"
-              :class="{'disable': isFirstFrame}"
-              :data="[{id:'_',text:'前フレーム全て複製'}]"
-              :selectId="-1"
-              :cols="1"
-              @select="onSelectCopyFrame"
-          />
-        </Row>
-      </SubMenu>
+        <ButtonGrid
+            class="copy_button"
+            :class="{'disable': isFirstFrame}"
+            :data="[{id:'_',text:'直近フレームから複製'}]"
+            :selectId="-1"
+            :cols="1"
+            @select="onSelectCopyFrame"
+        />
+      </Row>
+    </SubMenu>
 
-      <!--データ選択時表示メニュー-->
-      <SubMenu v-show="selectingObject">
-        <SubMenu :menuTitle="'データタイプ'">
-          <ButtonGrid
-              :data="[
+    <!--データ選択時表示メニュー-->
+    <SubMenu v-show="selectingObject">
+      <SubMenu :menuTitle="'データタイプ'">
+        <ButtonGrid
+            :data="[
                   {id:'bounding',text:'領域'},
                   {id:'bone',text:'ボーン'},
                   {id:'neck_mark', text:'首'}
               ]"
-              :selectId="selectedMode"
+            :selectId="selectedMode"
+            :cols="3"
+            @select="onSelectMode"
+        />
+      </SubMenu>
+
+      <!--矩形選択モード-->
+      <SubMenu v-show="selectedMode==='bounding'">
+        <SubMenu :menuTitle="'クラス設定'">
+          <ButtonGrid
+              :data="behaviours"
+              :selectId="selectedBehaviourClass"
               :cols="3"
-              @select="onSelectMode"
+              :font-size="11"
+              @select="onSelectBehaviour"
           />
         </SubMenu>
+      </SubMenu>
 
-        <!--矩形選択モード-->
-        <SubMenu v-show="selectedMode==='bounding'">
-          <SubMenu :menuTitle="'クラス設定'">
-            <ButtonGrid
-                :data="behaviours"
-                :selectId="selectedBehaviourClass"
-                :cols="3"
-                :font-size="11"
-                @select="onSelectBehaviour"
-            />
-          </SubMenu>
+      <!--ボーンモード-->
+      <SubMenu v-show="selectedMode==='bone'">
+        <SubMenu :menuTitle="'反転'">
+          <ButtonGrid
+              :data="[{id:'_',text:'左右反転'}]"
+              :cols="1"
+              @select="onClickFlipJoint"
+          />
         </SubMenu>
-
-        <!--ボーンモード-->
-        <SubMenu v-show="selectedMode==='bone'">
-          <SubMenu :menuTitle="'反転'">
-            <ButtonGrid
-                :data="[{id:'_',text:'左右反転'}]"
-                :cols="1"
-                @select="onClickFlipJoint"
-            />
-          </SubMenu>
-          <SubMenu :menuTitle="'復活'">
-            <ButtonGrid
-                :data="[{id:'_',text:'削除した関節を復活'}]"
-                :cols="1"
-                @select="onClickRebirthJoint"
-            />
-          </SubMenu>
+        <SubMenu :menuTitle="'復活'">
+          <ButtonGrid
+              :data="[{id:'_',text:'削除した関節を復活'}]"
+              :cols="1"
+              @select="onClickRebirthJoint"
+          />
         </SubMenu>
+      </SubMenu>
 
-        <!--首装置モード-->
-        <SubMenu v-show="selectedMode==='neck_mark'">
-          <SubMenu v-show="!isNeckExist" :menuTitle="'データ追加'">
-            <ButtonGrid
-                :data="[{id:'_',text:'首装置を追加'}]"
-                :cols="1"
-                @select="onClickCreateNeckMark"
-            />
-          </SubMenu>
-          <SubMenu v-show="isNeckExist" :menuTitle="'クラス設定'">
-            <ButtonGrid
-                :data="neckMarks"
-                :selectId="selectedNeckMarkClass"
-                :cols="5"
-                :font-size="11"
-                @select="onSelectNeckMark"
-            />
-          </SubMenu>
+      <!--首装置モード-->
+      <SubMenu v-show="selectedMode==='neck_mark'">
+        <SubMenu v-show="!isNeckExist" :menuTitle="'データ追加'">
+          <ButtonGrid
+              :data="[{id:'_',text:'首装置を追加'}]"
+              :cols="1"
+              @select="onClickCreateNeckMark"
+          />
+        </SubMenu>
+        <SubMenu v-show="isNeckExist" :menuTitle="'クラス設定'">
+          <ButtonGrid
+              :data="neckMarks"
+              :selectId="selectedNeckMarkClass"
+              :cols="5"
+              :font-size="11"
+              @select="onSelectNeckMark"
+          />
         </SubMenu>
       </SubMenu>
     </SubMenu>
@@ -116,21 +116,19 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
-import AnnotationsStore from "@/app/pose_tracking/store/AnnotationsStore";
-import OperationStore from "@/app/pose_tracking/store/OperationStore";
-import ScrollableArea from "@/components/UI/ScrollableArea.vue";
+import ScrollableArea from "@/components/UI/Area/ScrollableArea.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
 import Row from "@/components/Layout/Row.vue";
-import {BEHAVIOUR, NECK_MARK} from "@/app/pose_tracking/const/Constants";
+import AnnotationsStore from "@/app/pose_tracking/store/AnnotationsStore";
+import OperationStore from "@/app/pose_tracking/store/OperationStore";
+import FileStore from "@/app/pose_tracking/store/FileStore";
+import ClassListStore from "@/app/pose_tracking/store/ClassListStore";
 
 @Component({
   components: {
@@ -148,7 +146,7 @@ import {BEHAVIOUR, NECK_MARK} from "@/app/pose_tracking/const/Constants";
 export default class MenuPane extends Vue {
 
   get isVideoSelected() {
-    return VideoPlayerStore.isSelected;
+    return FileStore.isVideoFileSelected;
   }
 
   get selectedBehaviourClass() {
@@ -177,11 +175,13 @@ export default class MenuPane extends Vue {
   }
 
   get behaviours() {
-    return Object.keys(BEHAVIOUR).map(key => ({id: key, text: BEHAVIOUR[key]}));
+    const behaviours = ClassListStore.behaviours;
+    return Object.keys(behaviours).map(key => ({id: key, text: behaviours[key]}));
   }
 
   get neckMarks() {
-    return Object.keys(NECK_MARK).map(key => ({id: key, text: NECK_MARK[key]})) ;
+    const neckMarks = ClassListStore.neckMarks;
+    return Object.keys(neckMarks).map(key => ({id: key, text: neckMarks[key]}));
   }
 
   get selectedNeckMarkClass() {
@@ -189,15 +189,14 @@ export default class MenuPane extends Vue {
   }
 
   private onSelectVideoFile(files: File[]) {
-    VideoPlayerStore.setFile(files[0]);
-    AnnotationFilesStore.setFiles([]);
+    FileStore.setVideoFile(files[0]);
   }
 
   private onSelectAnnotationFiles(files: File[]) {
     if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
       return;
 
-    AnnotationFilesStore.setFiles(files);
+    FileStore.setAnnotationFiles(files);
   }
 
   private onSelectCreateData(_: number) {
@@ -282,10 +281,6 @@ export default class MenuPane extends Vue {
 
   private addHistory() {
     this.$emit("addHistory")
-  }
-
-  private onHelp(): void {
-    HelpStore.toggle();
   }
 }
 </script>

@@ -1,6 +1,9 @@
 <template>
   <div v-show="isImagesSelected">
-    <ToolBar/>
+    <ToolBar
+        :annotationOpacity="annotationOpacity"
+        @annotationOpacity="annotationOpacity = $event"
+    />
 
     <AnnotationStatusBar
         class="annotation-status-bar"
@@ -10,12 +13,17 @@
     />
 
     <ImagePlayer
+        :srcUrls="imageUrls"
+        :seekFrame="seekFrame"
+        :markerTimes="annotatedFrames"
+        :overlayOpacity="annotationOpacity"
+        @pageupdate="onFrameUpdate"
         @dragareastart="onDragStart"
         @dragarea="onDrag"
         @dragareaend="onDragEnd"
         @download="onDownload"
     >
-      <CanvasRenderer :graphics="graphics" :opacity="opacity"/>
+      <CanvasRenderer :graphics="graphics"/>
     </ImagePlayer>
 
     <DownloadButton
@@ -42,18 +50,16 @@ import {Graphic} from "@/components/Canvas/Renderer/Graphic";
 import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
 import {Color} from "@/common/interface/Color";
 import FileUtil from "@/common/utils/FileUtil";
-import AnnotationStatusBar from "@/components/AnnotationStatusBar.vue";
+import AnnotationStatusBar from "@/components/UI/AnnotationStatusBar/AnnotationStatusBar.vue";
 import FileDownloader from "@/common/utils/FileDownloader";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
-import ImagePlayer from "@/components/UI_Singleton/Player/ImagePlayer.vue";
+import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
 import EditStateStore, {EditState} from "@/store/EditStateStore";
 import OperationStore from "@/app/pore/store/OperationStore";
 import AnnotationsStore, {Annotation} from "@/app/pore/store/AnnotationsStore";
-import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
+import FileStore from "@/app/pore/store/FileStore";
 
 
 enum MODE {
@@ -74,55 +80,16 @@ enum MODE {
 
 export default class CanvasPane extends Vue {
   private graphics: Graphic[] = [];
-
   private circleColor: Color = {r: 150, g: 0, b: 0, a: 1};
   private lineColor: Color = {r: 0, g: 0, b: 150, a: 1};
+  private annotationOpacity: number = 1;
+
+  private frame: string = "";       // PlayerのフレームとOperationStoreのフレームの差分検知用
 
   private mode: MODE = MODE.IDLE;
   private isDeleteMode: boolean = false;
   private widthValue: number = 0.1;
   private unWatchWidthValue!: Function;
-
-  get isImagesSelected() {
-    return ImagePlayerStore.isSelected;
-  }
-
-  get isLineWidthMode() {
-    return this.mode == MODE.LINE_WIDTH;
-  }
-
-  get currentFileNameFull() {
-    return ImagePlayerStore.currentName
-  }
-
-  get isUseAnnotationFile() {
-    return this.operationOfCurrentFrame.isUseAnnotationFile;
-  }
-
-  get isDownloaded() {
-    return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
-  }
-
-  get operationOfCurrentFrame(): EditState {
-    return EditStateStore.states[OperationStore.frame] || {};
-  }
-
-  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
-    return AnnotationsStore.annotations[OperationStore.frame] || {};
-  }
-
-  get opacity() {
-    return CanvasSettingsStore.opacity;
-  }
-
-  get selectingObject() {
-    const frame = OperationStore.frame;
-    if (!AnnotationsStore.annotations[frame])
-      return null;
-
-    const objectId = OperationStore.selectingObjectId;
-    return AnnotationsStore.annotations[frame][objectId];
-  }
 
   created() {
     // 表示対象のアノテーションたちの状態が変わった
@@ -148,15 +115,8 @@ export default class CanvasPane extends Vue {
 
     // 教師データ読み込み
     this.$watch(
-        () => AnnotationFilesStore.items,
+        () => FileStore.annotationFiles,
         () => this.restoreAnnotation(),
-        {deep: true}
-    );
-
-    // 画像が切り替わった
-    this.$watch(
-        () => ImagePlayerStore.currentName,
-        () => OperationStore.setFrame(FileUtil.removeExtension(ImagePlayerStore.currentName)),
         {deep: true}
     );
 
@@ -172,6 +132,62 @@ export default class CanvasPane extends Vue {
         this.isDeleteMode = false;
       }
     })
+  }
+
+  get isImagesSelected() {
+    return FileStore.isImageFilesSelected;
+  }
+
+  get isLineWidthMode() {
+    return this.mode == MODE.LINE_WIDTH;
+  }
+
+  get imageUrls() {
+    return FileStore.imageUrls;
+  }
+
+  get currentFileNameFull() {
+    return FileStore.imageNames[OperationStore.frame];
+  }
+
+  get seekFrame(): number {
+    return Number(this.frame == OperationStore.frame ? -1 : OperationStore.frame);
+  }
+
+  get annotatedFrames(): number[] {
+    return Object.keys(AnnotationsStore.annotations)
+        .map(v => Number(v))
+        .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
+  }
+
+  get isUseAnnotationFile() {
+    return this.operationOfCurrentFrame.isUseAnnotationFile;
+  }
+
+  get isDownloaded() {
+    return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
+  }
+
+  get operationOfCurrentFrame(): EditState {
+    return EditStateStore.states[OperationStore.frame] || ({} as EditState);
+  }
+
+  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
+    return AnnotationsStore.annotations[OperationStore.frame] || {};
+  }
+
+  get selectingObject() {
+    const frame = OperationStore.frame;
+    if (!AnnotationsStore.annotations[frame])
+      return null;
+
+    const objectId = OperationStore.selectingObjectId;
+    return AnnotationsStore.annotations[frame][objectId];
+  }
+
+  private onFrameUpdate(frame: number): void {
+    this.frame = frame.toString();
+    OperationStore.setFrame(this.frame);
   }
 
   private draw() {
@@ -193,15 +209,15 @@ export default class CanvasPane extends Vue {
   private async restoreAnnotation() {
     AnnotationsStore.clear();
 
-    for (let i = 0; i < AnnotationFilesStore.items.length; i++) {
-      const frame = FileUtil.removeExtension(AnnotationFilesStore.items[i].name);
+    for (let i = 0; i < FileStore.annotationFiles.length; i++) {
+      const frame = FileUtil.removeExtension(FileStore.annotationFiles[i].name);
 
       const fileText = await new Promise(resolve => {
         const reader = new FileReader();
         reader.onload = () => {
           resolve(reader.result || "");
         };
-        reader.readAsText(AnnotationFilesStore.items[i]);
+        reader.readAsText(FileStore.annotationFiles[i]);
       });
 
       AnnotationsStore.setAnnotationsOfFrame({
@@ -215,7 +231,7 @@ export default class CanvasPane extends Vue {
       });
     }
 
-    if (AnnotationFilesStore.items.length > 0) {
+    if (FileStore.annotationFiles.length > 0) {
       this.addHistory();
     }
   }
@@ -307,13 +323,11 @@ export default class CanvasPane extends Vue {
   }
 
   private async onDownload() {
-    const json = JSON.stringify(this.annotationsOfCurrentFrame);
-    FileDownloader.downloadJsonFile(OperationStore.frame + ".json", json);
+    const file = FileStore.loadedFiles.imageFiles[OperationStore.frame];
+    FileDownloader.downloadBlob(file.name, file);
 
-    FileDownloader.downloadBlob(
-        OperationStore.frame,
-        ImagePlayerStore.currentItem
-    );
+    const json = JSON.stringify(this.annotationsOfCurrentFrame);
+    FileDownloader.downloadJsonFile(file.name + ".json", json);
 
     EditStateStore.setIsDownloaded({frame: OperationStore.frame, isDownloaded: true});
     EditStateStore.setIsDirty({frame: OperationStore.frame, isDirty: false});

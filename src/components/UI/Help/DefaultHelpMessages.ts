@@ -37,7 +37,7 @@ export const defaultHelpMessages: { title: string, body: string }[] = [
     body: '<span>← キー</span>',
   },
 
-  // ScalableArea.vue
+  // Area.vue
   {
     title: '画像拡大',
     body: 'マウスホイール',

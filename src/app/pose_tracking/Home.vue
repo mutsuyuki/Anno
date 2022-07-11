@@ -1,39 +1,42 @@
 <template>
-  <div>
-    <AnnotationPageLayout>
-      <template v-slot:menu>
-        <MenuPane @addHistory="addHistory"/>
-      </template>
+  <AnnotationPageLayout>
+    <template v-slot:menu>
+      <MenuPane
+          @addHistory="addHistory"
+          @help="isShowHelp = !isShowHelp"
+      />
+    </template>
 
-      <template v-slot:editor>
-        <CanvasPane @addHistory="addHistory"/>
-      </template>
+    <template v-slot:editor>
+      <CanvasPane @addHistory="addHistory"/>
+    </template>
 
-      <template v-slot:size-check-target>
-        <video :src="sizeCheckVideoUrl"></video>
-      </template>
+    <template v-slot:size-check-target>
+      <video :src="sizeCheckVideoUrl"></video>
+    </template>
 
-      <template v-slot:help>
-        <Help/>
-      </template>
-    </AnnotationPageLayout>
-  </div>
+    <template v-slot:help>
+      <Help
+          :isShow="isShowHelp"
+          :descriptions="helpDescriptions"
+          @close="isShowHelp = false"
+      />
+    </template>
+  </AnnotationPageLayout>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
+import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 import MenuPane from "@/app/pose_tracking/MenuPane.vue";
 import CanvasPane from "@/app/pose_tracking/CanvasPane.vue";
-import Help from "@/app/pose_tracking/Help.vue";
-import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
+import Help from "@/components/UI/Help/Help.vue";
+import HelpMessage from "@/app/pose_tracking/HelpMessages";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import OperationStore from "@/app/pose_tracking/store/OperationStore";
 import EditStateStore from "@/store/EditStateStore";
 import AnnotationsStore from "@/app/pose_tracking/store/AnnotationsStore";
-import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
+import FileStore from "@/app/pose_tracking/store/FileStore";
 
 @Component({
   components: {
@@ -44,9 +47,14 @@ import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
   },
 })
 export default class Home extends Vue {
+  private isShowHelp: boolean = false;
 
   get sizeCheckVideoUrl() {
-    return VideoPlayerStore.url;
+    return FileStore.videoUrl;
+  }
+
+  get helpDescriptions() {
+    return HelpMessage.descriptions;
   }
 
   mounted() {
@@ -62,13 +70,6 @@ export default class Home extends Vue {
           AnnotationsStore.setAnnotation(current.value.annotation);
         }
     );
-  }
-
-  destroyed() {
-    ImagePlayerStore.clear();
-    AnnotationFilesStore.clear();
-    HistoryStore.clear();
-    HelpStore.hide();
   }
 
   private makeHistoryRecord() {

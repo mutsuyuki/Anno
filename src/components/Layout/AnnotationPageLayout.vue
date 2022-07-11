@@ -54,7 +54,7 @@ export default class AnnotationPageLayout extends Vue {
   width: 100%;
   overflow: hidden;
 
-  $menu_width:220px;
+  $menu_width: 220px;
   .menu_pane {
     width: $menu_width;
     min-width: $menu_width;

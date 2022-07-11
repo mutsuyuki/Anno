@@ -1,62 +1,66 @@
 <template>
-
-  <div class="control_pane">
-
-    <MenuHeader
-        :text="'Object Detection'"
-    />
-
-    <div class="container">
-      <MenuSubTitle :text="'ファイル'"/>
+  <MenuLayout
+      :headerText="'Object Detection'"
+      :footerText="'Enjoy Annotation!'"
+      @help="$emit('help')"
+  >
+    <SubMenu :menuTitle="'ファイル'">
       <FileSelectorSet
           :useVideoSelector="true"
-          :useAnnotationSelector="isVideoSelected"
+          :useImagesSelector="true"
+          :useAnnotationSelector="isVideoSelected || isImagesSelected"
           @selectVideoFile="onSelectVideoFile"
+          @selectImageFiles="onSelectImageFiles"
           @selectAnnotationFiles="onSelectAnnotationFiles"
       />
+    </SubMenu>
 
-      <div class="object_detection_menu"
-           v-show="isVideoSelected"
-      >
-        <MenuSubTitle :text="'データ作成'" class="subtitle"/>
+    <SubMenu v-show="isVideoSelected || isImagesSelected"
+             :menuTitle="'データ作成'"
+    >
+      <Row>
         <ButtonGrid
-            :data="[{id:'_',text:'新しいデータを作る'}]"
+            :data="[{id:0,text:'新しいデータを作る'}]"
+            :selectId="-1"
             :cols="1"
             @select="onSelectCreateData"
         />
 
-        <div v-show="selectingObject">
+        <ButtonGrid
+            class="copy_button"
+            :class="{'disable': !selectingObject}"
+            :data="[{id:'_',text:'選択中データを複製'}]"
+            :selectId="-1"
+            :cols="1"
+            @select="onSelectCopyData"
+        />
 
-          <ButtonGrid
-              class="copy_button"
-              :class="{'disable': !selectingObject}"
-              :data="[{id:'_',text:'選択中データを複製'}]"
-              :cols="1"
-              @select="onSelectCopyData"
-          />
+        <ButtonGrid
+            class="copy_button"
+            :class="{'disable': isFirstFrame}"
+            :data="[{id:'_',text:'直近フレームから複製'}]"
+            :selectId="-1"
+            :cols="1"
+            @select="onSelectCopyFrame"
+        />
+      </Row>
+    </SubMenu>
 
-          <MenuSubTitle :text="'クラス設定'" class="subtitle"/>
-          <ClassEditor
-              :classes="classes"
-              :selectedId="selectedClass"
-              :enableAdd="true"
-              :enableDelete="true"
-              @select="onSelectClass"
-              @delete="onDeleteClass"
-              @add="onAddClass"
-          />
-        </div>
+    <SubMenu v-show="selectingObject"
+             :menuTitle="'クラス設定'"
+    >
+      <ClassEditor
+          :classes="classes"
+          :selectedId="selectedClass"
+          :enableAdd="true"
+          :enableDelete="true"
+          @select="onSelectClass"
+          @delete="onDeleteClass"
+          @add="onAddClass"
+      />
+    </SubMenu>
 
-      </div>
-    </div>
-
-    <MenuFooter
-        :text="'Enjoy Annotation!'"
-        @help="onClickHelp"
-    />
-
-  </div>
-
+  </MenuLayout>
 </template>
 
 <script lang="ts">
@@ -68,15 +72,21 @@ import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 import ButtonGrid from "@/components/UI/Button/ButtonGrid.vue";
 import ClassEditor from "@/components/UI/ClassEditor/ClassEditor.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
+import MenuLayout from "@/components/Menu/MenuLayout.vue";
+import SubMenu from "@/components/Menu/SubMenu.vue";
+import Row from "@/components/Layout/Row.vue";
 import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
+import FileStore from "@/app/object_detection/store/FileStore";
+import EditStateStore from "@/store/EditStateStore";
+import HistoryStore from "@/store/HistoryStore";
 
 @Component({
   components: {
+    Row,
+    SubMenu,
+    MenuLayout,
     FileSelectorSet,
     ClassEditor,
     ButtonGrid,
@@ -99,15 +109,23 @@ export default class MenuPane extends Vue {
   }
 
   get isVideoSelected() {
-    return VideoPlayerStore.isSelected;
+    return FileStore.isVideoFileSelected;
   }
 
-  get classes(){
+  get isImagesSelected() {
+    return FileStore.isImageFilesSelected;
+  }
+
+  get classes() {
     return ClassListStore.classList
   }
 
   get selectedClass() {
     return this.selectingObject ? this.selectingObject.class : -1;
+  }
+
+  get isFirstFrame() {
+    return Number(OperationStore.frame) <= 0;
   }
 
   get selectingObject() {
@@ -120,15 +138,22 @@ export default class MenuPane extends Vue {
   }
 
   private onSelectVideoFile(files: File[]) {
-    VideoPlayerStore.setFile(files[0]);
-    AnnotationFilesStore.setFiles([]);
+    EditStateStore.clear();
+    HistoryStore.clear();
+    FileStore.setVideoFile(files[0])
+  }
+
+  private onSelectImageFiles(files: File[]) {
+    EditStateStore.clear();
+    HistoryStore.clear();
+    FileStore.setImageFiles(files)
   }
 
   private onSelectAnnotationFiles(files: File[]) {
     if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
       return;
 
-    AnnotationFilesStore.setFiles(files);
+    FileStore.setAnnotationFiles(files)
   }
 
   private onSelectCreateData(_: number) {
@@ -142,6 +167,13 @@ export default class MenuPane extends Vue {
       frame: OperationStore.frame,
       objectId: OperationStore.selectingObjectId
     });
+    OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
+
+    this.addHistory();
+  }
+
+  private onSelectCopyFrame(_: string) {
+    AnnotationsStore.copyPrevFrameObjects(OperationStore.frame);
     OperationStore.setSelectingObjectId(AnnotationsStore.newestObjectId);
 
     this.addHistory();
@@ -166,32 +198,11 @@ export default class MenuPane extends Vue {
     this.addHistory();
   }
 
-
   private addHistory() {
     this.$emit("addHistory")
   }
 
-  private onClickHelp(): void {
-    HelpStore.toggle();
-  }
 }
 </script>
 
-<style scoped lang="scss">
-
-.container {
-  padding: 16px;
-  height: calc(100vh - 40px - 40px); // 100vh - header - footer
-
-  .copy_button {
-    margin-top: 8px;
-  }
-
-  .object_detection_menu {
-    .subtitle {
-      margin-top: 24px;
-    }
-  }
-}
-
-</style>
+<style scoped lang="scss"></style>

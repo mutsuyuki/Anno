@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
+import ScalableArea from "@/components/UI/Area/ScalableArea.vue";
 import {MovingPoint, Point, PointAndScale} from "@/common/interface/Point";
 
 @Component({

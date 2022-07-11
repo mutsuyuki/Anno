@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
-import ScrollableArea from "@/components/UI/ScrollableArea.vue";
+import ScrollableArea from "@/components/UI/Area/ScrollableArea.vue";
 import {defaultHelpMessages} from "@/components/UI/Help/DefaultHelpMessages";
 
 @Component({

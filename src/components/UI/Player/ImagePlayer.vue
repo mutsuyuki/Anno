@@ -33,8 +33,8 @@
         <input
             type="number"
             placeholder="0"
-            v-bind:value="seekIndex"
-            v-on:input="$emit('page', $event.target.value)"
+            :value="pageManager.currentIndex + 1"
+            @input="$emit('pageupdate', $event.target.value)"
         >
         <span class="divider">/</span>
         <span class="total-page">{{ srcUrls.length }}</span>
@@ -53,9 +53,9 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
+import ScalableArea from "@/components/UI/Area/ScalableArea.vue";
 import InlineSvg from "@/common/utils/InlineSvg";
-import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
+import NormalizedScalableArea from "@/components/UI/Area/NormalizedScalableArea.vue";
 import ListManager from "@/common/utils/ListManager";
 
 @Component({
@@ -68,9 +68,9 @@ import ListManager from "@/common/utils/ListManager";
 export default class ImagePlayer extends Vue {
   @Prop({default: []}) private srcUrls!: string[];
   @Prop({default: 0}) private seekIndex!: number;
+  @Prop({default: []}) private markerTimes!: number[];  // 現状未使用
   @Prop({default: 1}) private imageOpacity!: number;
   @Prop({default: 1}) private overlayOpacity!: number;
-  @Prop({default: false}) private createBlobSignal!: boolean;
 
   private pageManager: ListManager<string> = new ListManager<string>(this.srcUrls);
   private isShiftDown: boolean = false;
@@ -123,18 +123,22 @@ export default class ImagePlayer extends Vue {
 
   public first(): void {
     this.pageManager.first();
+    this.$emit('pageupdate', this.pageManager.currentIndex);
   }
 
   public last(): void {
     this.pageManager.last();
+    this.$emit('pageupdate', this.pageManager.currentIndex);
   }
 
   public next(): void {
     this.pageManager.next();
+    this.$emit('pageupdate', this.pageManager.currentIndex);
   }
 
   public prev(): void {
     this.pageManager.prev();
+    this.$emit('pageupdate', this.pageManager.currentIndex);
   }
 }
 </script>

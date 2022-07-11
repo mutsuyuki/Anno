@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
 
@@ -13,44 +12,43 @@ import store from "@/store";
 class ClassListStore extends VuexModule {
 
   // --- state ------------------------------
-  private _classList: { [id: string]: string } = {
-    "0": "piman",
-    "1": "stem",
+  private _behaviours: { [id: string]: string } = {
+    '0': '食',
+    '1': '飲',
+    '2': '歩',
+    '3': '立_通常',
+    '4': '立_反芻',
+    '5': '休_通常',
+    '6': '休_反芻'
+  };
+
+  private _neckMarks: { [id: string]: string } = {
+    '0': '1',
+    '1': '2',
+    '2': '3',
+    '3': '4',
+    '4': '5',
+    '5': '6',
+    '6': '7',
+    '7': '8',
+    '8': '0',
+    '9': 'A',
+    '10': 'B',
+    '11': 'C',
+    '12': 'D',
+    '13': 'F',
+    '14': 'G',
+    '15': 'K',
+    '16': 'V'
   };
 
   // getters
-  get classList() {
-    return this._classList;
+  get behaviours() {
+    return this._behaviours;
   }
 
-  get classesArray(): { id: string, text: string }[] {
-    const classesArray = Object.entries(this._classList);
-    return classesArray.map(v => {
-      return {id: v[0], text: v[1]}
-    });
-  }
-
-  @Mutation
-  public setClassList(value: { [id: string]: string }) {
-    this._classList = value;
-  }
-
-  @Mutation
-  public addClass(value: { id: string, text: string }) {
-    Vue.set(this._classList, value.id, value.text);
-  }
-
-  @Mutation
-  public addClassByName(name: string) {
-    const ids = Object.keys(this._classList).map(v => Number(v));
-    const newestId = ids.length == 0 ? -1 : ids.reduce((a, b) => Math.max(a, b));
-    const newId = newestId + 1;
-    Vue.set(this._classList, newId.toString(), name);
-  }
-
-  @Mutation
-  public deleteClass(id: string) {
-    Vue.delete(this._classList, id);
+  get neckMarks() {
+    return this._neckMarks;
   }
 }
 

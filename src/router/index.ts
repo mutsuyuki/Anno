@@ -1,9 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import * as PoreHome from '@/app/pore/Home.vue'
-import * as PoseTrackingHome from "@/app/pose_tracking/Home.vue";
 import * as ObjectDetectionHome from "@/app/object_detection/Home.vue";
-// import * as ObjectDetectionHome_ByImages from "@/app/object_detection/Home_ByImages.vue";
+import * as PoseTrackingHome from "@/app/pose_tracking/Home.vue";
+import * as PoreHome from '@/app/pore/Home.vue'
 
 Vue.use(VueRouter)
 
@@ -11,17 +10,14 @@ const routes = [
   {
     path: '/',
 
-    // name: 'PoreHome',
-    // component: PoreHome.default,
+    name: 'ObjectDetectionHome',
+    component: ObjectDetectionHome.default,
 
     // name: 'PoseTrackingHome',
     // component: PoseTrackingHome.default,
 
-    name: 'ObjectDetectionHome',
-    component: ObjectDetectionHome.default,
-
-    // name: 'ObjectDetectionHome_ByImages',
-    // component: ObjectDetectionHome_ByImages.default,
+    // name: 'PoreHome',
+    // component: PoreHome.default,
   },
 
 ];

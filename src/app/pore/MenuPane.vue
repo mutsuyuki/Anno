@@ -1,41 +1,39 @@
 <template>
-  <div class="control_pane">
+  <MenuLayout
+      :headerText="'Pore'"
+      :footerText="'Enjoy Annotation!'"
+      @help="$emit('help')"
+  >
 
-    <MenuHeader
-        :text="'Pore'"
-    />
-
-    <div class="container">
-      <MenuSubTitle :text="'ファイル'"/>
+    <SubMenu :menuTitle="'ファイル'">
       <FileSelectorSet
+          :useVideoSelector="false"
           :useImagesSelector="true"
           :useAnnotationSelector="isImagesSelected"
           @selectImageFiles="onSelectImageFiles"
           @selectAnnotationFiles="onSelectAnnotationFiles"
       />
-    </div>
+    </SubMenu>
 
-    <MenuFooter
-        :text="'Enjoy Annotation!'"
-        @help="onClickHelp"
-    />
-
-  </div>
-
+  </MenuLayout>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
-import AnnotationFilesStore from "@/store/AnnotationFilesStore";
-import HelpStore from "@/components/UI_Singleton/Help/HelpStore";
 import MenuHeader from "@/components/Menu/MenuHeader.vue";
 import MenuFooter from "@/components/Menu/MenuFooter.vue";
 import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
+import MenuLayout from "@/components/Menu/MenuLayout.vue";
+import SubMenu from "@/components/Menu/SubMenu.vue";
+import EditStateStore from "@/store/EditStateStore";
+import HistoryStore from "@/store/HistoryStore";
+import FileStore from "@/app/pore/store/FileStore";
 
 @Component({
   components: {
+    SubMenu,
+    MenuLayout,
     MenuSubTitle,
     FileSelectorSet,
     MenuFooter,
@@ -45,39 +43,23 @@ import MenuSubTitle from "@/components/Menu/MenuSubTitle.vue";
 export default class MenuPane extends Vue {
 
   get isImagesSelected() {
-    return ImagePlayerStore.isSelected;
+    return FileStore.isImageFilesSelected;
   }
 
   private onSelectImageFiles(files: File[]) {
-    ImagePlayerStore.setFiles(files);
-    AnnotationFilesStore.setFiles([]);
+    EditStateStore.clear();
+    HistoryStore.clear();
+    FileStore.setImageFiles(files)
   }
 
   private onSelectAnnotationFiles(files: File[]) {
     if (!confirm("今編集中のアノテーションは消えてしまいますがよろしいですか？"))
       return;
 
-    AnnotationFilesStore.setFiles(files);
+    FileStore.setAnnotationFiles(files)
   }
 
-  private onClickHelp(): void {
-    HelpStore.toggle();
-  }
 }
 </script>
 
-<style scoped lang="scss">
-
-.container {
-  padding: 16px;
-  height: calc(100vh - 40px - 40px); // 100vh - header - footer
-
-  .container_above {
-    *:nth-child(n + 2) {
-      margin-top: 8px;
-    }
-  }
-}
-
-
-</style>
+<style scoped lang="scss"></style>
