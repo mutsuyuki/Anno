@@ -38,10 +38,6 @@ class OperationStore extends VuexModule {
     return this._operation.frame;
   }
 
-  get frameNumber(): number {
-    return parseInt(this._operation.frame);
-  }
-
   get selectingObjectId(): string {
     return this._operation.selectingObjectId;
   }
