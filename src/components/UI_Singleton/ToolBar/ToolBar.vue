@@ -46,17 +46,35 @@ export default class ToolBar extends Vue {
   private isControlDown: boolean = false;
 
   mounted() {
-    document.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key == "a") this.$emit('annotationOpacity', 0);
-      if (e.key == "s") this.$emit('annotationOpacity', 1);
+    document.addEventListener("keydown", this.onKeyDown);
+    document.addEventListener("keyup", this.onKeyUp);
+  }
 
-      if (e.key == "Control") this.isControlDown = true;
-      if (e.key == "z" && this.isControlDown) HistoryStore.undo();
-      if (e.key == "Z" && this.isControlDown) HistoryStore.redo();
-    });
-    document.addEventListener("keyup", (e: KeyboardEvent) => {
-      if (e.key == "Control") this.isControlDown = false;
-    });
+  destroyed() {
+    document.removeEventListener("keydown", this.onKeyDown);
+    document.removeEventListener("keyup", this.onKeyUp);
+  }
+
+  private onKeyDown(e: KeyboardEvent) {
+    if (e.key == "a")
+      this.$emit('annotationOpacity', 0);
+
+    if (e.key == "s")
+      this.$emit('annotationOpacity', 1);
+
+    if (e.key == "Control")
+      this.isControlDown = true;
+
+    if (e.key == "z" && this.isControlDown)
+      HistoryStore.undo();
+
+    if (e.key == "Z" && this.isControlDown)
+      HistoryStore.redo();
+  }
+
+  private onKeyUp(e: KeyboardEvent) {
+    if (e.key == "Control")
+      this.isControlDown = false;
   }
 
   private onClickUndo() {

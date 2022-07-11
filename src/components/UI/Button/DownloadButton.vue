@@ -14,9 +14,16 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 @Component({})
 export default class DownloadButton extends Vue {
   created() {
-    document.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key == "d") this.$emit('download');
-    });
+    document.addEventListener("keydown", this.onKeyDown);
+  }
+
+  destroyed(){
+    document.removeEventListener("keydown", this.onKeyDown);
+  }
+
+  private onKeyDown(e: KeyboardEvent) {
+    if (e.key == "d")
+      this.$emit('download');
   }
 }
 </script>

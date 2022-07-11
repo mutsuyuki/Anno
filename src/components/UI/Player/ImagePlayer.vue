@@ -94,31 +94,39 @@ export default class ImagePlayer extends Vue {
         }
     );
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key == "Shift") {
-        this.isShiftDown = true;
-      }
-      if (e.key == "ArrowRight") {
-        if (this.isShiftDown) {
-          alert("not implemented yet")
-        } else {
-          this.next();
-        }
-      }
-      if (e.key == "ArrowLeft") {
-        if (this.isShiftDown) {
-          alert("not implemented yet")
-        } else {
-          this.prev();
-        }
-      }
-    });
+    document.addEventListener("keydown", this.onKeyDown);
+    document.addEventListener("keyup", this.onKeyUp)
+  }
 
-    document.addEventListener("keyup", (e) => {
-      if (e.key == "Shift") {
-        this.isShiftDown = false;
+  destroyed() {
+    document.removeEventListener("keydown", this.onKeyDown);
+    document.removeEventListener("keyup", this.onKeyUp)
+  }
+
+  private onKeyDown(e: KeyboardEvent) {
+    if (e.key == "Shift") {
+      this.isShiftDown = true;
+    }
+    if (e.key == "ArrowRight") {
+      if (this.isShiftDown) {
+        alert("not implemented yet")
+      } else {
+        this.next();
       }
-    })
+    }
+    if (e.key == "ArrowLeft") {
+      if (this.isShiftDown) {
+        alert("not implemented yet")
+      } else {
+        this.prev();
+      }
+    }
+  }
+
+  private onKeyUp(e: KeyboardEvent) {
+    if (e.key == "Shift") {
+      this.isShiftDown = false;
+    }
   }
 
   public first(): void {

@@ -1,8 +1,8 @@
 <template>
   <div v-show="isVideoSelected || isImagesSelected">
     <ToolBar
-      :annotationOpacity="annotationOpacity"
-      @annotationOpacity="annotationOpacity = $event"
+        :annotationOpacity="annotationOpacity"
+        @annotationOpacity="annotationOpacity = $event"
     />
 
     <AnnotationStatusBar
@@ -153,19 +153,14 @@ export default class CanvasPane extends Vue {
     );
 
     // 削除用のCtrlキー検出
-    document.addEventListener("keydown", (e) => {
-      if (e.key == "Control") {
-        this.isDeleteMode = true;
-      }
-    });
-
-    document.addEventListener("keyup", (e) => {
-      if (e.key == "Control") {
-        this.isDeleteMode = false;
-      }
-    })
+    document.addEventListener("keydown", this.onKeyDown);
+    document.addEventListener("keyup",  this.onKeyUp);
   }
 
+  destroyed() {
+    document.removeEventListener("keydown", this.onKeyDown);
+    document.removeEventListener("keyup",  this.onKeyUp);
+  }
 
   get isVideoSelected() {
     return FileStore.isVideoFileSelected;
@@ -187,7 +182,7 @@ export default class CanvasPane extends Vue {
     if (this.isVideoSelected)
       return FileStore.videoName;
 
-    if (this.isImagesSelected){
+    if (this.isImagesSelected) {
       const imageIndex = parseInt(OperationStore.frame);
       return FileStore.imageNames[imageIndex];
     }
@@ -252,18 +247,30 @@ export default class CanvasPane extends Vue {
     return result;
   }
 
-  private onFrameUpdate(frame: number): void {
-    this.frame = frame.toString();
-    OperationStore.setFrame(this.frame);
-  }
-
   private async restoreAnnotation() {
     AnnotationsStore.clear();
 
     for (let i = 0; i < FileStore.annotationFiles.length; i++) {
-      const fileName = FileUtil.removeExtension(FileStore.annotationFiles[i].name);
-      const fileNameParts = fileName.split("___");
-      const frame = fileNameParts[fileNameParts.length - 2];
+
+      const frame = (() => {
+        const annotationFileName = FileUtil.removeExtension(FileStore.annotationFiles[i].name);
+        if (this.isVideoSelected) {
+          const fileNameParts = annotationFileName.split("___");
+          return fileNameParts[fileNameParts.length - 2];
+        }
+        if (this.isImagesSelected) {
+          for (let imageIndex = 0; imageIndex < FileStore.imageNames.length; imageIndex++) {
+            const imageFileName = FileUtil.removeExtension(FileStore.imageNames[imageIndex]);
+            if (imageFileName == annotationFileName) {
+              return imageIndex.toString();
+            }
+          }
+        }
+        return "";
+      })();
+
+      if (frame == "")
+        continue;
 
       const fileText = await new Promise(resolve => {
         const reader = new FileReader();
@@ -287,6 +294,23 @@ export default class CanvasPane extends Vue {
     if (FileStore.annotationFiles.length > 0) {
       this.addHistory();
     }
+  }
+
+  private onKeyDown(e: KeyboardEvent) {
+    if (e.key == "Control") {
+      this.isDeleteMode = true;
+    }
+  }
+
+  private onKeyUp(e: KeyboardEvent) {
+    if (e.key == "Control") {
+      this.isDeleteMode = false;
+    }
+  }
+
+  private onFrameUpdate(frame: number): void {
+    this.frame = frame.toString();
+    OperationStore.setFrame(this.frame);
   }
 
   private selectBoundingBox(objectId: string) {

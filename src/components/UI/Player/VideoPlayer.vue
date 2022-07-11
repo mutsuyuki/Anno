@@ -115,28 +115,7 @@ export default class VideoPlayer extends Vue {
   }
 
   mounted() {
-    this.video = <HTMLVideoElement>document.getElementById("video_player");
-    this.videoTextureCanvas = <HTMLCanvasElement>document.getElementById("video_buffer");
-
-    this.video.addEventListener("loadeddata", () => {
-      this.timelineProgress = 0;
-      this.$forceUpdate();
-      this.$emit("timeupdate", 0);
-    });
-
-    this.video.addEventListener("timeupdate", () => {
-      this.timelineProgress = this.video.currentTime;
-      this.$forceUpdate();
-      const stepedTime = this.getStepedSec(this.video.currentTime);
-      const timeForFrame = Math.round(stepedTime * 1000) / 1000;
-      this.$emit("timeupdate", timeForFrame);
-    });
-
-    this.video.addEventListener("pause", () => {
-      this.applyStepedSec(this.video.currentTime);
-    });
-
-    this.$watch(
+   this.$watch(
         () => this.seekFrame,
         () => {
           if (this.seekFrame != -1) {
@@ -150,31 +129,39 @@ export default class VideoPlayer extends Vue {
         () => this.makeBlob()
     );
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key == "Shift") {
-        this.isShiftDown = true;
-      }
-      if (e.key == "ArrowRight") {
-        if (this.isShiftDown) {
-          this.nextData();
-        } else {
-          this.forward();
-        }
-      }
-      if (e.key == "ArrowLeft") {
-        if (this.isShiftDown) {
-          this.prevData();
-        } else {
-          this.back();
-        }
-      }
-    });
+    this.video = <HTMLVideoElement>document.getElementById("video_player");
+    this.videoTextureCanvas = <HTMLCanvasElement>document.getElementById("video_buffer");
+    this.video.addEventListener("loadeddata", this.onVideoLoadedData);
+    this.video.addEventListener("timeupdate", this.onVideoTimeUpdate);
+    this.video.addEventListener("pause", this.onVideoPause);
+    document.addEventListener("keydown", this.onKeyDown);
+    document.addEventListener("keyup", this.onKeyUp)
+  }
 
-    document.addEventListener("keyup", (e) => {
-      if (e.key == "Shift") {
-        this.isShiftDown = false;
-      }
-    })
+  destroyed() {
+    this.video.removeEventListener("loadeddata", this.onVideoLoadedData);
+    this.video.removeEventListener("timeupdate", this.onVideoTimeUpdate);
+    this.video.removeEventListener("pause", this.onVideoPause);
+    document.removeEventListener("keydown", this.onKeyDown);
+    document.removeEventListener("keyup", this.onKeyUp)
+  }
+
+  private onVideoLoadedData() {
+    this.timelineProgress = 0;
+    this.$forceUpdate();
+    this.$emit("timeupdate", 0);
+  }
+
+  private onVideoTimeUpdate() {
+    this.timelineProgress = this.video.currentTime;
+    this.$forceUpdate();
+    const stepedTime = this.getStepedSec(this.video.currentTime);
+    const timeForFrame = Math.round(stepedTime * 1000) / 1000;
+    this.$emit("timeupdate", timeForFrame);
+  }
+
+  private onVideoPause() {
+    this.applyStepedSec(this.video.currentTime);
   }
 
   private applyStepedSec(time: number): void {
@@ -187,6 +174,32 @@ export default class VideoPlayer extends Vue {
     let stepedSec = Math.round(time / this.stepSec) * this.stepSec;
     stepedSec = Number(stepedSec.toFixed(10));   // 誤差の丸め
     return stepedSec;
+  }
+
+  private onKeyDown(e: KeyboardEvent): void {
+    if (e.key == "Shift") {
+      this.isShiftDown = true;
+    }
+    if (e.key == "ArrowRight") {
+      if (this.isShiftDown) {
+        this.nextData();
+      } else {
+        this.forward();
+      }
+    }
+    if (e.key == "ArrowLeft") {
+      if (this.isShiftDown) {
+        this.prevData();
+      } else {
+        this.back();
+      }
+    }
+  }
+
+  private onKeyUp(e: KeyboardEvent): void {
+    if (e.key == "Shift") {
+      this.isShiftDown = false;
+    }
   }
 
   private play(): void {
@@ -260,6 +273,8 @@ export default class VideoPlayer extends Vue {
     const blob = FileDownloader.editImageBlobFromCanvas(this.videoTextureCanvas);
     this.$emit("prepareBlob", blob);
   }
+
+
 }
 </script>
 

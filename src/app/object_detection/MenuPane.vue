@@ -98,14 +98,20 @@ import FileStore from "@/app/object_detection/store/FileStore";
 })
 export default class MenuPane extends Vue {
   mounted() {
-    document.addEventListener("keydown", (e) => {
-      if (e.key == "c") {
-        this.onSelectCreateData(-1);
-      }
-      if (parseInt(e.key)) {
-        this.onSelectClass(e.key);
-      }
-    });
+    document.addEventListener("keydown", this.onKeyDown);
+  }
+
+  destroyed() {
+    document.removeEventListener("keydown", this.onKeyDown);
+  }
+
+  private onKeyDown(e: KeyboardEvent) {
+    if (e.key == "c") {
+      this.onSelectCreateData(-1);
+    }
+    if (parseInt(e.key)) {
+      this.onSelectClass(e.key);
+    }
   }
 
   get isVideoSelected() {

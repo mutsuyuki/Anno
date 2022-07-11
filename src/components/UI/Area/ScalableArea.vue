@@ -53,12 +53,18 @@ export default class ScalableArea extends Vue {
 
 
   created() {
-    document.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key == "r") {
-        this.scale_ = 1;
-        this.endZoom(0, 0)
-      }
-    });
+    document.addEventListener("keydown", this.onnKeyDown);
+  }
+
+  destroyed(){
+    document.removeEventListener("keydown", this.onnKeyDown);
+  }
+
+  private onnKeyDown(e: KeyboardEvent) {
+    if (e.key == "r") {
+      this.scale_ = 1;
+      this.endZoom(0, 0)
+    }
   }
 
   // ---------------------------------
