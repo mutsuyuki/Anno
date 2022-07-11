@@ -64,25 +64,14 @@ class FileStore extends VuexModule {
     return this._loadedFiles.annotationFiles;
   }
 
-  @Action
-  public setVideoFile(value: File) {
-    this.clear();
-    this._setVideoFile(value);
-  }
 
   @Mutation
-  private _setVideoFile(value: File) {
+  public setVideoFile(value: File) {
     this._loadedFiles.videoFile = value;
   }
 
-  @Action
-  public setImageFiles(value: File[]) {
-    this.clear();
-    this._setImageFiles(value);
-  }
-
   @Mutation
-  private _setImageFiles(value: File[]) {
+  public setImageFiles(value: File[]) {
     this._loadedFiles.imageFiles = value;
   }
 
@@ -92,7 +81,7 @@ class FileStore extends VuexModule {
   }
 
   @Mutation
-  private clear() {
+  public clear() {
     this._loadedFiles = getInitialState();
   }
 }

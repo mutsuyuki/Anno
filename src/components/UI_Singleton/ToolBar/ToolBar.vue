@@ -41,7 +41,7 @@ import HistoryStore from "@/store/HistoryStore";
   components: {NormalizedScalableArea, InlineSvg, ScalableArea}
 })
 export default class ToolBar extends Vue {
-  @Prop({default: 1}) annotationOpacity!;
+  @Prop({default: 1}) private annotationOpacity!: number;
 
   private isControlDown: boolean = false;
 

@@ -147,7 +147,8 @@ export default class CanvasPane extends Vue {
   }
 
   get currentFileNameFull() {
-    return FileStore.imageNames[OperationStore.frame];
+    const imageIndex = parseInt(OperationStore.frame);
+    return FileStore.imageNames[imageIndex];
   }
 
   get seekFrame(): number {
@@ -323,7 +324,8 @@ export default class CanvasPane extends Vue {
   }
 
   private async onDownload() {
-    const file = FileStore.loadedFiles.imageFiles[OperationStore.frame];
+    const imageIndex = parseInt(OperationStore.frame);
+    const file = FileStore.loadedFiles.imageFiles[imageIndex];
     FileDownloader.downloadBlob(file.name, file);
 
     const json = JSON.stringify(this.annotationsOfCurrentFrame);

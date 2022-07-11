@@ -47,7 +47,8 @@ export default class Home extends Vue {
   private isShowHelp: boolean = false;
 
   get sizeCheckImageUrl() {
-    return FileStore.imageUrls[OperationStore.frame];
+    const imageIndex = parseInt(OperationStore.frame);
+    return FileStore.imageUrls[imageIndex];
   }
 
   get helpDescriptions() {

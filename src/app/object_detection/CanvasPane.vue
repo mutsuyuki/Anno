@@ -106,9 +106,9 @@ import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
 import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
+import EditStateStore, {EditState} from "@/store/EditStateStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
 import AnnotationsStore, {Annotation} from "@/app/object_detection/store/AnnotationsStore";
-import EditStateStore, {EditState} from "@/store/EditStateStore";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
 import FileStore from "@/app/object_detection/store/FileStore";
 
@@ -187,8 +187,10 @@ export default class CanvasPane extends Vue {
     if (this.isVideoSelected)
       return FileStore.videoName;
 
-    if (this.isImagesSelected)
-      return FileStore.imageNames[OperationStore.frame];
+    if (this.isImagesSelected){
+      const imageIndex = parseInt(OperationStore.frame);
+      return FileStore.imageNames[imageIndex];
+    }
 
     return "";
   }
@@ -212,12 +214,16 @@ export default class CanvasPane extends Vue {
     return result;
   }
 
-  get selectingObjectId() {
-    return OperationStore.selectingObjectId;
+  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
+    return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
   get operationOfCurrentFrame(): EditState {
     return EditStateStore.states[OperationStore.frame] || ({} as EditState);
+  }
+
+  get selectingObjectId() {
+    return OperationStore.selectingObjectId;
   }
 
   get isUseAnnotationFile() {
@@ -226,10 +232,6 @@ export default class CanvasPane extends Vue {
 
   get isDownloaded() {
     return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
-  }
-
-  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
-    return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
   get objectLabels(): { text: string, position: { x: string, y: string }, isActive: boolean }[] {
@@ -323,7 +325,8 @@ export default class CanvasPane extends Vue {
     }
 
     if (this.isImagesSelected) {
-      const file = FileStore.loadedFiles.imageFiles[OperationStore.frame];
+      const imageIndex = parseInt(OperationStore.frame);
+      const file = FileStore.loadedFiles.imageFiles[imageIndex];
       FileDownloader.downloadBlob(file.name, file);
       this.downloadAnnotation(file.name);
       return;

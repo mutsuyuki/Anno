@@ -75,12 +75,12 @@ import FileSelectorSet from "@/components/UI/FileSelector/FileSelectorSet.vue";
 import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
 import Row from "@/components/Layout/Row.vue";
+import HistoryStore from "@/store/HistoryStore";
+import EditStateStore from "@/store/EditStateStore";
 import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
 import FileStore from "@/app/object_detection/store/FileStore";
-import EditStateStore from "@/store/EditStateStore";
-import HistoryStore from "@/store/HistoryStore";
 
 @Component({
   components: {
@@ -138,15 +138,21 @@ export default class MenuPane extends Vue {
   }
 
   private onSelectVideoFile(files: File[]) {
-    EditStateStore.clear();
-    HistoryStore.clear();
+    this.clearAllState();
     FileStore.setVideoFile(files[0])
   }
 
   private onSelectImageFiles(files: File[]) {
+    this.clearAllState();
+    FileStore.setImageFiles(files)
+  }
+
+  private clearAllState(){
+    OperationStore.clear();
+    AnnotationsStore.clear()
     EditStateStore.clear();
     HistoryStore.clear();
-    FileStore.setImageFiles(files)
+    FileStore.clear();
   }
 
   private onSelectAnnotationFiles(files: File[]) {

@@ -5,7 +5,6 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import {Graphic} from "@/components/Canvas/Renderer/Graphic";
-import CanvasSettingsStore from "@/components/UI_Singleton/ToolBar/CanvasSettingsStore";
 
 @Component({
   components: {}

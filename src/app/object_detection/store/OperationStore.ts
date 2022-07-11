@@ -2,10 +2,19 @@ import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decor
 import store from "@/store";
 
 export interface Operation {
-  frame: string;
+  frame: string;  // 動画の場合は時刻、画像の場合は画像index
   selectingObjectId: string;
   selectingEdge: { top: boolean, right: boolean, bottom: boolean, left: boolean };
   hoveringObjectId: string;
+}
+
+function getInitialState(): Operation {
+  return {
+    frame: "0",
+    selectingObjectId: "",
+    selectingEdge: {top: false, right: false, bottom: false, left: false},
+    hoveringObjectId: "",
+  }
 }
 
 @Module({
@@ -18,12 +27,7 @@ export interface Operation {
 class OperationStore extends VuexModule {
 
   // states
-  private _operation: Operation = {
-    frame: "0",
-    selectingObjectId: "",
-    selectingEdge: {top: false, right: false, bottom: false, left: false},
-    hoveringObjectId: "",
-  };
+  private _operation: Operation = getInitialState();
 
   // getters
   get operation(): Operation {
@@ -32,6 +36,10 @@ class OperationStore extends VuexModule {
 
   get frame(): string {
     return this._operation.frame;
+  }
+
+  get frameNumber(): number {
+    return parseInt(this._operation.frame);
   }
 
   get selectingObjectId(): string {
@@ -72,6 +80,10 @@ class OperationStore extends VuexModule {
     this._operation.hoveringObjectId = value;
   }
 
+  @Mutation
+  public clear(){
+    this._operation = getInitialState();
+  }
 }
 
 export default getModule(OperationStore);

@@ -17,6 +17,29 @@ export interface Bounding {
   height: number
 }
 
+
+function getAannotationRecord(frame: string, objectId: string): Annotation {
+  return {
+    frame: frame,
+    objectId: objectId,
+    class: "0",
+    bounding: {
+      left: 0.38,
+      top: 0.38,
+      width: 0.24,
+      height: 0.24
+    }
+  }
+}
+
+function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation } }): string {
+  const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
+  const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
+  const newestIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
+  return newestIdAsNumber.toString();
+}
+
+
 @Module({
   name: "AnnotationsStore_" + Math.random().toString(),
   dynamic: true,
@@ -65,7 +88,7 @@ class AnnotationsStore extends VuexModule {
     Vue.set(
       this._annotations[frame],
       newObjectId,
-      makeAnnotationInstance(frame, newObjectId)
+      getAannotationRecord(frame, newObjectId)
     );
   }
 
@@ -172,24 +195,3 @@ class AnnotationsStore extends VuexModule {
 
 export default getModule(AnnotationsStore);
 
-
-function makeAnnotationInstance(frame: string, objectId: string): Annotation {
-  return {
-    frame: frame,
-    objectId: objectId,
-    class: "0",
-    bounding: {
-      left: 0.38,
-      top: 0.38,
-      width: 0.24,
-      height: 0.24
-    }
-  }
-}
-
-function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation } }): string {
-  const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
-  const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
-  const newestIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
-  return newestIdAsNumber.toString();
-}

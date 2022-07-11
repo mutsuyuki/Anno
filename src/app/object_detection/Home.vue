@@ -29,13 +29,13 @@
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
+import Help from "@/components/UI/Help/Help.vue";
 import MenuPane from "@/app/object_detection/MenuPane.vue";
 import CanvasPane from "@/app/object_detection/CanvasPane.vue";
-import Help from "@/components/UI/Help/Help.vue";
 import HelpMessage from "@/app/object_detection/HelpMessages";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
-import OperationStore from "@/app/object_detection/store/OperationStore";
 import EditStateStore from "@/store/EditStateStore";
+import OperationStore from "@/app/object_detection/store/OperationStore";
 import AnnotationsStore from "@/app/object_detection/store/AnnotationsStore";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
 import FileStore from "@/app/object_detection/store/FileStore";
@@ -56,7 +56,8 @@ export default class Home extends Vue {
   }
 
   get sizeCheckImageUrl() {
-    return FileStore.imageUrls[OperationStore.frame];
+    const imageIndex = parseInt(OperationStore.frame);
+    return FileStore.imageUrls[imageIndex];
   }
 
   get helpDescriptions() {
