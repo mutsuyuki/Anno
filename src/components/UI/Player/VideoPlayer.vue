@@ -13,7 +13,7 @@
         @zoomend="$emit('zoomend', $event)"
     >
       <div class="video_area">
-        <video id="video_player" :src="videoUrl" :style="{'opacity':videoOpacity}"></video>
+        <video id="video_player" :src="srcUrl" :style="{'opacity':videoOpacity}"></video>
         <canvas id="video_buffer"></canvas>
         <div class="overlay_layer" :style="{'opacity':overlayOpacity}">
           <slot></slot>
@@ -23,7 +23,6 @@
 
 
     <div class="video_control_area">
-
       <div class="row row1">
         <div class="except_timeline">
           <button v-if="video.paused" class="button" @click="play">
@@ -86,7 +85,6 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
 import InlineSvg from "@/common/utils/InlineSvg";
 import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
-import VideoPlayerStore from "@/components/UI_Singleton/Player/VideoPlayerStore";
 import FileDownloader from "@/common/utils/FileDownloader";
 
 @Component({
@@ -98,11 +96,12 @@ import FileDownloader from "@/common/utils/FileDownloader";
 })
 export default class VideoPlayer extends Vue {
 
-  @Prop() private createBlobSignal!: boolean;
-  @Prop() private seekFrame!: number;
-  @Prop() private markerTimes!: number[];
+  @Prop({default: ""}) private srcUrl!: string;
+  @Prop({default: 0}) private seekFrame!: number;
+  @Prop({default: []}) private markerTimes!: number[];
   @Prop({default: 1}) private videoOpacity!: number;
   @Prop({default: 1}) private overlayOpacity!: number;
+  @Prop({default: false}) private createBlobSignal!: boolean;
 
   private video: HTMLVideoElement = document.createElement("video");
   private videoTextureCanvas: HTMLCanvasElement = document.createElement("canvas");
@@ -110,10 +109,6 @@ export default class VideoPlayer extends Vue {
   private timelineProgress: number = 0;
   private stepSec: number = 0.1;    // 30fps --> 1frame 0.0333334sec   29.97fps --> 0.0333667sec
   private isShiftDown: boolean = false;
-
-  get videoUrl() {
-    return VideoPlayerStore.url;
-  }
 
   get markerPositions() {
     return this.markerTimes.map(v => (v / this.video.duration) * 100);

@@ -13,8 +13,8 @@
         @zoomend="$emit('zoomend', $event)"
     >
       <div class="image_area">
-        <img :src="imageUrl">
-        <div class="overlay_layer">
+        <img :src="currentUrl" :style="{'opacity':imageOpacity}">
+        <div class="overlay_layer" :style="{'opacity':overlayOpacity}">
           <slot></slot>
         </div>
       </div>
@@ -30,9 +30,14 @@
       </button>
 
       <div class="page_display">
-        <input type="number" v-model="currentPage" placeholder="0">
+        <input
+            type="number"
+            placeholder="0"
+            v-bind:value="seekIndex"
+            v-on:input="$emit('page', $event.target.value)"
+        >
         <span class="divider">/</span>
-        <span class="total-page">{{ totalPage }}</span>
+        <span class="total-page">{{ srcUrls.length }}</span>
       </div>
 
       <button class="button" @click="next">
@@ -50,49 +55,44 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ScalableArea from "@/components/UI/ScalableArea/ScalableArea.vue";
 import InlineSvg from "@/common/utils/InlineSvg";
-import ImagePlayerStore from "@/components/UI_Singleton/Player/ImagePlayerStore";
 import NormalizedScalableArea from "@/components/UI/ScalableArea/NormalizedScalableArea.vue";
+import ListManager from "@/common/utils/ListManager";
 
 @Component({
-  components: {NormalizedScalableArea, InlineSvg, ScalableArea}
+  components: {
+    NormalizedScalableArea,
+    InlineSvg,
+    ScalableArea
+  }
 })
 export default class ImagePlayer extends Vue {
+  @Prop({default: []}) private srcUrls!: string[];
+  @Prop({default: 0}) private seekIndex!: number;
+  @Prop({default: 1}) private imageOpacity!: number;
+  @Prop({default: 1}) private overlayOpacity!: number;
+  @Prop({default: false}) private createBlobSignal!: boolean;
 
+  private pageManager: ListManager<string> = new ListManager<string>(this.srcUrls);
   private isShiftDown: boolean = false;
 
-  get imageUrl() {
-    return ImagePlayerStore.currentItemUrl;
-  }
-
-  get currentPage() {
-    return ImagePlayerStore.currentIndex + 1;
-  }
-
-  set currentPage(value) {
-    ImagePlayerStore.setIndex(value)
-  }
-
-  get totalPage() {
-    return ImagePlayerStore.numberOfItems;
-  }
-
-  private first() {
-    ImagePlayerStore.first();
-  }
-
-  private prev() {
-    ImagePlayerStore.prev();
-  }
-
-  private next() {
-    ImagePlayerStore.next();
-  }
-
-  private last() {
-    ImagePlayerStore.last();
+  get currentUrl(): string {
+    return this.pageManager.isEnable ? this.pageManager.currentItem : "";
   }
 
   mounted() {
+    this.$watch(
+        () => this.srcUrls,
+        () => {
+          this.pageManager = new ListManager<string>(this.srcUrls);
+        }
+    );
+
+    this.$watch(
+        () => this.seekIndex,
+        () => {
+          this.pageManager.setIndex(this.seekIndex);
+        }
+    );
 
     document.addEventListener("keydown", (e) => {
       if (e.key == "Shift") {
@@ -119,7 +119,22 @@ export default class ImagePlayer extends Vue {
         this.isShiftDown = false;
       }
     })
+  }
 
+  public first(): void {
+    this.pageManager.first();
+  }
+
+  public last(): void {
+    this.pageManager.last();
+  }
+
+  public next(): void {
+    this.pageManager.next();
+  }
+
+  public prev(): void {
+    this.pageManager.prev();
   }
 }
 </script>
