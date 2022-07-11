@@ -44,7 +44,7 @@
         </div>
 
         <div class="timeline">
-          <input type="range" min="0" :max="video.duration" :step="stepSec"
+          <input type="range" min="0" :max="video.duration" :step="0.01"
                  :value="timelineProgress"
                  @input="timeChange"
                  @mouseup="timeChangeEnd"
