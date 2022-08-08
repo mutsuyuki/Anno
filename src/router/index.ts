@@ -11,8 +11,8 @@ const routes = [
   {
     path: '/',
 
-    // name: 'ObjectDetectionHome',
-    // component: ObjectDetectionHome.default,
+    name: 'ObjectDetectionHome',
+    component: ObjectDetectionHome.default,
 
     // name: 'PoseTrackingHome',
     // component: PoseTrackingHome.default,
@@ -20,8 +20,8 @@ const routes = [
     // name: 'PoreHome',
     // component: PoreHome.default,
 
-    name: 'EmotionHome',
-    component: EmotionHome.default,
+    // name: 'EmotionHome',
+    // component: EmotionHome.default,
 
   },
 

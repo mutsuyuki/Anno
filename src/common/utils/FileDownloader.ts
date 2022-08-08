@@ -2,18 +2,17 @@ export default class FileDownloader {
 
   // テキストダウンロード
   static downloadTextFile(fileName: string, content: string) {
-    const blob = FileDownloader.editTextBlob(fileName, content, 'text/plain')
+    const blob = FileDownloader.editTextBlob(content, 'text/plain')
     FileDownloader.downloadBlob(fileName, blob);
   }
-
 
   // テキストダウンロード
   static downloadJsonFile(fileName: string, content: string) {
-    const blob = FileDownloader.editTextBlob(fileName, content, 'application/json')
+    const blob = FileDownloader.editTextBlob(content, 'application/json')
     FileDownloader.downloadBlob(fileName, blob);
   }
 
-  static editTextBlob(fileName: string, content: string, mimeType: string) {
+  static editTextBlob(content: string, mimeType: string) {
     const bom = new Uint8Array([]); // 文字化け対策
     return new Blob([bom, content], {type: mimeType});
   }
@@ -52,6 +51,26 @@ export default class FileDownloader {
       a.click();
       document.body.removeChild(a);
     }
+  }
+
+  // 複数Blobダウンロード
+  static async downloadMultiBlobs(fileNames: string[], blobs: Blob[]) {
+    if (fileNames.length !== blobs.length) {
+      alert("複数ダウンロードに失敗しました。ファイル名とデータの数が一致しません。");
+      return;
+    }
+
+    const pause = () => new Promise((resolve, _) => setTimeout(resolve, 1000));
+    var count = 0;
+    for (let i = 0; i < fileNames.length; i++) {
+      FileDownloader.downloadBlob(fileNames[i], blobs[i]);
+      if (++count >= 10) {
+        await pause();
+        count = 0;
+      }
+    }
+
+    alert("ダウンロードが完了しました。");
   }
 
 }
