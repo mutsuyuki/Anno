@@ -18,6 +18,7 @@
         :seekFrame="seekFrame"
         :markerTimes="annotatedFrames"
         :overlayOpacity="annotationOpacity"
+        :videoPadding="padding"
         :createBlobSignal="createBlobSignal"
         @timeupdate="onFrameUpdate"
         @dragareastart="dragStartPosition = $event"
@@ -55,6 +56,7 @@
         :seekFrame="seekFrame"
         :markerTimes="annotatedFrames"
         :overlayOpacity="annotationOpacity"
+        :imagePadding="padding"
         @pageupdate="onFrameUpdate"
         @dragareastart="dragStartPosition = $event"
         @dragarea="draggingPosition = $event"
@@ -126,6 +128,7 @@ import FileStore from "@/app/object_detection/store/FileStore";
 })
 export default class CanvasPane extends Vue {
   private annotationOpacity: number = 1;
+  private padding: number = 0;
 
   private dragStartPosition: MovingPoint = MovingPointUtil.zero();
   private draggingPosition: MovingPoint = MovingPointUtil.zero();
