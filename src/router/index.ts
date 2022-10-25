@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import * as ObjectDetectionHome from "@/app/object_detection/Home.vue";
-import * as PoseTrackingHome from "@/app/pose_tracking/Home.vue";
-import * as PoreHome from '@/app/pore_detection/Home.vue'
-import * as EmotionHome from '@/app/emotion_classification/Home.vue'
+import * as AnimalPoseTrackingHome from "@/app/animal_pose_tracking/Home.vue";
+import * as PoreDetectionHome from '@/app/pore_detection/Home.vue'
+import * as EmotionClassificationHome from '@/app/emotion_classification/Home.vue'
 
 Vue.use(VueRouter)
 
@@ -14,14 +14,14 @@ const routes = [
     name: 'ObjectDetectionHome',
     component: ObjectDetectionHome.default,
 
-    // name: 'PoseTrackingHome',
-    // component: PoseTrackingHome.default,
+    // name: 'AnimalPoseTrackingHome',
+    // component: AnimalPoseTrackingHome.default,
 
-    // name: 'PoreHome',
-    // component: PoreHome.default,
+    // name: 'PoreDetectionHome',
+    // component: PoreDetectionHome.default,
 
-    // name: 'EmotionHome',
-    // component: EmotionHome.default,
+    // name: 'EmotionClassificationHome',
+    // component: EmotionClassificationHome.default,
 
   },
 
