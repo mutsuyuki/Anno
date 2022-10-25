@@ -3,8 +3,13 @@
        @wheel="onWheel"
   >
     <div class="scale_area"
-         :class="{'fit-animation' : (!isZooming) && (!isMoving) }"
-         :style="{'transform' : 'scale3d(' + scale_ + ',' + scale_ + ',1) ' +  'translate3d(' + translateX_ + 'px,' + translateY_ + 'px, 0)'}"
+         :class="{
+             fit_animation : (!isZooming) && (!isMoving)
+         }"
+         :style="{
+             transform : 'scale3d(' + scale_ + ',' + scale_ + ',1) ' +  'translate3d(' + translateX_ + 'px,' + translateY_ + 'px, 0)',
+             background: 'gray'
+         }"
     >
 
       <slot></slot>
@@ -450,7 +455,7 @@ export default class ScalableArea extends Vue {
       height: 100%;
     }
 
-    &.fit-animation {
+    &.fit_animation {
       transition: transform 0.3s ease;
     }
   }
