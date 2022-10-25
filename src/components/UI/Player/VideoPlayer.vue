@@ -13,14 +13,26 @@
         @zoomend="$emit('zoomend', $event)"
     >
       <div class="video_area">
-        <video id="video_player" :src="srcUrl" :style="{'opacity':videoOpacity}"></video>
-        <canvas id="video_buffer"></canvas>
-        <div class="overlay_layer" :style="{'opacity':overlayOpacity}">
+        <video id="video_player"
+               :src="srcUrl"
+               :style="{
+                 opacity:videoOpacity,
+                 padding:`${videoPadding}%`
+               }"
+        />
+        <div class="overlay_layer"
+             :style="{
+               opacity:overlayOpacity
+             }"
+        >
           <slot></slot>
         </div>
       </div>
     </NormalizedScalableArea>
 
+    <div class="hidden_buffer_area">
+      <canvas id="video_buffer"/>
+    </div>
 
     <div class="video_control_area">
       <div class="row row1">
@@ -100,6 +112,7 @@ export default class VideoPlayer extends Vue {
   @Prop({default: 0}) private seekFrame!: number;
   @Prop({default: []}) private markerTimes!: number[];
   @Prop({default: 1}) private videoOpacity!: number;
+  @Prop({default: 0}) private videoPadding!: number;
   @Prop({default: 1}) private overlayOpacity!: number;
   @Prop({default: false}) private createBlobSignal!: boolean;
 
@@ -115,7 +128,7 @@ export default class VideoPlayer extends Vue {
   }
 
   mounted() {
-   this.$watch(
+    this.$watch(
         () => this.seekFrame,
         () => {
           if (this.seekFrame != -1) {
@@ -273,8 +286,6 @@ export default class VideoPlayer extends Vue {
     const blob = FileDownloader.editImageBlobFromCanvas(this.videoTextureCanvas);
     this.$emit("prepareBlob", blob);
   }
-
-
 }
 </script>
 
@@ -307,6 +318,9 @@ export default class VideoPlayer extends Vue {
   }
 }
 
+.hidden_buffer_area{
+  display: none;
+}
 
 .video_control_area {
   .row1 {

@@ -13,8 +13,17 @@
         @zoomend="$emit('zoomend', $event)"
     >
       <div class="image_area">
-        <img :src="currentUrl" :style="{'opacity':imageOpacity}">
-        <div class="overlay_layer" :style="{'opacity':overlayOpacity}">
+        <img :src="currentUrl"
+             :style="{
+               opacity:imageOpacity,
+               padding:`${imagePadding}%`
+             }"
+        >
+        <div class="overlay_layer"
+             :style="{
+               opacity:overlayOpacity
+             }"
+        >
           <slot></slot>
         </div>
       </div>
@@ -70,6 +79,7 @@ export default class ImagePlayer extends Vue {
   @Prop({default: 0}) private seekIndex!: number;
   @Prop({default: []}) private markerTimes!: number[];  // 現状未使用
   @Prop({default: 1}) private imageOpacity!: number;
+  @Prop({default: 0}) private imagePadding!: number;
   @Prop({default: 1}) private overlayOpacity!: number;
 
   private pageManager: ListManager<string> = new ListManager<string>(this.srcUrls);
