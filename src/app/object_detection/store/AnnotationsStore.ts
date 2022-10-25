@@ -12,7 +12,7 @@ export interface Annotation {
 }
 
 
-function getAannotationRecord(frame: string, objectId: string): Annotation {
+function getAnnotationRecord(frame: string, objectId: string): Annotation {
   return {
     frame: frame,
     objectId: objectId,
@@ -82,7 +82,7 @@ class AnnotationsStore extends VuexModule {
     Vue.set(
       this._annotations[frame],
       newObjectId,
-      getAannotationRecord(frame, newObjectId)
+      getAnnotationRecord(frame, newObjectId)
     );
   }
 
