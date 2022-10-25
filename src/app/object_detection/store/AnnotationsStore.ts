@@ -2,19 +2,13 @@ import Vue from 'vue'
 import {Mutation, Action, VuexModule, getModule, Module} from "vuex-module-decorators";
 import store from "@/store";
 import DeepCloner from "@/common/utils/DeepCloner";
+import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 
 export interface Annotation {
   frame: string;
   objectId: string;
   class: string;
-  bounding: Bounding;
-}
-
-export interface Bounding {
-  left: number,
-  top: number
-  width: number,
-  height: number
+  bounding: BoundingBoxModel;
 }
 
 
@@ -164,7 +158,7 @@ class AnnotationsStore extends VuexModule {
   }
 
   @Mutation
-  public setBounding(value: { frame: string, objectId: string, bounding: Bounding }) {
+  public setBounding(value: { frame: string, objectId: string, bounding: BoundingBoxModel }) {
     Vue.set(
       this._annotations[value.frame][value.objectId],
       "bounding",
