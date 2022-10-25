@@ -47,7 +47,9 @@ export default class BoundingBoxInteraction {
   }
 
   public dragEnd() {
+    const selectedObjectId = this.selectingObjectId;
     this.clear();
+    return selectedObjectId;
   }
 
   public hover(position: Point, boundingBoxModels: { [objectId: string]: BoundingBoxModel }) {

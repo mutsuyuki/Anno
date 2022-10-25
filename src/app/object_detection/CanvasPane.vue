@@ -305,7 +305,9 @@ export default class CanvasPane extends Vue {
   }
 
   private onDragEnd(position: MovingPoint) {
-    this.boundingBoxInteraction.dragEnd();
+    const objectId = this.boundingBoxInteraction.dragEnd();
+    if (objectId != "")
+      this.addHistory();
   }
 
   private onHover(position: Point) {
