@@ -13,11 +13,13 @@
         @zoomend="$emit('zoomend', $event)"
     >
       <div class="image_area">
-        <img :src="currentUrl"
+        <img ref="image"
+             :src="currentUrl"
              :style="{
                opacity:imageOpacity,
-               padding:`${imagePadding}%`
+               padding:`${imagePadding * ($refs.image ? ($refs.image.height / $refs.image.width) : 1)}%  ${imagePadding}%`
              }"
+             @load="$forceUpdate()"
         >
         <div class="overlay_layer"
              :style="{

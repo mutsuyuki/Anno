@@ -17,7 +17,7 @@
                :src="srcUrl"
                :style="{
                  opacity:videoOpacity,
-                 padding:`${videoPadding}%`
+                 padding:`${videoPadding * (video ? (video.videoHeight / video.videoWidth) : 1)}% ${videoPadding}%`
                }"
         />
         <div class="overlay_layer"
