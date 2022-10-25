@@ -28,7 +28,7 @@ import MenuLayout from "@/components/Menu/MenuLayout.vue";
 import SubMenu from "@/components/Menu/SubMenu.vue";
 import EditStateStore from "@/store/EditStateStore";
 import HistoryStore from "@/store/HistoryStore";
-import FileStore from "@/app/pore/store/FileStore";
+import FileStore from "@/app/pore_detection/store/FileStore";
 
 @Component({
   components: {

@@ -57,9 +57,9 @@ import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import ImagePlayer from "@/components/UI/Player/ImagePlayer.vue";
 import CanvasRenderer from "@/components/Canvas/Renderer/CanvasRenderer.vue";
 import EditStateStore, {EditState} from "@/store/EditStateStore";
-import OperationStore from "@/app/pore/store/OperationStore";
-import AnnotationsStore, {Annotation} from "@/app/pore/store/AnnotationsStore";
-import FileStore from "@/app/pore/store/FileStore";
+import OperationStore from "@/app/pore_detection/store/OperationStore";
+import AnnotationsStore, {Annotation} from "@/app/pore_detection/store/AnnotationsStore";
+import FileStore from "@/app/pore_detection/store/FileStore";
 
 
 enum MODE {

@@ -2,8 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import * as ObjectDetectionHome from "@/app/object_detection/Home.vue";
 import * as PoseTrackingHome from "@/app/pose_tracking/Home.vue";
-import * as PoreHome from '@/app/pore/Home.vue'
-import * as EmotionHome from '@/app/emotion/Home.vue'
+import * as PoreHome from '@/app/pore_detection/Home.vue'
+import * as EmotionHome from '@/app/emotion_classification/Home.vue'
 
 Vue.use(VueRouter)
 

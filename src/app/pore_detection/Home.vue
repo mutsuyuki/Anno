@@ -24,16 +24,16 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import MenuPane from "@/app/pore/MenuPane.vue";
-import CanvasPane from "@/app/pore/CanvasPane.vue";
+import MenuPane from "@/app/pore_detection/MenuPane.vue";
+import CanvasPane from "@/app/pore_detection/CanvasPane.vue";
 import AnnotationPageLayout from "@/components/Layout/AnnotationPageLayout.vue";
 import Help from "@/components/UI/Help/Help.vue";
-import HelpMessage from "@/app/pore/HelpMessages";
+import HelpMessage from "@/app/pore_detection/HelpMessages";
 import HistoryStore, {HistoryRecord} from "@/store/HistoryStore";
 import EditStateStore from "@/store/EditStateStore";
-import AnnotationsStore from "@/app/pore/store/AnnotationsStore";
-import OperationStore from "@/app/pore/store/OperationStore";
-import FileStore from "@/app/pore/store/FileStore";
+import AnnotationsStore from "@/app/pore_detection/store/AnnotationsStore";
+import OperationStore from "@/app/pore_detection/store/OperationStore";
+import FileStore from "@/app/pore_detection/store/FileStore";
 
 @Component({
   components: {

@@ -2,6 +2,9 @@
 node_modules
 /dist
 
+emotion_classification
+kanban_detection
+
 # local env items
 .env.local
 .env.*.local
