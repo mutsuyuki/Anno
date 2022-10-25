@@ -10,6 +10,8 @@ export interface Annotation {
   class: string;
   bounding: BoundingBoxModel;
 }
+export type AnnotationByObjectId = { [objectId: string]: Annotation };
+export type AnnotationsByFrameId = { [frameId: string]: AnnotationByObjectId };
 
 
 function getAnnotationRecord(frame: string, objectId: string): Annotation {
@@ -26,7 +28,7 @@ function getAnnotationRecord(frame: string, objectId: string): Annotation {
   }
 }
 
-function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]: Annotation } }): string {
+function getNewestObjectId(annotations: AnnotationsByFrameId): string {
   const objectIds = Object.values(annotations).map(v => Object.keys(v)).flat();
   const objectIdsAsNumber = objectIds.map(v => Number(v));   // keyはnumber型なので本来いらないはずだけど、string型とみなされるので一応数値配列化
   const newestIdAsNumber = objectIdsAsNumber.length == 0 ? -1 : objectIdsAsNumber.reduce((a, b) => Math.max(a, b));
@@ -44,7 +46,7 @@ function getNewestObjectId(annotations: { [frame: string]: { [objectId: string]:
 class AnnotationsStore extends VuexModule {
 
   // states
-  private _annotations: { [frame: string]: { [objectId: string]: Annotation } } = {};
+  private _annotations: AnnotationsByFrameId = {};
 
   // getters
   get annotations() {
@@ -56,12 +58,12 @@ class AnnotationsStore extends VuexModule {
   }
 
   @Mutation
-  public setAnnotation(value: { [frame: string]: { [objectId: string]: Annotation } }) {
+  public setAnnotation(value: AnnotationsByFrameId) {
     this._annotations = value;
   }
 
   @Mutation
-  public setAnnotationsOfFrame(value: { frame: string, data: { [objectId: string]: Annotation } }) {
+  public setAnnotationsOfFrame(value: { frame: string, data: AnnotationByObjectId }) {
     if (!this._annotations[value.frame])
       Vue.set(this._annotations, value.frame, {});
 

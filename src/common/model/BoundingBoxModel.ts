@@ -5,3 +5,4 @@ export interface BoundingBoxModel {
   height: number
 }
 
+export type BoundingBoxByObjectId = { [objectId: string]: BoundingBoxModel }

@@ -21,31 +21,17 @@
         :videoPadding="padding"
         :createBlobSignal="createBlobSignal"
         @timeupdate="onFrameUpdate"
-        @dragareastart="dragStartPosition = $event"
-        @dragarea="draggingPosition = $event"
-        @dragareaend="dragEndPosition = $event"
-        @hover="hoverPosition = $event"
+        @dragareastart="onDragStart"
+        @dragarea="onDrag"
+        @dragareaend="onDragEnd"
+        @hover="onHover"
         @download="onDownload"
         @prepareBlob="onPrepareBlob"
     >
       <BoundingBoxOverlay
           :boundingBoxModels="boundingBoxes"
           :selectingObjectId="selectingObjectId"
-          :useInteraction="true"
-          :isDeleteMode="isDeleteMode"
-          :dragStartPosition="dragStartPosition"
-          :draggingPosition="draggingPosition"
-          :dragEndPosition="dragEndPosition"
-          :hoverPosition="hoverPosition"
           :color="{r: 40, g: 80, b: 220, a: 1}"
-          @resizestart="selectBoundingBox"
-          @movestart="selectBoundingBox"
-          @resize="updateBoundingBox"
-          @move="updateBoundingBox"
-          @resizeend="addHistory"
-          @moveend="addHistory"
-          @unselect="unselectBoundingBox"
-          @delete="deleteBoundingBox"
       />
       <TextOverlay :labels="objectLabels"/>
     </VideoPlayer>
@@ -58,30 +44,16 @@
         :overlayOpacity="annotationOpacity"
         :imagePadding="padding"
         @pageupdate="onFrameUpdate"
-        @dragareastart="dragStartPosition = $event"
-        @dragarea="draggingPosition = $event"
-        @dragareaend="dragEndPosition = $event"
-        @hover="hoverPosition = $event"
+        @dragareastart="onDragStart"
+        @dragarea="onDrag"
+        @dragareaend="onDragEnd"
+        @hover="onHover"
         @download="onDownload"
     >
       <BoundingBoxOverlay
           :boundingBoxModels="boundingBoxes"
           :selectingObjectId="selectingObjectId"
-          :useInteraction="true"
-          :isDeleteMode="isDeleteMode"
-          :dragStartPosition="dragStartPosition"
-          :draggingPosition="draggingPosition"
-          :dragEndPosition="dragEndPosition"
-          :hoverPosition="hoverPosition"
           :color="{r: 40, g: 80, b: 220, a: 1}"
-          @resizestart="selectBoundingBox"
-          @movestart="selectBoundingBox"
-          @resize="updateBoundingBox"
-          @move="updateBoundingBox"
-          @resizeend="addHistory"
-          @moveend="addHistory"
-          @unselect="unselectBoundingBox"
-          @delete="deleteBoundingBox"
       />
       <TextOverlay :labels="objectLabels"/>
     </ImagePlayer>
@@ -107,12 +79,13 @@ import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
 import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
 import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
-import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
+import {BoundingBoxByObjectId} from "@/common/model/BoundingBoxModel";
 import EditStateStore, {EditState} from "@/store/EditStateStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
-import AnnotationsStore, {Annotation} from "@/app/object_detection/store/AnnotationsStore";
+import AnnotationsStore, { AnnotationByObjectId} from "@/app/object_detection/store/AnnotationsStore";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
 import FileStore from "@/app/object_detection/store/FileStore";
+import BoundingBoxInteraction from "@/common/interaction/BoundingBoxInteraction";
 
 @Component({
   components: {
@@ -130,11 +103,7 @@ export default class CanvasPane extends Vue {
   private annotationOpacity: number = 1;
   private padding: number = 0;
 
-  private dragStartPosition: MovingPoint = MovingPointUtil.zero();
-  private draggingPosition: MovingPoint = MovingPointUtil.zero();
-  private dragEndPosition: MovingPoint = MovingPointUtil.zero();
-  private hoverPosition: Point = PointUtil.zero();
-
+  private boundingBoxInteraction: BoundingBoxInteraction = new BoundingBoxInteraction();
   private isDeleteMode: boolean = false;
 
   private frame: string = "";       // PlayerのフレームとOperationStoreのフレームの差分検知用
@@ -157,12 +126,12 @@ export default class CanvasPane extends Vue {
 
     // 削除用のCtrlキー検出
     document.addEventListener("keydown", this.onKeyDown);
-    document.addEventListener("keyup",  this.onKeyUp);
+    document.addEventListener("keyup", this.onKeyUp);
   }
 
   destroyed() {
     document.removeEventListener("keydown", this.onKeyDown);
-    document.removeEventListener("keyup",  this.onKeyUp);
+    document.removeEventListener("keyup", this.onKeyUp);
   }
 
   get isVideoSelected() {
@@ -203,7 +172,7 @@ export default class CanvasPane extends Vue {
         .sort((a, b) => a > b ? 1 : a < b ? -1 : 0);
   }
 
-  get boundingBoxes(): { [objectId: string]: BoundingBoxModel } {
+  get boundingBoxes(): BoundingBoxByObjectId {
     let result = {} as any;
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
@@ -212,7 +181,7 @@ export default class CanvasPane extends Vue {
     return result;
   }
 
-  get annotationsOfCurrentFrame(): { [objectId: string]: Annotation } {
+  get annotationsOfCurrentFrame(): AnnotationByObjectId {
     return AnnotationsStore.annotations[OperationStore.frame] || {};
   }
 
@@ -316,29 +285,31 @@ export default class CanvasPane extends Vue {
     OperationStore.setFrame(this.frame);
   }
 
-  private selectBoundingBox(objectId: string) {
-    OperationStore.setSelectingObjectId(objectId)
+  private onDragStart(position: MovingPoint) {
+    if (this.isDeleteMode) {
+      const objectId = this.boundingBoxInteraction.delete(position, this.boundingBoxes);
+      if (objectId != "") {
+        AnnotationsStore.deleteObject({frame: OperationStore.frame, objectId: objectId,});
+        this.addHistory();
+      }
+    } else {
+      const objectId = this.boundingBoxInteraction.dragStart(position, this.boundingBoxes);
+      OperationStore.setSelectingObjectId(objectId)
+    }
   }
 
-  private unselectBoundingBox() {
-    OperationStore.setSelectingObjectId("")
+  private onDrag(position: MovingPoint) {
+    const [objectId, bounding] = this.boundingBoxInteraction.drag(position, this.boundingBoxes);
+    if (objectId != "")
+      AnnotationsStore.setBounding({frame: OperationStore.frame, objectId: objectId, bounding: bounding});
   }
 
-  private updateBoundingBox(objectId: string, bounding: BoundingBoxModel) {
-    AnnotationsStore.setBounding({
-      frame: OperationStore.frame,
-      objectId: objectId,
-      bounding: bounding
-    });
+  private onDragEnd(position: MovingPoint) {
+    this.boundingBoxInteraction.dragEnd();
   }
 
-  private deleteBoundingBox(objectId: string) {
-    AnnotationsStore.deleteObject({
-      frame: OperationStore.frame,
-      objectId: objectId,
-    });
-
-    this.addHistory();
+  private onHover(position: Point) {
+    this.boundingBoxInteraction.hover(position, this.boundingBoxes);
   }
 
   private addHistory() {
