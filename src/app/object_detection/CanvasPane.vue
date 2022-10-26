@@ -77,7 +77,7 @@ import FileDownloader from "@/common/utils/FileDownloader";
 import ToolBar from "@/components/UI_Singleton/ToolBar/ToolBar.vue";
 import DownloadButton from "@/components/UI/Button/DownloadButton.vue";
 import VideoPlayer from "@/components/UI/Player/VideoPlayer.vue";
-import TextOverlay from "@/components/Canvas/Overlay/TextOverlay.vue";
+import TextOverlay, {TextOverlayInput} from "@/components/Canvas/Overlay/TextOverlay.vue";
 import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.vue";
 import {BoundingBoxByObjectId} from "@/common/model/BoundingBoxModel";
 import EditStateStore, {EditState} from "@/store/EditStateStore";
@@ -201,8 +201,8 @@ export default class CanvasPane extends Vue {
     return this.operationOfCurrentFrame.isDownloaded && !this.operationOfCurrentFrame.isDirty;
   }
 
-  get objectLabels(): { text: string, position: { x: string, y: string }, isActive: boolean }[] {
-    let result = [];
+  get objectLabels(): TextOverlayInput {
+    let result: TextOverlayInput = [];
     const annotations = this.annotationsOfCurrentFrame;
     for (const objectId in annotations) {
       const annotation = annotations[objectId];
@@ -332,7 +332,7 @@ export default class CanvasPane extends Vue {
       const imageIndex = parseInt(OperationStore.frame);
       const file = FileStore.loadedFiles.imageFiles[imageIndex];
       FileDownloader.downloadBlob(file.name, file);
-      this.downloadAnnotation(file.name);
+      this.downloadAnnotation(FileUtil.removeExtension(file.name));
       return;
     }
   }

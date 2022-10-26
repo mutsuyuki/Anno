@@ -111,10 +111,10 @@ export default class BoundingBoxInteraction {
         selectingEdge.isResize = true;
         if (Math.abs(distanceToTop - distance) < thresh)
           selectingEdge.top = true;
-        if (Math.abs(distanceToRight - distance) < thresh)
-          selectingEdge.right = true;
         if (Math.abs(distanceToBottom - distance) < thresh)
           selectingEdge.bottom = true;
+        if (Math.abs(distanceToRight - distance) < thresh)
+          selectingEdge.right = true;
         if (Math.abs(distanceToLeft - distance) < thresh)
           selectingEdge.left = true;
       }

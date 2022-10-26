@@ -4,7 +4,12 @@
         v-for="label in labels"
         class="label"
         :class="{'active': label.isActive}"
-        :style="{'left':label.position.x,'top':label.position.y}"
+        :style="{
+          left:label.position.x,
+          top:label.position.y,
+          'font-size': fontSize,
+          'font-weight': isBold ? 'bold' : 'normal',
+        }"
     >
       {{ label.text }}
     </div>
@@ -14,13 +19,16 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {Point} from "@/common/interface/Point";
+
+export type TextOverlayInput = { text: string, position: { x: string, y: string }, isActive: boolean }[];
 
 @Component({
   components: {}
 })
 export default class TextOverlay extends Vue {
-  @Prop() private labels!: { text: string, position: {x:string, y:string}, isActive: boolean }[];
+  @Prop() private labels!: TextOverlayInput;
+  @Prop({default: "12px"}) private fontSize!: string;
+  @Prop({default: false}) private isBold!: boolean;
 }
 </script>
 

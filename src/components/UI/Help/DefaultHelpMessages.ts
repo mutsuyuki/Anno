@@ -21,11 +21,11 @@ export const defaultHelpMessages: { title: string, body: string }[] = [
 
   // ToolBar.vue
   {
-    title: '次のアノテーション済データを表示',
+    title: '次のアノテーション済データを表示（動画の場合のみ）',
     body: '<span>shift キー</span> + <span>→ キー</span>',
   },
   {
-    title: '前のアノテーション済データを表示',
+    title: '前のアノテーション済データを表示（動画の場合のみ）',
     body: '<span>shift キー</span> + <span>← キー</span>',
   },
   {
