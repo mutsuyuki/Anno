@@ -102,9 +102,8 @@ class AnnotationsStore extends VuexModule {
     const newObjectId = (Number(getNewestObjectId(this._annotations)) + 1).toString();
     let copiedAnnotation = DeepCloner.copy(this._annotations[value.frame][value.objectId]);
     copiedAnnotation.objectId = newObjectId;
-    copiedAnnotation.bounding.left += 0.005;
-    copiedAnnotation.bounding.top += 0.01;
-    copiedAnnotation.bounding.width -= 0.0001;   // 小さいものが優先して選ばれるため、コピーしたやつを選ばれやすくする
+    copiedAnnotation.bounding.left += 0.1;
+    copiedAnnotation.bounding.top += 0.1;
 
     Vue.set(
       this._annotations[value.frame],

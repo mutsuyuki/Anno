@@ -17,7 +17,7 @@ export default class Row extends Vue {
 
 <style scoped lang="scss">
 
-.row :nth-child(n + 2) {
+.row {
   margin-top: 8px;
 }
 

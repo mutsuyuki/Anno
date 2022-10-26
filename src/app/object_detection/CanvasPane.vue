@@ -287,31 +287,35 @@ export default class CanvasPane extends Vue {
 
   private onDragStart(position: MovingPoint) {
     if (this.isDeleteMode) {
-      const objectId = this.boundingBoxInteraction.delete(position, this.boundingBoxes);
-      if (objectId != "") {
-        AnnotationsStore.deleteObject({frame: OperationStore.frame, objectId: objectId,});
+      const bboxSearchResult = this.boundingBoxInteraction.searchNearest(position, this.boundingBoxes);
+      if (bboxSearchResult.objectId != "") {
+        AnnotationsStore.deleteObject({frame: OperationStore.frame, objectId: bboxSearchResult.objectId,});
         this.addHistory();
       }
     } else {
-      const objectId = this.boundingBoxInteraction.dragStart(position, this.boundingBoxes);
-      OperationStore.setSelectingObjectId(objectId)
+      const dragTarget = this.boundingBoxInteraction.dragStart(position, this.boundingBoxes);
+      OperationStore.setSelectingObjectId(dragTarget.objectId)
     }
   }
 
   private onDrag(position: MovingPoint) {
-    const [objectId, bounding] = this.boundingBoxInteraction.drag(position, this.boundingBoxes);
-    if (objectId != "")
-      AnnotationsStore.setBounding({frame: OperationStore.frame, objectId: objectId, bounding: bounding});
+    const [dragTarget, bounding] = this.boundingBoxInteraction.drag(position, this.boundingBoxes);
+    if (dragTarget.objectId != "")
+      AnnotationsStore.setBounding({
+        frame: OperationStore.frame,
+        objectId: dragTarget.objectId,
+        bounding: bounding
+      });
   }
 
   private onDragEnd(position: MovingPoint) {
-    const objectId = this.boundingBoxInteraction.dragEnd();
-    if (objectId != "")
+    const dragTarget = this.boundingBoxInteraction.dragEnd();
+    if (dragTarget.objectId != "")
       this.addHistory();
   }
 
   private onHover(position: Point) {
-    this.boundingBoxInteraction.hover(position, this.boundingBoxes);
+    // this.boundingBoxInteraction.searchBounding(position, this.boundingBoxes);
   }
 
   private addHistory() {

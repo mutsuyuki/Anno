@@ -19,7 +19,7 @@ import {BoundingBoxModel} from "@/common/model/BoundingBoxModel";
 export default class BoundingBoxOverlay extends Vue {
   @Prop() private boundingBoxModels!: { [objectId: string]: BoundingBoxModel };
   @Prop() private selectingObjectId!: string;
-  @Prop({default: {r: 255, g: 0, b: 0, a: 1}}) private color!: Color;
+  @Prop({default: () => ({r: 255, g: 0, b: 0, a: 1})}) private color!: Color;
 
   private graphics: Graphic[] = [];
 
@@ -31,6 +31,10 @@ export default class BoundingBoxOverlay extends Vue {
   }
 
   private draw() {
+    if(!this.boundingBoxModels) {
+      return;
+    }
+
     const graphics: Graphic[] = [];
 
     const color = DeepCloner.copy(this.color);
@@ -52,5 +56,3 @@ export default class BoundingBoxOverlay extends Vue {
 }
 
 </script>
-
-<style scoped lang="scss"></style>

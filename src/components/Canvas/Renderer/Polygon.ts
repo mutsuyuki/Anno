@@ -21,8 +21,9 @@ export default class Polygon implements Graphic {
     const scale = {x: context.canvas.clientWidth, y: context.canvas.clientHeight};
 
     context.beginPath();
-    // context.strokeStyle = ColorUtil.rgba(this._color);
-    // context.lineWidth = this._width;
+    context.strokeStyle = ColorUtil.rgba(this.strokeColor);
+    context.fillStyle = ColorUtil.rgba(this.fillColor);
+    context.lineWidth = 1;
     context.moveTo(
       this.points[0].x * scale.x,
       this.points[0].y * scale.y
@@ -33,7 +34,12 @@ export default class Polygon implements Graphic {
         this.points[i].y * scale.y
       );
     }
+    context.lineTo(
+      this.points[0].x * scale.x,
+      this.points[0].y * scale.y
+    );
     context.stroke();
+    context.fill();
     context.closePath();
   };
 }

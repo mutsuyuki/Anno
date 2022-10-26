@@ -1,41 +1,57 @@
 import {MovingPoint, Point, PointUtil} from "@/common/interface/Point";
 import DeepCloner from "@/common/utils/DeepCloner";
-import {BoundingBoxByObjectId, BoundingBoxModel} from "@/common/model/BoundingBoxModel";
+import {BoundingBoxByObjectId, BoundingBoxModel, BoundingBoxUtil} from "@/common/model/BoundingBoxModel";
+
+export type SelectingEdge = { top: boolean, right: boolean, bottom: boolean, left: boolean, isResize: boolean }
+
+export interface BoundingBoxSearchResult {
+  objectId: string,
+  selectingEdge: SelectingEdge,
+  distance: number
+}
 
 export default class BoundingBoxInteraction {
-  private selectingObjectId: string = "";
-  private selectingEdge = {top: false, right: false, bottom: false, left: false, isResize: false};
+  private dragTarget = this.getInitialSearchResult();
 
-
-  public dragStart(position: MovingPoint, boundingBoxModels: { [objectId: string]: BoundingBoxModel }): string {
-    const clickedBounding = this.searchBounding(position, boundingBoxModels);
-    this.selectingObjectId = clickedBounding.objectId;
-    this.selectingEdge = clickedBounding.selectingEdge;
-
-    return this.selectingObjectId;
+  private getInitialSearchResult(): BoundingBoxSearchResult {
+    return {
+      objectId: "",
+      selectingEdge: this.getInitialSelectingEdge(),
+      distance: Number.MAX_VALUE
+    };
   }
 
-  public drag(position: MovingPoint, boundingBoxModels: BoundingBoxByObjectId): [string, BoundingBoxModel] {
-    if (!boundingBoxModels[this.selectingObjectId]) {
-      return ["", {} as BoundingBoxModel];
+  private getInitialSelectingEdge(): SelectingEdge {
+    return {top: false, right: false, bottom: false, left: false, isResize: false};
+  }
+
+  public dragStart(position: MovingPoint, boundingBoxModels: BoundingBoxByObjectId): BoundingBoxSearchResult {
+    const searchResult = this.searchNearest(position, boundingBoxModels);
+    this.dragTarget = DeepCloner.copy(searchResult);
+    return searchResult;
+  }
+
+  public drag(position: MovingPoint, boundingBoxModels: BoundingBoxByObjectId): [BoundingBoxSearchResult, BoundingBoxModel] {
+    if (!boundingBoxModels[this.dragTarget.objectId]) {
+      return [this.getInitialSearchResult(), {} as BoundingBoxModel];
     }
 
-    let editedBoundingBox = DeepCloner.copy(boundingBoxModels[this.selectingObjectId]);
+    let editedBoundingBox = DeepCloner.copy(boundingBoxModels[this.dragTarget.objectId]);
 
-    if (this.selectingEdge.isResize) {
+    if (this.dragTarget.selectingEdge.isResize) {
       // 端のドラッグは矩形の拡大縮小
-      if (this.selectingEdge.left) {
+      if (this.dragTarget.selectingEdge.left) {
         editedBoundingBox.left += position.deltaX;
         editedBoundingBox.width -= position.deltaX;
       }
-      if (this.selectingEdge.right) {
+      if (this.dragTarget.selectingEdge.right) {
         editedBoundingBox.width += position.deltaX;
       }
-      if (this.selectingEdge.top) {
+      if (this.dragTarget.selectingEdge.top) {
         editedBoundingBox.top += position.deltaY;
         editedBoundingBox.height -= position.deltaY;
       }
-      if (this.selectingEdge.bottom) {
+      if (this.dragTarget.selectingEdge.bottom) {
         editedBoundingBox.height += position.deltaY;
       }
     } else {
@@ -43,66 +59,72 @@ export default class BoundingBoxInteraction {
       editedBoundingBox.top += position.deltaY;
       editedBoundingBox.left += position.deltaX;
     }
-    return [this.selectingObjectId, editedBoundingBox]
+    return [DeepCloner.copy(this.dragTarget), editedBoundingBox]
   }
 
   public dragEnd() {
-    const selectedObjectId = this.selectingObjectId;
-    this.clear();
-    return selectedObjectId;
+    const dragTarget = DeepCloner.copy(this.dragTarget);
+    this.cancel();
+    return dragTarget;
   }
 
-  public hover(position: Point, boundingBoxModels: { [objectId: string]: BoundingBoxModel }) {
-    // todo 選択中の線の強調
+  public cancel() {
+    this.dragTarget = this.getInitialSearchResult();
   }
 
-  public delete(position: MovingPoint, boundingBoxModels: { [objectId: string]: BoundingBoxModel }): string {
-    const clickedBounding = this.searchBounding(position, boundingBoxModels);
-    const objectId = clickedBounding.objectId;
-    return objectId;
-  }
-
-  public clear() {
-    this.selectingObjectId = "";
-    this.selectingEdge = {top: false, right: false, bottom: false, left: false, isResize: false};
-  }
-
-  private searchBounding(position: Point, boundingBoxModels: { [objectId: string]: BoundingBoxModel }) {
-    let smallestArea = Number.MAX_VALUE;
-    let smallestObjectId: string = "";
-    let selectingEdge = {top: false, right: false, bottom: false, left: false, isResize: false};
-    const edgeWidth = 0.02;
+  public searchNearest(position: Point, boundingBoxModels: BoundingBoxByObjectId): BoundingBoxSearchResult {
+    let nearestObjectId: string = "";
+    let nearestDistance = Number.MAX_VALUE;
+    let selectingEdge = this.getInitialSelectingEdge()
+    const thresh = 0.02;
 
     for (const objectId in boundingBoxModels) {
-      const boundingBoxModel = boundingBoxModels[objectId];
+      const bounding = boundingBoxModels[objectId];
       const x = position.x;
       const y = position.y;
-      const insideHorizontal = (boundingBoxModel.left - edgeWidth < x) && (x < boundingBoxModel.left + boundingBoxModel.width + edgeWidth);
-      const insideVertical = (boundingBoxModel.top - edgeWidth < y) && (y < boundingBoxModel.top + boundingBoxModel.height + edgeWidth);
-      const area = boundingBoxModel.width * boundingBoxModel.height;
-      if (insideHorizontal && insideVertical && area < smallestArea) {
-        smallestObjectId = objectId;
 
-        if (Math.abs(boundingBoxModel.left - x) <= edgeWidth) {
-          selectingEdge.left = true;
-          selectingEdge.isResize = true;
-        }
-        if (Math.abs(boundingBoxModel.left + boundingBoxModel.width - x) <= edgeWidth) {
-          selectingEdge.right = true;
-          selectingEdge.isResize = true;
-        }
-        if (Math.abs(boundingBoxModel.top - y) <= edgeWidth) {
+      const insideHorizontal = (bounding.left - thresh < x) && (x < BoundingBoxUtil.right(bounding) + thresh);
+      const insideVertical = (bounding.top - thresh < y) && (y < BoundingBoxUtil.bottom(bounding) + thresh);
+      const isInside = insideHorizontal && insideVertical;
+
+      if (!isInside) {
+        continue;
+      }
+
+      const distanceToTop = Math.abs(y - bounding.top);
+      const distanceToRight = Math.abs(x - BoundingBoxUtil.right(bounding));
+      const distanceToBottom = Math.abs(y - BoundingBoxUtil.bottom(bounding));
+      const distanceToLeft = Math.abs(x - bounding.left);
+      const distanceToCenter = PointUtil.distance(position, BoundingBoxUtil.center(bounding));
+      const distance = Math.min(distanceToTop, distanceToRight, distanceToBottom, distanceToLeft, distanceToCenter);
+
+      if (distance > nearestDistance) {
+        continue;
+      }
+
+      nearestObjectId = objectId;
+      nearestDistance = distance;
+
+      if (distanceToCenter == distance) {
+        selectingEdge.isResize = false;
+      } else {
+        selectingEdge.isResize = true;
+        if (Math.abs(distanceToTop - distance) < thresh)
           selectingEdge.top = true;
-          selectingEdge.isResize = true;
-        }
-        if (Math.abs(boundingBoxModel.top + boundingBoxModel.height - y) <= edgeWidth) {
+        if (Math.abs(distanceToRight - distance) < thresh)
+          selectingEdge.right = true;
+        if (Math.abs(distanceToBottom - distance) < thresh)
           selectingEdge.bottom = true;
-          selectingEdge.isResize = true;
-        }
+        if (Math.abs(distanceToLeft - distance) < thresh)
+          selectingEdge.left = true;
       }
     }
 
-    return {objectId: smallestObjectId, selectingEdge: selectingEdge};
+    return {
+      objectId: nearestObjectId,
+      selectingEdge: selectingEdge,
+      distance: nearestDistance
+    };
   }
 
 }

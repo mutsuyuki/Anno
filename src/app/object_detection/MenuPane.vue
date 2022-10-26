@@ -25,7 +25,8 @@
             :cols="1"
             @select="onSelectCreateData"
         />
-
+      </Row>
+      <Row>
         <ButtonGrid
             class="copy_button"
             :class="{'disable': !selectingObject}"
@@ -34,7 +35,8 @@
             :cols="1"
             @select="onSelectCopyData"
         />
-
+      </Row>
+      <Row>
         <ButtonGrid
             class="copy_button"
             :class="{'disable': isFirstFrame}"
