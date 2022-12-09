@@ -1,14 +1,16 @@
 import * as d3 from 'd3'
+import {Selection} from "d3-selection";
 import {ScaleBand} from "d3-scale";
 import {Dispatch} from "d3-dispatch";
-import {GraphValue} from "./GraphValue";
+import GraphValue from "../core/GraphValue";
 
 export default class GrouphBarTouchArea {
 
   public dataIndex: number = 0;     // datasetのyValuesのうち、どのデータを使うか
 
   private parent: any;
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private bars: any;
   private labelData: GraphValue[] = [new GraphValue("_",[0])];
   private height: number;
@@ -21,7 +23,7 @@ export default class GrouphBarTouchArea {
   static MOUSE_ENTER: string = "on_mouseenter";
   static CLICK: string = "on_bar_click";
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.dispatcher = d3.dispatch(GrouphBarTouchArea.MOUSE_ENTER, GrouphBarTouchArea.CLICK);
     this.parent = __parent;
     this.root = __parent.append('g');

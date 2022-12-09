@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 import {Axis} from "d3-axis";
+import {Selection} from "d3-selection";
 import {AxisDirection} from "./AxisDirection";
 
 export default class AxisLabel {
@@ -10,17 +11,18 @@ export default class AxisLabel {
   public fontSize: number = 12;
   public ticks: number = 10;
   public timeFormat: string = "";
-  public showDuration:number = 600;
-  public hideDuration:number = 300;
-  public moveDuration:number = 800;
+  public showDuration: number = 600;
+  public hideDuration: number = 300;
+  public moveDuration: number = 800;
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
   private labelContainer: any;
 
   private scaler: any = d3.scaleLinear();
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
+    this.root.attr("parts-name", this.constructor.name);
     this.labelContainer = this.root.append("g");
   }
 
@@ -31,7 +33,7 @@ export default class AxisLabel {
     this.removeUseless();
 
     this.prepareParts();
-    this.labelContainer.selectAll(".tick").select("text").attr("opacity", 0);
+    this.root.attr("opacity", 0);
   }
 
   private getAxisFunction(): Axis<any> {
@@ -49,7 +51,7 @@ export default class AxisLabel {
     }
 
     axis.ticks(this.ticks);
-    if(this.timeFormat)
+    if (this.timeFormat)
       axis.tickFormat(d3.timeFormat(this.timeFormat));
 
     return axis;
@@ -74,7 +76,7 @@ export default class AxisLabel {
   public show(): void {
     this.root.attr("display", "block");
 
-    this.labelContainer.selectAll(".tick").select("text")
+    this.root
       .interrupt()
       .transition()
       .ease(d3.easeSinOut)
@@ -96,7 +98,6 @@ export default class AxisLabel {
       .duration(this.moveDuration)
       .ease(d3.easeExpOut)
       .call(this.getAxisFunction());
-
   }
 
   public getTransforms(): number[] {
@@ -111,7 +112,7 @@ export default class AxisLabel {
     return transforms;
   }
 
-  public resize(__scaler: any):void{
+  public resize(__scaler: any): void {
     this.scaler = __scaler;
 
     let tmpDuration = this.moveDuration;
@@ -121,7 +122,7 @@ export default class AxisLabel {
   }
 
   public hide(): void {
-    this.labelContainer.selectAll(".tick").select("text")
+    this.root
       .interrupt()
       .transition()
       .ease(d3.easeSinOut)

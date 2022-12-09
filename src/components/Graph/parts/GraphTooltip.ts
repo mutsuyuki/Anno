@@ -1,10 +1,7 @@
 import * as d3 from 'd3'
 import {ScaleBand, ScaleLinear} from "d3-scale";
-import {GraphValue} from "./GraphValue";
+import GraphValue from "../core/GraphValue";
 
-/**
- * Created by muttuwo on 2017/04/18.
- */
 export default class GraphTooltip {
 
   public dataIndex: number = 0;     // datasetのyValuesのうち、どのデータを使うか

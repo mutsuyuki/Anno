@@ -1,17 +1,21 @@
-import {GraphValue} from "../parts/GraphValue";
+import GraphBase from "../core/GraphBase";
+import ScaleFactory from "../core/ScaleFactory";
+import GraphValue from "../core/GraphValue";
+import {GraphBounds} from "../core/Types";
 import GraphLine from "../parts/GraphLine";
 import AxisLabel from "../parts/AxisLabel";
 import AxisRuler from "../parts/AxisRuler";
-import {AxisDirection} from "@/components/Graph/parts/AxisDirection";
-import SequenceGraphBase from "@/components/Graph/base/SequenceGraphBase";
+import {AxisDirection} from "../parts/AxisDirection";
 
-export default class LineGraphSample extends SequenceGraphBase {
+export default class LineGraphSample extends GraphBase<number> {
 
   private leftLabel: AxisLabel;
   private bottomLabel: AxisLabel;
   private horizonRuler: AxisRuler;
   private verticalRuler: AxisRuler;
-  protected lines: GraphLine[];
+  private lines: GraphLine[];
+
+  private dataset: GraphValue<number>[] = [];
 
   private colors: string[] = [
     "rgba(255, 99, 100, 1)",
@@ -19,42 +23,59 @@ export default class LineGraphSample extends SequenceGraphBase {
     "rgba(100, 206, 255, 1)",
   ]
 
-  public init(__dataset: GraphValue[]): void {
-    super.init(__dataset);
+  private getScalers(dataset: GraphValue<number>[], bounds: GraphBounds) {
+    const xScaler = ScaleFactory.newScaleLinearX(dataset, bounds.left, bounds.right)
+    // const yScaler = ScaleFactory.newScaleLinearY(dataset, bounds.top, bounds.bottom)
+    const yScaler = ScaleFactory.newFixedScaleLinearY(-1, 1, bounds.top, bounds.bottom)
+
+    return [xScaler, yScaler];
+  }
+
+  public show(dataset: GraphValue<number>[]){
+    super.show(dataset);
+  }
+
+  protected _init(dataset: GraphValue<number>[]): void {
+    super._init(dataset);
+
+    this.dataset = dataset;
+
+    const bounds = this.getGraphBounds();
+    const [xScaler, yScaler] = this.getScalers(dataset, bounds);
 
     this.leftLabel = new AxisLabel(this.svg);
     this.leftLabel.axisDirection = AxisDirection.HORIZONTAL;
     this.leftLabel.color = "#7B848F";
     this.leftLabel.ticks = 4;
     this.leftLabel.moveDuration = 0;
-    this.leftLabel.setPosition(this.marginLeft, 0);
-    this.leftLabel.init(this.yScaler);
+    this.leftLabel.setPosition(bounds.left, 0);
+    this.leftLabel.init(yScaler);
 
     this.bottomLabel = new AxisLabel(this.svg);
     this.bottomLabel.axisDirection = AxisDirection.VERTICAL;
     this.bottomLabel.color = "#7B848F";
     this.bottomLabel.ticks = 8;
     this.bottomLabel.moveDuration = 0;
-    this.bottomLabel.setPosition(0, this.svgHeight - this.marginBottom);
-    this.bottomLabel.init(this.xScaler);
+    this.bottomLabel.setPosition(0, bounds.bottom);
+    this.bottomLabel.init(xScaler);
 
     this.horizonRuler = new AxisRuler(this.svg);
     this.horizonRuler.axisDirection = AxisDirection.HORIZONTAL;
-    this.horizonRuler.lineLength = parseInt(this.svg.node().clientWidth) - (this.marginRight + this.marginLeft);
+    this.horizonRuler.lineLength = bounds.width;
     this.horizonRuler.color = "#EDF0F1";
     this.horizonRuler.ticks = 4;
     this.horizonRuler.moveDuration = 0;
-    this.horizonRuler.setPosition(this.marginLeft, 0);
-    this.horizonRuler.init(this.yScaler);
+    this.horizonRuler.setPosition(bounds.left, 0);
+    this.horizonRuler.init(yScaler);
 
     this.verticalRuler = new AxisRuler(this.svg);
     this.verticalRuler.axisDirection = AxisDirection.VERTICAL;
-    this.verticalRuler.lineLength = parseInt(this.svg.node().clientHeight) - (this.marginTop + this.marginBottom);
+    this.verticalRuler.lineLength = bounds.height;
     this.verticalRuler.color = "#EDF0F1";
     this.verticalRuler.ticks = 8;
-    this.verticalRuler.showDuration = 0;
+    this.verticalRuler.moveDuration = 0;
     this.verticalRuler.setPosition(0, this.marginTop);
-    this.verticalRuler.init(this.xScaler);
+    this.verticalRuler.init(xScaler);
 
     this.lines = [];
     for (let i = 0; i < this.dataset[0].yValues.length; i++) {
@@ -62,42 +83,38 @@ export default class LineGraphSample extends SequenceGraphBase {
       line.dataIndex = i;
       line.color = this.colors[i];
       line.moveDuration = 0;
-      line.init(this.dataset, this.xScaler as any, this.yScaler);
+      line.init(this.dataset, xScaler, yScaler);
       this.lines.push(line);
     }
-
-    this.verticalRuler.moveDuration = 0;
   }
 
-  public show(): void {
+  protected _show(): void {
+    super._show();
+
+    const bounds = this.getGraphBounds();
+
     this.leftLabel.show();
     this.bottomLabel.show();
-    this.horizonRuler.show();
-    this.verticalRuler.show();
+    this.horizonRuler.show(bounds.width);
+    this.verticalRuler.show(bounds.height);
     this.lines.forEach(v => v.show());
   }
 
-  public update(__dataset: GraphValue[]): void {
-    super.update(__dataset);
+  protected _update(dataset: GraphValue<number>[]): void {
+    super._update(dataset);
 
-    this.makeYScaler();
-    this.makeXScaler();
+    this.dataset = dataset;
+    const bounds = this.getGraphBounds();
+    const [xScaler, yScaler] = this.getScalers(dataset, bounds);
 
-    this.leftLabel.update(this.yScaler);
-    this.bottomLabel.update(this.xScaler);
-    this.horizonRuler.update(this.yScaler);
-    this.verticalRuler.update(this.xScaler);
-
-    this.leftLabel.update(this.yScaler);
-    this.bottomLabel.update(this.xScaler);
-    this.horizonRuler.update(this.yScaler);
-    this.verticalRuler.update(this.xScaler);
-
-    this.lines.forEach(v => v.update(this.dataset, this.xScaler, this.yScaler));
+    this.leftLabel.update(yScaler);
+    this.bottomLabel.update(xScaler);
+    this.horizonRuler.update(yScaler, bounds.width);
+    this.verticalRuler.update(xScaler, bounds.height);
+    this.lines.forEach(v => v.update(this.dataset, xScaler, yScaler));
   }
 
-
-  public hide(): void {
+  protected _hide(): void {
     this.leftLabel.hide();
     this.bottomLabel.hide();
     this.horizonRuler.hide();
@@ -106,14 +123,9 @@ export default class LineGraphSample extends SequenceGraphBase {
     this.lines.forEach(v => v.hide());
   }
 
-  public resize(): void {
-    super.resize();
-    this.leftLabel.resize(this.yScaler);
-    this.bottomLabel.resize(this.xScaler);
-    this.horizonRuler.resize(this.yScaler, parseInt(this.svg.node().clientWidth) - (this.marginRight + this.marginLeft));
-    this.verticalRuler.resize(this.xScaler, parseInt(this.svg.node().clientHeight) - (this.marginTop + this.marginBottom));
-
-    this.lines.forEach(v => v.resize(this.xScaler, this.yScaler));
+  protected _resize(): void {
+    super._resize();
+    this._update(this.dataset);
   }
 
 };

@@ -3,27 +3,28 @@
     <span>{{ label }}</span>
 
     <input type="number"
-           @change="onChange"
            :placeholder="placeholder"
-           v-model="number"
+           v-model="numberValue"
     >
   </label>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {HTMLElementEvent} from "@/common/interface/HTMLElementEvent";
 
 @Component({})
 export default class NumberInput extends Vue {
   @Prop({default: "label"}) private label!: string;
   @Prop({default: "placeholder"}) private placeholder!: string;
-  private number: number = 1.0;
+  @Prop({default: 1.0}) private number!: number;
 
-  private onChange(e: HTMLElementEvent<HTMLInputElement>) {
-    this.$emit("change", e.target.value);
+  get numberValue() {
+    return this.number;
   }
 
+  set numberValue(value: number) {
+    this.$emit("change", value);
+  }
 }
 </script>
 

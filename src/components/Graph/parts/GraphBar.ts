@@ -1,6 +1,7 @@
 import * as d3 from 'd3'
+import {Selection} from "d3-selection";
 import {ScaleBand, ScaleLinear} from "d3-scale";
-import {GraphValue} from "./GraphValue";
+import GraphValue from "../core/GraphValue";
 
 export default class GraphBar {
 
@@ -16,7 +17,8 @@ export default class GraphBar {
   public barPadding: number = 0;   // バー間の距離
 
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private bars: any;
 
   private dataset: GraphValue[] = [new GraphValue("_", [0])];
@@ -24,7 +26,7 @@ export default class GraphBar {
   private xScaler: ScaleBand<string> = d3.scaleBand();
   private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
     this.bars = this.root.selectAll("rect");
   }

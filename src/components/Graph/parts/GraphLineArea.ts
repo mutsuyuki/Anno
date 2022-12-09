@@ -1,7 +1,8 @@
 import * as d3 from 'd3'
-import {GraphValue} from "./GraphValue";
+import {Selection} from "d3-selection";
 import {Area, CurveFactory} from "d3-shape";
 import {ScaleLinear} from "d3-scale";
+import GraphValue from "../core/GraphValue";
 
 export default class GraphLineArea {
 
@@ -14,7 +15,8 @@ export default class GraphLineArea {
   public moveDuration: number = 800;
 
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private fill: any;
 
   private zeroData: GraphValue[] = [new GraphValue("_", [0])];
@@ -24,7 +26,7 @@ export default class GraphLineArea {
   private xScaler: any = d3.scaleLinear();
   private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
     this.fill = this.root.append("path");
   }

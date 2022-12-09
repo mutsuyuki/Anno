@@ -1,7 +1,8 @@
 import * as d3 from 'd3'
-import {GraphValue} from "./GraphValue";
+import {Selection} from "d3-selection";
 import {CurveFactory,  Line} from "d3-shape";
 import {ScaleLinear} from "d3-scale";
+import GraphValue from "../core/GraphValue";
 
 export default class GraphLine {
 
@@ -13,7 +14,8 @@ export default class GraphLine {
   public hideDuration:number = 500;
   public moveDuration:number = 800;
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private line: any;
 
   private zeroData: GraphValue[] = [new GraphValue("_", [0])];
@@ -24,13 +26,13 @@ export default class GraphLine {
   private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
   private isLineMoving: boolean = false;
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
     this.root.attr("parts-name","graphline");
     this.line = this.root.append("path");
   }
 
-  public init(__dataset: GraphValue[], __xScaler: Function, __yScaler: ScaleLinear<any, any>): void {
+  public init(__dataset: GraphValue[], __xScaler: ScaleLinear<any, any>, __yScaler: ScaleLinear<any, any>): void {
     this.dataset = __dataset;
     this.xScaler = __xScaler;
     this.yScaler = __yScaler;

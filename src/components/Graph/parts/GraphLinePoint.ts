@@ -1,14 +1,16 @@
 import * as d3 from 'd3'
+import {Selection} from "d3-selection";
 import {ScaleLinear} from "d3-scale";
-import {GraphValue} from "./GraphValue";
+import GraphValue from "../core/GraphValue";
 
-export default class GraphPoint {
+export default class GraphLinePoint {
 
   public dataIndex: number = 0;    // datasetのyValuesのうち、どのデータを使うか
   public color: string = "#888";
   public radius: number = 3;
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private points: any;
 
   private dataset: GraphValue[] = [new GraphValue("_", [0])];
@@ -16,7 +18,7 @@ export default class GraphPoint {
   private xScaler: any = d3.scaleLinear();
   private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
     this.points = this.root.selectAll("circle");
   }

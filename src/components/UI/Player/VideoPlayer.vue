@@ -25,7 +25,7 @@
                opacity:overlayOpacity
              }"
         >
-          <slot></slot>
+          <slot name="overlay"></slot>
         </div>
       </div>
     </NormalizedScalableArea>
@@ -33,6 +33,8 @@
     <div class="hidden_buffer_area">
       <canvas id="video_buffer"/>
     </div>
+
+    <slot name="video_bottom"></slot>
 
     <div class="video_control_area">
       <div class="row row1">

@@ -4,24 +4,25 @@
 
       <input type="text"
              :placeholder="placeholder"
-             @change="onChange"
-             v-model="text"
+             v-model="textValue"
       >
     </label>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {HTMLElementEvent} from "@/common/interface/HTMLElementEvent";
 
 @Component({ })
 export default class TextInput extends Vue {
   @Prop({default:"label"}) private label!: string;
   @Prop({default:""}) private placeholder!: string;
-  private text: string = "";
+  @Prop({default:""}) private text: string = "";
 
-  private onChange(e: HTMLElementEvent<HTMLInputElement>) {
-    console.log(e)
+  get textValue() {
+    return this.text;
+  }
+  set textValue(value: string) {
+    this.$emit("change", value);
   }
 
 }

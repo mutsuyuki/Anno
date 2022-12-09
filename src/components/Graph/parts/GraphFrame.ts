@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import {Selection} from "d3-selection";
 
 export default class GraphFrame {
 
@@ -14,14 +15,15 @@ export default class GraphFrame {
   public showDuration:number = 700;
   public hideDuration:number = 800;
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private topLine: any;
   private bottomLine: any;
   private leftLine: any;
   private rightLine: any;
 
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
   }
 

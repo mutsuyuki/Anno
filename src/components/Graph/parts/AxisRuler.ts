@@ -1,29 +1,29 @@
 import * as d3 from 'd3'
 import {Axis} from "d3-axis";
+import {Selection} from "d3-selection";
 import {AxisDirection} from "./AxisDirection";
-import AxisLabel from "./AxisLabel";
 
 export default class AxisRuler {
 
   public axisDirection: AxisDirection = AxisDirection.HORIZONTAL;
 
-  public isDashed: boolean = false;
-  public lineLength: number = 0;
-  public width: number = 1;
-  public color: string = "#888";
+  public isDashed: boolean = true;
+  public strokeWidth: number = 1;
+  public color: string = "#666";
   public ticks: number = 8;
-  public highlightTicks: number = null;  // 強調する線のticks （普通はラベルと同じにする）
   public showDuration:number = 700;
   public hideDuration:number = 300;
   public moveDuration:number = 800;
 
-  private root: any;
+  private root: Selection<SVGElement, string, null, undefined>;
+
   private rulerContainer: any;
 
   private scaler: any = d3.scaleLinear();
 
-  constructor(__parent: any) {
+  constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
+    this.root.attr("parts-name", this.constructor.name);
     this.rulerContainer = this.root.append("g");
   }
 
@@ -32,7 +32,6 @@ export default class AxisRuler {
 
     this.rulerContainer.call(this.getAxisFunction());
     this.removeUseless();
-    this.highlightLabelLines();
 
     this.prepareParts();
     let direction: string = this.getDirection();
@@ -72,28 +71,9 @@ export default class AxisRuler {
     this.rulerContainer.selectAll(".tick").select("text").remove();
   }
 
-  private highlightLabelLines(): void {
-    if (this.highlightTicks == null)
-      return;
-
-    // let labelPositions: number[] = this.labels.getTransforms();
-    // this.rulerContainer.selectAll(".tick")
-    //   .each((d, i, __elements) => {
-    //     let transform: string = __elements[i].getAttribute("transform");
-    //     let parsed: string[] = transform.match(/translate\([^)]+\)/)[0].match(/[0-9.-]+/g);
-    //     let pos: number = this.axisDirection == AxisDirection.VERTICAL ? +parsed[0] : +parsed[1]
-    //     console.log(i, labelPositions, pos);
-    //     if (labelPositions.indexOf(pos) < 0) {
-    //       d3.select(__elements[i]).select("line").attr("stroke-dasharray", "1,1")
-    //     }else{
-    //       d3.select(__elements[i]).select("line").attr("stroke-dasharray", "none")
-    //     }
-    //   });
-  }
-
   protected prepareParts(): void {
     this.rulerContainer.selectAll(".tick").select("line")
-      .attr("stroke-width", this.width)
+      .attr("stroke-width", this.strokeWidth)
       .attr("stroke", this.color);
 
     if(this.isDashed)
@@ -101,7 +81,7 @@ export default class AxisRuler {
         .attr("stroke-dasharray", "1,1");
   }
 
-  public show(): void {
+  public show(lineLength:number): void {
     this.root.attr("display", "block");
 
     let direction: string = this.getDirection();
@@ -112,19 +92,16 @@ export default class AxisRuler {
       .ease(d3.easeExpOut)
       .duration(this.showDuration)
       .attr(direction + "1", 0)
-      .attr(direction + "2", this.lineLength)
-    ;
+      .attr(direction + "2", lineLength);
   }
 
-  public update(__scaler: any): void {
-    this.scaler = __scaler;
+  public update(scaler: any, lineLength:number): void {
+    this.scaler = scaler;
 
     this.moveParts();
-    this.highlightLabelLines();
     this.removeUseless();
-
     this.prepareParts();
-    this.show();
+    this.show(lineLength);
   }
 
 
@@ -136,21 +113,7 @@ export default class AxisRuler {
       .call(this.getAxisFunction());
   }
 
-  public resize(__scaler:any, __lineLength:number):void{
-    this.scaler = __scaler;
-    this.lineLength = __lineLength;
-
-    let showTmpDuration = this.showDuration;
-    let moveTmpDuration = this.moveDuration;
-    this.showDuration = 0;
-    this.moveDuration = 0;
-    this.update(this.scaler);
-    this.showDuration = showTmpDuration;
-    this.moveDuration = moveTmpDuration;
-  }
-
   public hide(): void {
-
     let direction: string = this.getDirection();
 
     this.rulerContainer.selectAll(".tick").select("line")
@@ -161,7 +124,5 @@ export default class AxisRuler {
       .attr(direction + "1", 0)
       .attr(direction + "2", 0)
   }
-
-
 
 };
