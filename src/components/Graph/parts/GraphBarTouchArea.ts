@@ -12,10 +12,10 @@ export default class GrouphBarTouchArea {
   private root: Selection<SVGElement, string, null, undefined>;
 
   private bars: any;
-  private labelData: GraphValue[] = [new GraphValue("_",[0])];
-  private height: number;
+  private labelData: GraphValue<string>[] = [new GraphValue("_",[0])];
+  private height: number = 0;
 
-  private dataset: GraphValue[] = [new GraphValue("_", [0])];
+  private dataset: GraphValue<string>[] = [new GraphValue("_", [0])];
   private xScaler: ScaleBand<string> = d3.scaleBand();
 
   public dispatcher: Dispatch<any>;
@@ -27,23 +27,24 @@ export default class GrouphBarTouchArea {
     this.dispatcher = d3.dispatch(GrouphBarTouchArea.MOUSE_ENTER, GrouphBarTouchArea.CLICK);
     this.parent = __parent;
     this.root = __parent.append('g');
+    this.root.attr("parts-name", this.constructor.name);
     this.bars = this.root.selectAll("rect");
   }
 
-  public init(__dataset: GraphValue[], __xScaler: ScaleBand<string>) {
+  public init(dataset: GraphValue<string>[], xScaler: ScaleBand<string>) {
     this.height = parseInt(this.parent.node().clientHeight);
-    this.labelData = __dataset;
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
+    this.labelData = dataset;
+    this.dataset = dataset;
+    this.xScaler = xScaler;
     this.bindData();
 
     this.bars
-      .attr("x", (d: GraphValue) => __xScaler(d.xValue))
-      .attr("width", __xScaler.bandwidth())
+      .attr("x", (d: GraphValue<string>) => xScaler(d.xValue))
+      .attr("width", xScaler.bandwidth())
       .attr("y", 0)
       .attr("height", this.height)
       .attr("opacity", 0)
-      .on("mouseenter", (d: GraphValue) => {
+      .on("mouseenter", (d: GraphValue<string>) => {
         this.dispatcher.call(GrouphBarTouchArea.MOUSE_ENTER, this, d);
       })
   }
@@ -57,15 +58,10 @@ export default class GrouphBarTouchArea {
     this.bars.data(this.labelData);
   }
 
-  public resize(__xScaler: ScaleBand<string>):void{
-    this.xScaler = __xScaler;
-    this.init(this.dataset, this.xScaler);
-  }
-
   public enableClick(): void {
     this.bars
       .attr("cursor", "pointer")
-      .on("click", (d: GraphValue) => {
+      .on("click", (d: GraphValue<string>) => {
         this.dispatcher.call(GrouphBarTouchArea.CLICK, this, d);
       });
   }

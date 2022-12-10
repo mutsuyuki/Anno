@@ -21,35 +21,25 @@ export default class GraphBar {
 
   private bars: any;
 
-  private dataset: GraphValue[] = [new GraphValue("_", [0])];
+  private dataset: GraphValue<string>[] = [new GraphValue("_", [0])];
 
   private xScaler: ScaleBand<string> = d3.scaleBand();
   private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
+    this.root.attr("parts-name", this.constructor.name);
     this.bars = this.root.selectAll("rect");
   }
 
-  public init(__dataset: GraphValue[], __xScaler: ScaleBand<string>, __yScaler: ScaleLinear<any, any>): void {
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
+  public init(dataset: GraphValue<string>[], xScaler: ScaleBand<string>, yScaler: ScaleLinear<any, any>): void {
+    this.dataset = dataset;
+    this.xScaler = xScaler;
+    this.yScaler = yScaler;
 
     this.bars.remove();
     this.bars = this.root.selectAll("rect");
     this.fitPartsCount();
-  }
-
-  public resize(__xScaler: ScaleBand<string>, __yScaler: ScaleLinear<any, any>): void {
-    this.yScaler = __yScaler;
-    this.xScaler = __xScaler;
-
-    this.initParts(this.bars);
-    let saveDuration = this.showDuration;
-    this.showDuration = 0;
-    this.moveParts();
-    this.showDuration = saveDuration;
   }
 
   private fitPartsCount(): void {
@@ -68,7 +58,7 @@ export default class GraphBar {
       .attr("rx", this.edgeRadius)
       .attr("ry", this.edgeRadius)
       .attr("fill", this.color)
-      .attr("x", (d: GraphValue) => this.getX(d))
+      .attr("x", (d: GraphValue<string>) => this.getX(d))
       .attr("width", this.getWidth())
       .attr("y", this.yScaler(0))
       .attr("height", 0);
@@ -84,20 +74,22 @@ export default class GraphBar {
       .interrupt()
       .transition()
       .duration(this.showDuration)
-      .attr("x", (d: GraphValue) => this.getX(d))
+      .attr("x", (d: GraphValue<string>) => this.getX(d))
       .attr("width", this.getWidth())
-      .attr("y", (d: GraphValue) => this.getY(d))
-      .attr("height", (d: GraphValue) => this.getHeight(d));
+      .attr("y", (d: GraphValue<string>) => this.getY(d))
+      .attr("height", (d: GraphValue<string>) => this.getHeight(d));
   }
 
-  private getX(d: GraphValue): number {
-    var offset: number = (this.xScaler.bandwidth() - this.getWidth()) / 2;
+  private getX(d: GraphValue<string>): number {
+    const offset: number = (this.xScaler.bandwidth() - this.getWidth()) / 2;
+    const baseX = this.xScaler(d.xValue) || 0;
+
     if (this.barsPerLabel <= 1) {
-      return this.xScaler(d.xValue) + offset;
+      return baseX + offset;
     } else {
       var unitWidth: number = this.getWidth() + this.barPadding;
 
-      return this.xScaler(d.xValue) + offset
+      return baseX + offset
         + this.getWidth() / 2
         + unitWidth * this.dataIndex
         - unitWidth * (this.barsPerLabel / 2)
@@ -109,7 +101,7 @@ export default class GraphBar {
     return Math.min(this.xScaler.bandwidth(), this.maxWidth);
   }
 
-  private getY(d: GraphValue): number {
+  private getY(d: GraphValue<string>): number {
     var distance: number = Math.abs(this.yScaler(d.yValues[this.dataIndex]) - this.yScaler(0));
     if (distance <= this.floatY) {
       return this.yScaler(0);
@@ -122,7 +114,7 @@ export default class GraphBar {
     }
   }
 
-  private getHeight(d: GraphValue): number {
+  private getHeight(d: GraphValue<string>): number {
     var distance: number = Math.abs(this.yScaler(d.yValues[this.dataIndex]) - this.yScaler(0));
     if (distance <= this.floatY) {
       return 0;
@@ -131,10 +123,10 @@ export default class GraphBar {
     }
   }
 
-  public update(__dataset: GraphValue[], __xScaler: ScaleBand<string>, __yScaler: ScaleLinear<any, any>): void {
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
+  public update(dataset: GraphValue<string>[], xScaler: ScaleBand<string>, yScaler: ScaleLinear<any, any>): void {
+    this.dataset = dataset;
+    this.xScaler = xScaler;
+    this.yScaler = yScaler;
 
     this.fitPartsCount();
     this.moveParts();

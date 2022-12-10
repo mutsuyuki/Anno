@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 import {Selection} from "d3-selection";
 import {ScaleLinear} from "d3-scale";
 import GraphValue from "../core/GraphValue";
+import {XAxisType} from "../core/Types";
 
 export default class GraphLinePoint {
 
@@ -13,20 +14,21 @@ export default class GraphLinePoint {
 
   private points: any;
 
-  private dataset: GraphValue[] = [new GraphValue("_", [0])];
+  private dataset: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
 
   private xScaler: any = d3.scaleLinear();
   private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
+    this.root.attr("parts-name","graphline");
     this.points = this.root.selectAll("circle");
   }
 
-  public init(__dataset: GraphValue[], __xScaler: any, __yScaler: ScaleLinear<any, any>): void {
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
+  public init(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+    this.dataset = dataset;
+    this.xScaler = xScaler;
+    this.yScaler = yScaler;
 
     this.points.remove();
     this.points = this.root.selectAll("circle");
@@ -49,7 +51,7 @@ export default class GraphLinePoint {
       .attr("stroke", this.color)
       .attr("stroke-width", 2)
       .attr("fill", "#000")
-      .attr("cx", (d: GraphValue) => this.xScaler(d.xValue) + offsetX)
+      .attr("cx", (d: GraphValue<XAxisType>) => this.xScaler(d.xValue) + offsetX)
       .attr("cy", this.yScaler(0))
       .attr("r", 0);
   }
@@ -66,15 +68,15 @@ export default class GraphLinePoint {
       .transition()
       .duration(800)
       .ease(d3.easeExpOut)
-      .attr("cx", (d: GraphValue) => this.xScaler(d.xValue) + offsetX)
-      .attr("cy", (d: GraphValue) => this.yScaler(d.yValues[this.dataIndex]))
+      .attr("cx", (d: GraphValue<XAxisType>) => this.xScaler(d.xValue) + offsetX)
+      .attr("cy", (d: GraphValue<XAxisType>) => this.yScaler(d.yValues[this.dataIndex]))
       .attr("r", this.radius);
   }
 
-  public update(__dataset: GraphValue[], __xScaler: any, __yScaler: ScaleLinear<any, any>): void {
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
+  public update(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+    this.dataset = dataset;
+    this.xScaler = xScaler;
+    this.yScaler = yScaler;
 
     this.fitPartsCount();
     this.moveParts();

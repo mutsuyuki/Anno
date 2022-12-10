@@ -6,6 +6,7 @@ import GraphLine from "../parts/GraphLine";
 import AxisLabel from "../parts/AxisLabel";
 import AxisRuler from "../parts/AxisRuler";
 import {AxisDirection} from "../parts/AxisDirection";
+import GraphFrame from "@/components/Graph/parts/GraphFrame";
 
 export default class LineGraphSample extends GraphBase<number> {
 
@@ -13,6 +14,7 @@ export default class LineGraphSample extends GraphBase<number> {
   private bottomLabel: AxisLabel;
   private horizonRuler: AxisRuler;
   private verticalRuler: AxisRuler;
+  private graphFrame: GraphFrame;
   private lines: GraphLine[];
 
   private dataset: GraphValue<number>[] = [];
@@ -23,15 +25,41 @@ export default class LineGraphSample extends GraphBase<number> {
     "rgba(100, 206, 255, 1)",
   ]
 
-  private getScalers(dataset: GraphValue<number>[], bounds: GraphBounds) {
-    const xScaler = ScaleFactory.newScaleLinearX(dataset, bounds.left, bounds.right)
-    // const yScaler = ScaleFactory.newScaleLinearY(dataset, bounds.top, bounds.bottom)
-    const yScaler = ScaleFactory.newFixedScaleLinearY(-1, 1, bounds.top, bounds.bottom)
+  constructor(rootElement: HTMLElement) {
+    super(rootElement);
 
-    return [xScaler, yScaler];
+    this.leftLabel = new AxisLabel(this.svg);
+    this.leftLabel.axisDirection = AxisDirection.HORIZONTAL;
+    this.leftLabel.color = "#7B848F";
+    this.leftLabel.ticks = 4;
+    this.leftLabel.moveDuration = 0;
+
+    this.bottomLabel = new AxisLabel(this.svg);
+    this.bottomLabel.axisDirection = AxisDirection.VERTICAL;
+    this.bottomLabel.color = "#7B848F";
+    this.bottomLabel.ticks = 8;
+    this.bottomLabel.moveDuration = 0;
+
+    this.horizonRuler = new AxisRuler(this.svg);
+    this.horizonRuler.axisDirection = AxisDirection.HORIZONTAL;
+    this.horizonRuler.color = "#EDF0F1";
+    this.horizonRuler.ticks = 4;
+    this.horizonRuler.moveDuration = 0;
+
+    this.verticalRuler = new AxisRuler(this.svg);
+    this.verticalRuler.axisDirection = AxisDirection.VERTICAL;
+    this.verticalRuler.color = "#EDF0F1";
+    this.verticalRuler.ticks = 8;
+    this.verticalRuler.moveDuration = 0;
+
+    this.graphFrame = new GraphFrame(this.svg);
+    this.graphFrame.isRight = false;
+    this.graphFrame.isLeft = false;
+
+    this.lines = [];
   }
 
-  public show(dataset: GraphValue<number>[]){
+  public show(dataset: GraphValue<number>[]) {
     super.show(dataset);
   }
 
@@ -39,43 +67,14 @@ export default class LineGraphSample extends GraphBase<number> {
     super._init(dataset);
 
     this.dataset = dataset;
-
     const bounds = this.getGraphBounds();
     const [xScaler, yScaler] = this.getScalers(dataset, bounds);
 
-    this.leftLabel = new AxisLabel(this.svg);
-    this.leftLabel.axisDirection = AxisDirection.HORIZONTAL;
-    this.leftLabel.color = "#7B848F";
-    this.leftLabel.ticks = 4;
-    this.leftLabel.moveDuration = 0;
-    this.leftLabel.setPosition(bounds.left, 0);
-    this.leftLabel.init(yScaler);
-
-    this.bottomLabel = new AxisLabel(this.svg);
-    this.bottomLabel.axisDirection = AxisDirection.VERTICAL;
-    this.bottomLabel.color = "#7B848F";
-    this.bottomLabel.ticks = 8;
-    this.bottomLabel.moveDuration = 0;
-    this.bottomLabel.setPosition(0, bounds.bottom);
-    this.bottomLabel.init(xScaler);
-
-    this.horizonRuler = new AxisRuler(this.svg);
-    this.horizonRuler.axisDirection = AxisDirection.HORIZONTAL;
-    this.horizonRuler.lineLength = bounds.width;
-    this.horizonRuler.color = "#EDF0F1";
-    this.horizonRuler.ticks = 4;
-    this.horizonRuler.moveDuration = 0;
-    this.horizonRuler.setPosition(bounds.left, 0);
-    this.horizonRuler.init(yScaler);
-
-    this.verticalRuler = new AxisRuler(this.svg);
-    this.verticalRuler.axisDirection = AxisDirection.VERTICAL;
-    this.verticalRuler.lineLength = bounds.height;
-    this.verticalRuler.color = "#EDF0F1";
-    this.verticalRuler.ticks = 8;
-    this.verticalRuler.moveDuration = 0;
-    this.verticalRuler.setPosition(0, this.marginTop);
-    this.verticalRuler.init(xScaler);
+    this.leftLabel.init(yScaler, bounds.left, 0);
+    this.bottomLabel.init(xScaler, 0, bounds.bottom);
+    this.horizonRuler.init(yScaler, bounds.left, 0);
+    this.verticalRuler.init(xScaler, 0, this.marginTop);
+    this.graphFrame.init(bounds);
 
     this.lines = [];
     for (let i = 0; i < this.dataset[0].yValues.length; i++) {
@@ -97,6 +96,7 @@ export default class LineGraphSample extends GraphBase<number> {
     this.bottomLabel.show();
     this.horizonRuler.show(bounds.width);
     this.verticalRuler.show(bounds.height);
+    this.graphFrame.show(bounds);
     this.lines.forEach(v => v.show());
   }
 
@@ -111,6 +111,7 @@ export default class LineGraphSample extends GraphBase<number> {
     this.bottomLabel.update(xScaler);
     this.horizonRuler.update(yScaler, bounds.width);
     this.verticalRuler.update(xScaler, bounds.height);
+    this.graphFrame.update(bounds);
     this.lines.forEach(v => v.update(this.dataset, xScaler, yScaler));
   }
 
@@ -119,6 +120,7 @@ export default class LineGraphSample extends GraphBase<number> {
     this.bottomLabel.hide();
     this.horizonRuler.hide();
     this.verticalRuler.hide();
+    this.graphFrame.hide();
 
     this.lines.forEach(v => v.hide());
   }
@@ -126,6 +128,14 @@ export default class LineGraphSample extends GraphBase<number> {
   protected _resize(): void {
     super._resize();
     this._update(this.dataset);
+  }
+
+  private getScalers(dataset: GraphValue<number>[], bounds: GraphBounds) {
+    const xScaler = ScaleFactory.newScaleLinearX(dataset, bounds.left, bounds.right)
+    // const yScaler = ScaleFactory.newScaleLinearY(dataset, bounds.top, bounds.bottom)
+    const yScaler = ScaleFactory.newFixedScaleLinearY(-1, 1, bounds.top, bounds.bottom)
+
+    return [xScaler, yScaler];
   }
 
 };

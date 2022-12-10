@@ -1,44 +1,68 @@
 import * as d3 from 'd3'
 import {Selection} from "d3-selection";
+import {GraphBounds} from "@/components/Graph/core/Types";
 
 export default class GraphFrame {
-
   public isTop: boolean = true;
   public isBottom: boolean = true;
   public isLeft: boolean = true;
   public isRight: boolean = true;
   public isDashed: boolean = false;
-  public lineWidth = 1;
-  public width: number = 1;
-  public height: number = 1;
-  public color: string = "#888";
-  public showDuration:number = 700;
-  public hideDuration:number = 800;
+  public lineWidth = 2;
+  public color: string = "#ccc";
+  public showDuration: number = 700;
+  public hideDuration: number = 800;
 
   private root: Selection<SVGElement, string, null, undefined>;
 
-  private topLine: any;
-  private bottomLine: any;
-  private leftLine: any;
-  private rightLine: any;
+  private topLine: Selection<SVGPathElement, string, null, undefined> | null;
+  private bottomLine: Selection<SVGPathElement, string, null, undefined> | null;
+  private leftLine: Selection<SVGPathElement, string, null, undefined> | null;
+  private rightLine: Selection<SVGPathElement, string, null, undefined> | null;
 
+  private bounds: GraphBounds | null;
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
+    this.root.attr("parts-name", this.constructor.name);
   }
 
-  public init(): void {
-    this.topLine = this.prepareLine(this.isTop, 0, 0);
-    this.bottomLine = this.prepareLine(this.isBottom, 0, this.height);
-    this.leftLine = this.prepareLine(this.isLeft, 0, 0);
-    this.rightLine = this.prepareLine(this.isRight, this.width, 0);
-    console.log(this.topLine, this.bottomLine, this.leftLine, this.rightLine)
+  public init(bounds: GraphBounds): void {
+    this.topLine = this.prepareLine(this.isTop, bounds.left, bounds.top);
+    this.bottomLine = this.prepareLine(this.isBottom, bounds.left, bounds.bottom);
+    this.leftLine = this.prepareLine(this.isLeft, bounds.left, bounds.top);
+    this.rightLine = this.prepareLine(this.isRight, bounds.right, bounds.top);
   }
 
+  public show(bounds: GraphBounds): void {
+    this.root.attr("display", "block");
+    this.update(bounds);
+  }
+
+  public update(bounds: GraphBounds): void {
+    this.bounds = bounds;
+
+    this.expandLine(this.topLine, bounds.left, bounds.top, bounds.right, bounds.top, this.showDuration);
+    this.expandLine(this.bottomLine, bounds.left, bounds.bottom, bounds.right, bounds.bottom, this.showDuration);
+    this.expandLine(this.leftLine, bounds.left, bounds.top, bounds.left, bounds.bottom, this.showDuration);
+    this.expandLine(this.rightLine, bounds.right, bounds.top, bounds.right, bounds.bottom, this.showDuration);
+  }
+
+  public hide(): void {
+    if (!this.bounds)
+      return;
+
+    const bounds = this.bounds;
+    this.expandLine(this.topLine, bounds.right, bounds.top, bounds.left, bounds.top, this.hideDuration);
+    this.expandLine(this.bottomLine, bounds.right, bounds.bottom, bounds.left, bounds.bottom, this.hideDuration);
+    this.expandLine(this.leftLine, bounds.left, bounds.bottom, bounds.left, bounds.top, this.hideDuration);
+    this.expandLine(this.rightLine, bounds.right, bounds.bottom, bounds.right, bounds.top, this.hideDuration);
+  }
 
   private prepareLine(__isNeed: boolean, __fromX: number, __fromY: number): any {
     if (__isNeed) {
-      let path: any = this.root.append("path");
+      let path = this.root.append("path");
+
       path
         .attr("stroke-width", this.lineWidth)
         .attr("stroke", this.color)
@@ -51,20 +75,7 @@ export default class GraphFrame {
     }
   }
 
-  public setPosition(__x, __y): void {
-    this.root.attr("transform", "translate(" + __x + "," + __y + ")");
-  }
-
-  public show(): void {
-    this.root.attr("display", "block");
-
-    this.expandLine(this.topLine, 0, 0, this.width, 0,this.showDuration);
-    this.expandLine(this.bottomLine, 0, this.height, this.width, this.height,this.showDuration);
-    this.expandLine(this.leftLine, 0, 0, 0, this.height,this.showDuration);
-    this.expandLine(this.rightLine, this.width, 0, this.width, this.height,this.showDuration);
-  }
-
-  private expandLine(__line: any, __fromX: number, __fromY: number, __toX: number, __toY: number, __duration:number): void {
+  private expandLine(__line: any, __fromX: number, __fromY: number, __toX: number, __toY: number, __duration: number): void {
     if (!__line)
       return;
 
@@ -73,23 +84,6 @@ export default class GraphFrame {
       .duration(__duration)
       .ease(d3.easeExpOut)
       .attr("d", "M " + __fromX + " " + __fromY + " L " + __toX + " " + __toY)
-  }
-
-  public resize(__width:number, __height:number):void{
-    this.width = __width;
-    this.height = __height;
-
-    let tempDuration:number = this.showDuration;
-    this.showDuration = 0;
-    this.show();
-    this.showDuration = tempDuration;
-  }
-
-  public hide(): void {
-    this.expandLine(this.topLine, 0, 0, 0, 0,this.hideDuration);
-    this.expandLine(this.bottomLine, 0, this.height, 0, this.height,this.hideDuration);
-    this.expandLine(this.leftLine, 0, 0, 0, 0,this.hideDuration);
-    this.expandLine(this.rightLine, this.width, 0, this.width, 0,this.hideDuration);
   }
 
 };

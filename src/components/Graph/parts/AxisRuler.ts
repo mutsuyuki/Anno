@@ -11,9 +11,9 @@ export default class AxisRuler {
   public strokeWidth: number = 1;
   public color: string = "#666";
   public ticks: number = 8;
-  public showDuration:number = 700;
-  public hideDuration:number = 300;
-  public moveDuration:number = 800;
+  public showDuration: number = 700;
+  public hideDuration: number = 300;
+  public moveDuration: number = 800;
 
   private root: Selection<SVGElement, string, null, undefined>;
 
@@ -27,7 +27,7 @@ export default class AxisRuler {
     this.rulerContainer = this.root.append("g");
   }
 
-  public init(__scaler: any): void {
+  public init(__scaler: any, x: number, y: number): void {
     this.scaler = __scaler;
 
     this.rulerContainer.call(this.getAxisFunction());
@@ -35,12 +35,18 @@ export default class AxisRuler {
 
     this.prepareParts();
     let direction: string = this.getDirection();
-    this.rulerContainer.selectAll(".tick").select("line")
+
+    this.root
+      .attr("transform", "translate(" + x + "," + y + ")");
+
+    this.rulerContainer
+      .selectAll(".tick")
+      .select("line")
       .attr(direction + "1", 0)
       .attr(direction + "2", 0);
   }
 
-  private getDirection():string{
+  private getDirection(): string {
     return (this.axisDirection == AxisDirection.HORIZONTAL) ? "x" : "y";
   }
 
@@ -62,10 +68,6 @@ export default class AxisRuler {
     return axis;
   }
 
-  public setPosition(__x, __y): void {
-    this.root.attr("transform", "translate(" + __x + "," + __y + ")");
-  }
-
   private removeUseless(): void {
     this.rulerContainer.select(".domain").remove();
     this.rulerContainer.selectAll(".tick").select("text").remove();
@@ -76,12 +78,12 @@ export default class AxisRuler {
       .attr("stroke-width", this.strokeWidth)
       .attr("stroke", this.color);
 
-    if(this.isDashed)
+    if (this.isDashed)
       this.rulerContainer.selectAll(".tick").select("line")
         .attr("stroke-dasharray", "1,1");
   }
 
-  public show(lineLength:number): void {
+  public show(lineLength: number): void {
     this.root.attr("display", "block");
 
     let direction: string = this.getDirection();
@@ -95,7 +97,7 @@ export default class AxisRuler {
       .attr(direction + "2", lineLength);
   }
 
-  public update(scaler: any, lineLength:number): void {
+  public update(scaler: any, lineLength: number): void {
     this.scaler = scaler;
 
     this.moveParts();

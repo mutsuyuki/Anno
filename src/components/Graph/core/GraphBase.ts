@@ -3,7 +3,6 @@ import {Selection} from 'd3-selection'
 import GraphValue from "./GraphValue";
 import {GraphBounds, XAxisType} from "./Types";
 
-
 // グラフクラスの土台
 export default class GraphBase<T extends XAxisType> {
 
@@ -27,7 +26,7 @@ export default class GraphBase<T extends XAxisType> {
       .style("height", "100%");
 
     //イベント登録
-    new ResizeObserver(_ => this._resize()).observe(rootElement);
+    new (window as any).ResizeObserver(() => this._resize()).observe(rootElement);
   }
 
   public show(dataset: GraphValue<T>[] | null = null): void {

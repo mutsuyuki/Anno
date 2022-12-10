@@ -26,14 +26,16 @@ export default class AxisLabel {
     this.labelContainer = this.root.append("g");
   }
 
-  public init(__scaler: any): void {
+  public init(__scaler: any, x:number, y:number): void {
     this.scaler = __scaler;
 
     this.labelContainer.call(this.getAxisFunction());
     this.removeUseless();
 
     this.prepareParts();
-    this.root.attr("opacity", 0);
+    this.root
+      .attr("opacity", 0)
+      .attr("transform", "translate(" + x + "," + y + ")");
   }
 
   private getAxisFunction(): Axis<any> {
@@ -55,10 +57,6 @@ export default class AxisLabel {
       axis.tickFormat(d3.timeFormat(this.timeFormat));
 
     return axis;
-  }
-
-  public setPosition(__x, __y): void {
-    this.root.attr("transform", "translate(" + __x + "," + __y + ")");
   }
 
   private removeUseless(): void {
@@ -98,27 +96,6 @@ export default class AxisLabel {
       .duration(this.moveDuration)
       .ease(d3.easeExpOut)
       .call(this.getAxisFunction());
-  }
-
-  public getTransforms(): number[] {
-    let transforms: number[] = [];
-    this.root.selectAll(".tick")
-      .each((d, i, __elements) => {
-        let transform: string = __elements[i].getAttribute("transform");
-        let parsed: string[] = transform.match(/translate\([^)]+\)/)[0].match(/[0-9.-]+/g);
-        transforms.push(this.axisDirection == AxisDirection.VERTICAL ? +parsed[0] : +parsed[1])
-      });
-
-    return transforms;
-  }
-
-  public resize(__scaler: any): void {
-    this.scaler = __scaler;
-
-    let tmpDuration = this.moveDuration;
-    this.moveDuration = 0;
-    this.update(this.scaler)
-    this.moveDuration = tmpDuration;
   }
 
   public hide(): void {

@@ -3,6 +3,7 @@ import {Selection} from "d3-selection";
 import {CurveFactory,  Line} from "d3-shape";
 import {ScaleLinear} from "d3-scale";
 import GraphValue from "../core/GraphValue";
+import {XAxisType} from "../core/Types";
 
 export default class GraphLine {
 
@@ -18,8 +19,8 @@ export default class GraphLine {
 
   private line: any;
 
-  private zeroData: GraphValue[] = [new GraphValue("_", [0])];
-  private dataset: GraphValue[] = [new GraphValue("_", [0])];
+  private zeroData: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
+  private dataset: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
 
   private lineFunction: Line<any> = d3.line();
   private xScaler: any = d3.scaleLinear();
@@ -28,14 +29,14 @@ export default class GraphLine {
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
-    this.root.attr("parts-name","graphline");
+    this.root.attr("parts-name", this.constructor.name);
     this.line = this.root.append("path");
   }
 
-  public init(__dataset: GraphValue[], __xScaler: ScaleLinear<any, any>, __yScaler: ScaleLinear<any, any>): void {
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
+  public init(dataset: GraphValue<XAxisType>[], xScaler: ScaleLinear<any, any>, yScaler: ScaleLinear<any, any>): void {
+    this.dataset = dataset;
+    this.xScaler = xScaler;
+    this.yScaler = yScaler;
 
     this.makeLineFunction();
     this.makeZeroData();
@@ -58,7 +59,7 @@ export default class GraphLine {
     this.zeroData = [];
 
     for (let i = 0; i < this.dataset.length; i++) {
-      let record: GraphValue = new GraphValue(
+      let record = new GraphValue(
         this.dataset[i].xValue,
         this.dataset[i].yValues.map((d) => 0)
       );
@@ -68,7 +69,7 @@ export default class GraphLine {
   }
 
   private initParts(): void {
-    let yValues: number[] = this.zeroData.map((d: GraphValue) => d.yValues[this.dataIndex]);
+    let yValues: number[] = this.zeroData.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
 
     this.line
       .attr('stroke', this.color)
@@ -83,7 +84,7 @@ export default class GraphLine {
   }
 
   private moveLine(__duration:number): void {
-    let yValues: number[] = this.dataset.map((d: GraphValue) => d.yValues[this.dataIndex]);
+    let yValues: number[] = this.dataset.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
 
     this.isLineMoving = true;
     this.line
@@ -99,25 +100,13 @@ export default class GraphLine {
     ;
   }
 
-  public update(__dataset: GraphValue[], __xScaler: any, __yScaler: ScaleLinear<any, any>): void {
-    this.dataset = __dataset;
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
+  public update(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+    this.dataset = dataset;
+    this.xScaler = xScaler;
+    this.yScaler = yScaler;
 
     this.makeLineFunction();
     this.moveLine(this.moveDuration);
-  }
-
-  public getPathCorrds(): { x: number, y: number }[] {
-    let pathString: string = this.lineFunction(this.dataset.map((d: GraphValue) => d.yValues[this.dataIndex]))
-    pathString = pathString.replace("M", "");
-    let rawCoords: string[] = pathString.split("L");
-    let coords: { x: number, y: number }[] = [];
-    for (var i = 0; i < rawCoords.length; i++) {
-      let coord: string[] = rawCoords[i].split(",");
-      coords.push({x: +coord[0], y: +coord[1]})
-    }
-    return coords;
   }
 
   public focus(__parent: any): void {
@@ -151,18 +140,8 @@ export default class GraphLine {
     this.setFocus(1, this.width);
   }
 
-  public resize(__xScaler: any, __yScaler: ScaleLinear<any, any>):void{
-    this.xScaler = __xScaler;
-    this.yScaler = __yScaler;
-
-    let tempDuration:number = this.moveDuration;
-    this.moveDuration = 0;
-    this.update(this.dataset,this.xScaler,this.yScaler);
-    this.moveDuration = tempDuration;
-  }
-
   public hide(): void {
-    var yValues: number[] = this.zeroData.map((d: GraphValue) => d.yValues[this.dataIndex]);
+    var yValues: number[] = this.zeroData.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
 
     this.line
       .interrupt()
@@ -170,5 +149,4 @@ export default class GraphLine {
       .duration(this.hideDuration)
       .attr('d', this.lineFunction(yValues));
   }
-
 };

@@ -20,8 +20,8 @@
 //     this.tooltip = new GraphTooltip(__rootDivD3.select(".tooltip"));
 //   }
 //
-//   public init(__dataset: GraphValue[]): void {
-//     super.init(__dataset);
+//   public init(dataset: GraphValue<XAxisType>[]): void {
+//     super.init(dataset);
 //
 //     this.bars.dataIndex = 0;
 //     this.bars.color = this.barColor;
@@ -42,14 +42,14 @@
 //     this.eventsListen();
 //   }
 //
-//   public update(__dataset: GraphValue[]): void {
-//     super.update(__dataset);
+//   public update(dataset: GraphValue<XAxisType>[]): void {
+//     super.update(dataset);
 //     this.bars.update(this.dataset, this.xScaler, this.yScaler);
 //     this.eventsListen();
 //   }
 //
 //   protected eventsListen(): void {
-//     this.touchArea.dispatcher.on(GrouphBarTouchArea.MOUSE_ENTER, (d: GraphValue) => {
+//     this.touchArea.dispatcher.on(GrouphBarTouchArea.MOUSE_ENTER, (d: GraphValue<string>) => {
 //       this.tooltip.setContent(d.xValue);
 //       this.tooltip.show(d, this.xScaler, this.yScaler);
 //     });
