@@ -4,8 +4,9 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import LineGraphSample from "@/components/Graph/sample/LineGraphSample";
 import GraphValue from "@/components/Graph/core/GraphValue";
+import {LinearX} from "@/components/Graph/core/Types";
+import LineGraphSample from "@/components/Graph/sample/LineGraphSample";
 
 @Component({
   components: {}
@@ -13,19 +14,31 @@ import GraphValue from "@/components/Graph/core/GraphValue";
 export default class LineGraph extends Vue {
 
   private graph: LineGraphSample | null = null;
-  @Prop({default: () => []}) private dataset!: GraphValue<number>[];
+  @Prop({default: () => []}) private dataset!: GraphValue<LinearX>[];
+  @Prop({default: () => []}) private annotation!: GraphValue<LinearX>[];
   @Prop({default: 0}) private currentTime!: number;
   @Prop({default: 120}) private displayTimeSize!: number;
   @Prop({default: 120}) private displayPointSize!: number;
 
+
   mounted() {
-    for (let i = 0; i < 89.47 * 30; i++) {
+    // 実際には渡してもらう
+    this.dataset.push(new GraphValue(
+        0,
+        [
+          Math.random() * 0.4 - 0.2,
+          Math.random() * 0.4 - 0.2,
+          Math.random() * 0.4 - 0.2,
+        ])
+    )
+
+    for (let i = 1; i < 89.47 * 30; i++) {
       this.dataset.push(new GraphValue(
           i / 30,
           [
-            Math.random() * 2 - 1,
-            Math.random() * 2 - 1,
-            Math.random() * 2 - 1,
+            this.dataset[i-1].yValues[0] + Math.random() * 0.04 - 0.02,
+            this.dataset[i-1].yValues[1] + Math.random() * 0.04 - 0.02,
+            this.dataset[i-1].yValues[2] + Math.random() * 0.04 - 0.02,
           ])
       )
     }

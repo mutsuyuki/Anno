@@ -1,47 +1,38 @@
 import * as d3 from 'd3'
 import {ScaleLinear} from "d3-scale";
 import GraphValue from "./GraphValue";
-import {XAxisType} from "./Types";
+import {BandX, LinearX, ScaleBandX, ScaleLinearX, ScaleY} from "./Types";
 
 export default class ScaleFactory {
 
-  public static newScaleLinearX(dataset: GraphValue<number>[], left: number, right: number): ScaleLinear<number, number, never> {
-    const xMin: number = d3.min(dataset, (d: GraphValue<number>) => d.xValue) || 0;
-    const xMax: number = d3.max(dataset, (d: GraphValue<number>) => d.xValue) || 1;
+  public static newScaleLinearX(dataset: GraphValue<LinearX>[], left: number, right: number): ScaleLinearX {
+    const xMin: LinearX = d3.min(dataset, (d: GraphValue<LinearX>) => d.xValue) || 0;
+    const xMax: LinearX = d3.max(dataset, (d: GraphValue<LinearX>) => d.xValue) || 1;
 
     return d3.scaleLinear()
       .domain([xMin, xMax])
       .range([left, right]);
   }
 
-  public static newScaleDateX(dataset: GraphValue<Date>[], left: number, right: number) {
-    const xMin: Date = d3.min(dataset, (d: GraphValue<Date>) => d.xValue as Date) || new Date();
-    const xMax: Date = d3.max(dataset, (d: GraphValue<Date>) => d.xValue as Date) || new Date();
-
-    return d3.scaleTime()
-      .domain([xMin, xMax])
-      .range([left, right]);
-  }
-
-  public static newScaleBandX(dataset: GraphValue<string>[], left: number, right: number, paddingInner: number = 0.1, paddingOuter: number = 0.1): d3.ScaleBand<string> {
+  public static newScaleBandX(dataset: GraphValue<BandX>[], left: number, right: number, paddingInner: number = 0.1, paddingOuter: number = 0.1): ScaleBandX {
     return d3.scaleBand()
-      .domain(dataset.map((d: GraphValue<string>) => d.xValue))
+      .domain(dataset.map((d: GraphValue<BandX>) => d.xValue))
       .range([left, right])
       .paddingInner(paddingInner)
       .paddingOuter(paddingOuter)
       .align(0.5);
   }
 
-  public static newScaleLinearY(dataset: GraphValue<XAxisType>[], bottom: number, top: number): ScaleLinear<number, number, never> {
-    const yMin: number = d3.min(dataset, (d: GraphValue<XAxisType>) => d3.min(d.yValues)) || 0;
-    const yMax: number = d3.max(dataset, (d: GraphValue<XAxisType>) => d3.max(d.yValues)) || 1;
+  public static newScaleLinearY(dataset: GraphValue<LinearX>[], bottom: number, top: number): ScaleY {
+    const yMin: number = d3.min(dataset, (d: GraphValue<LinearX>) => d3.min(d.yValues)) || 0;
+    const yMax: number = d3.max(dataset, (d: GraphValue<LinearX>) => d3.max(d.yValues)) || 1;
 
     return d3.scaleLinear()
       .domain([yMin, yMax])
       .range([bottom, top]);
   }
 
-  public static newFixedScaleLinearY(yMin: number, yMax: number, bottom: number, top: number): ScaleLinear<number, number, never> {
+  public static newFixedScaleLinearY(yMin: number, yMax: number, bottom: number, top: number): ScaleY {
     return d3.scaleLinear()
       .domain([yMin, yMax])
       .range([bottom, top]);

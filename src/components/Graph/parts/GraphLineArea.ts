@@ -1,9 +1,8 @@
 import * as d3 from 'd3'
 import {Selection} from "d3-selection";
 import {Area, CurveFactory} from "d3-shape";
-import {ScaleLinear} from "d3-scale";
 import GraphValue from "../core/GraphValue";
-import {XAxisType} from "../core/Types";
+import {LinearX, ScaleLinearX, ScaleY} from "../core/Types";
 
 export default class GraphLineArea {
 
@@ -20,20 +19,19 @@ export default class GraphLineArea {
 
   private fill: any;
 
-  private zeroData: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
-  private dataset: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
+  private zeroData: GraphValue<LinearX>[] = [];
+  private dataset: GraphValue<LinearX>[] = [];
 
   private areaFunction: Area<any> = d3.area();
-  private xScaler: any = d3.scaleLinear();
-  private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
+  private xScaler: ScaleLinearX = d3.scaleLinear();
+  private yScaler: ScaleY = d3.scaleLinear();
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
-    this.root.attr("parts-name","graphline");
     this.fill = this.root.append("path");
   }
 
-  public init(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+  public init(dataset: GraphValue<LinearX>[], xScaler: ScaleLinearX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;
@@ -48,10 +46,9 @@ export default class GraphLineArea {
   }
 
   private makeAreaFunction(): void {
-    let offsetX: number = this.xScaler.hasOwnProperty("bandwidth") ? this.xScaler.bandwidth() / 2 : 0;
     this.areaFunction = d3.area()
       .curve(this.curveType)
-      .x((_, i) => this.xScaler(this.dataset[i].xValue) + offsetX)
+      .x((_, i) => this.xScaler(this.dataset[i].xValue))
       .y0((d: any) => this.yScaler(0))
       .y1((d: any) => this.yScaler(d));
   }
@@ -70,7 +67,7 @@ export default class GraphLineArea {
   }
 
   private initParts(): void {
-    let yValues: number[] = this.zeroData.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
+    let yValues: number[] = this.zeroData.map((d: GraphValue<LinearX>) => d.yValues[this.dataIndex]);
 
     this.fill
       .style("fill", this.color)
@@ -84,7 +81,7 @@ export default class GraphLineArea {
   }
 
   private moveArea(__duration: number): void {
-    var yValues: number[] = this.dataset.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
+    var yValues: number[] = this.dataset.map((d: GraphValue<LinearX>) => d.yValues[this.dataIndex]);
 
     this.fill
       .interrupt()
@@ -96,7 +93,7 @@ export default class GraphLineArea {
       .attr('d', this.areaFunction(yValues));
   }
 
-  public update(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+  public update(dataset: GraphValue<LinearX>[], xScaler: ScaleLinearX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;
@@ -106,7 +103,7 @@ export default class GraphLineArea {
   }
 
   public hide(): void {
-    var yValues: number[] = this.zeroData.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
+    var yValues: number[] = this.zeroData.map((d: GraphValue<LinearX>) => d.yValues[this.dataIndex]);
 
     this.fill
       .interrupt()

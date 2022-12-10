@@ -1,14 +1,14 @@
 import GraphBase from "../core/GraphBase";
 import ScaleFactory from "../core/ScaleFactory";
 import GraphValue from "../core/GraphValue";
-import {GraphBounds} from "../core/Types";
+import {GraphBounds, LinearX, ScaleLinearX, ScaleY} from "../core/Types";
 import GraphLine from "../parts/GraphLine";
 import AxisLabel from "../parts/AxisLabel";
 import AxisRuler from "../parts/AxisRuler";
 import {AxisDirection} from "../parts/AxisDirection";
 import GraphFrame from "@/components/Graph/parts/GraphFrame";
 
-export default class LineGraphSample extends GraphBase<number> {
+export default class LineGraphSample extends GraphBase<LinearX> {
 
   private leftLabel: AxisLabel;
   private bottomLabel: AxisLabel;
@@ -17,7 +17,10 @@ export default class LineGraphSample extends GraphBase<number> {
   private graphFrame: GraphFrame;
   private lines: GraphLine[];
 
-  private dataset: GraphValue<number>[] = [];
+  private dataset: GraphValue<LinearX>[] = [];
+
+  private isInit: boolean = false;
+  private isShow: boolean = false;
 
   private colors: string[] = [
     "rgba(255, 99, 100, 1)",
@@ -59,16 +62,37 @@ export default class LineGraphSample extends GraphBase<number> {
     this.lines = [];
   }
 
-  public show(dataset: GraphValue<number>[]) {
-    super.show(dataset);
+  public show(dataset: GraphValue<LinearX>[] | null = null): void {
+    // データが渡されてない場合は、表示処理のみ行って終了
+    if (!dataset) {
+      if (this.isInit) {
+        this.showParts();
+      }
+      return;
+    }
+
+    // データを保存
+    this.dataset = dataset;
+
+    // 表示処理
+    if (!this.isInit) {
+      this.isInit = true;
+      this.initParts();
+    }
+    this.showParts();
+    this.updateParts();
   }
 
-  protected _init(dataset: GraphValue<number>[]): void {
-    super._init(dataset);
+  public hide(): void {
+    if (this.isShow) {
+      this.isShow = false;
+      this.hideParts();
+    }
+  }
 
-    this.dataset = dataset;
+  private initParts(): void {
     const bounds = this.getGraphBounds();
-    const [xScaler, yScaler] = this.getScalers(dataset, bounds);
+    const [xScaler, yScaler] = this.getScalers(this.dataset, bounds);
 
     this.leftLabel.init(yScaler, bounds.left, 0);
     this.bottomLabel.init(xScaler, 0, bounds.bottom);
@@ -87,9 +111,7 @@ export default class LineGraphSample extends GraphBase<number> {
     }
   }
 
-  protected _show(): void {
-    super._show();
-
+  private showParts(): void {
     const bounds = this.getGraphBounds();
 
     this.leftLabel.show();
@@ -100,12 +122,9 @@ export default class LineGraphSample extends GraphBase<number> {
     this.lines.forEach(v => v.show());
   }
 
-  protected _update(dataset: GraphValue<number>[]): void {
-    super._update(dataset);
-
-    this.dataset = dataset;
+  private updateParts(): void {
     const bounds = this.getGraphBounds();
-    const [xScaler, yScaler] = this.getScalers(dataset, bounds);
+    const [xScaler, yScaler] = this.getScalers(this.dataset, bounds);
 
     this.leftLabel.update(yScaler);
     this.bottomLabel.update(xScaler);
@@ -115,7 +134,7 @@ export default class LineGraphSample extends GraphBase<number> {
     this.lines.forEach(v => v.update(this.dataset, xScaler, yScaler));
   }
 
-  protected _hide(): void {
+  public hideParts(): void {
     this.leftLabel.hide();
     this.bottomLabel.hide();
     this.horizonRuler.hide();
@@ -125,12 +144,7 @@ export default class LineGraphSample extends GraphBase<number> {
     this.lines.forEach(v => v.hide());
   }
 
-  protected _resize(): void {
-    super._resize();
-    this._update(this.dataset);
-  }
-
-  private getScalers(dataset: GraphValue<number>[], bounds: GraphBounds) {
+  private getScalers(dataset: GraphValue<LinearX>[], bounds: GraphBounds): [ScaleLinearX, ScaleY] {
     const xScaler = ScaleFactory.newScaleLinearX(dataset, bounds.left, bounds.right)
     // const yScaler = ScaleFactory.newScaleLinearY(dataset, bounds.top, bounds.bottom)
     const yScaler = ScaleFactory.newFixedScaleLinearY(-1, 1, bounds.bottom, bounds.top)
@@ -138,4 +152,8 @@ export default class LineGraphSample extends GraphBase<number> {
     return [xScaler, yScaler];
   }
 
-};
+  protected _resize(): void {
+    super._resize();
+    this.updateParts();
+  }
+}

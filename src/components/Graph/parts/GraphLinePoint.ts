@@ -1,8 +1,7 @@
 import * as d3 from 'd3'
 import {Selection} from "d3-selection";
-import {ScaleLinear} from "d3-scale";
 import GraphValue from "../core/GraphValue";
-import {XAxisType} from "../core/Types";
+import {LinearX, ScaleLinearX, ScaleY} from "../core/Types";
 
 export default class GraphLinePoint {
 
@@ -11,21 +10,20 @@ export default class GraphLinePoint {
   public radius: number = 3;
 
   private root: Selection<SVGElement, string, null, undefined>;
-
   private points: any;
 
-  private dataset: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
+  private dataset: GraphValue<LinearX>[] = [];
 
-  private xScaler: any = d3.scaleLinear();
-  private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
+  private xScaler: ScaleLinearX = d3.scaleLinear();
+  private yScaler: ScaleY = d3.scaleLinear();
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
-    this.root.attr("parts-name","graphline");
+    this.root.attr("parts-name", "graphline");
     this.points = this.root.selectAll("circle");
   }
 
-  public init(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+  public init(dataset: GraphValue<LinearX>[], xScaler: ScaleLinearX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;
@@ -46,12 +44,11 @@ export default class GraphLinePoint {
   }
 
   private initParts(__bars: any): void {
-    let offsetX:number = this.xScaler.hasOwnProperty("bandwidth") ? this.xScaler.bandwidth() / 2 : 0;
     __bars
       .attr("stroke", this.color)
       .attr("stroke-width", 2)
       .attr("fill", "#000")
-      .attr("cx", (d: GraphValue<XAxisType>) => this.xScaler(d.xValue) + offsetX)
+      .attr("cx", (d: GraphValue<LinearX>) => this.xScaler(d.xValue))
       .attr("cy", this.yScaler(0))
       .attr("r", 0);
   }
@@ -62,18 +59,17 @@ export default class GraphLinePoint {
   }
 
   private moveParts(): void {
-    let offsetX:number = this.xScaler.hasOwnProperty("bandwidth") ? this.xScaler.bandwidth() / 2 : 0;
     this.points
       .interrupt()
       .transition()
       .duration(800)
       .ease(d3.easeExpOut)
-      .attr("cx", (d: GraphValue<XAxisType>) => this.xScaler(d.xValue) + offsetX)
-      .attr("cy", (d: GraphValue<XAxisType>) => this.yScaler(d.yValues[this.dataIndex]))
+      .attr("cx", (d: GraphValue<LinearX>) => this.xScaler(d.xValue))
+      .attr("cy", (d: GraphValue<LinearX>) => this.yScaler(d.yValues[this.dataIndex]))
       .attr("r", this.radius);
   }
 
-  public update(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+  public update(dataset: GraphValue<LinearX>[], xScaler: ScaleLinearX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;

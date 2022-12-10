@@ -1,7 +1,7 @@
 import * as d3 from 'd3'
 import {Selection} from "d3-selection";
-import {ScaleBand, ScaleLinear} from "d3-scale";
 import GraphValue from "../core/GraphValue";
+import {ScaleBandX, BandX, ScaleY} from "@/components/Graph/core/Types";
 
 export default class GraphBar {
 
@@ -18,10 +18,10 @@ export default class GraphBar {
   private root: Selection<SVGElement, string, null, undefined>;
   private bars: any;
 
-  private dataset: GraphValue<string>[] = [new GraphValue("_", [0])];
+  private dataset: GraphValue<BandX>[] = [];
 
-  private xScaler: ScaleBand<string> = d3.scaleBand();
-  private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
+  private xScaler: ScaleBandX = d3.scaleBand();
+  private yScaler: ScaleY = d3.scaleLinear();
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');
@@ -29,7 +29,7 @@ export default class GraphBar {
     this.bars = this.root.selectAll("rect");
   }
 
-  public init(dataset: GraphValue<string>[], xScaler: ScaleBand<string>, yScaler: ScaleLinear<any, any>): void {
+  public init(dataset: GraphValue<BandX>[], xScaler: ScaleBandX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;
@@ -55,7 +55,7 @@ export default class GraphBar {
       .attr("rx", this.edgeRadius)
       .attr("ry", this.edgeRadius)
       .attr("fill", this.color)
-      .attr("x", (d: GraphValue<string>) => this.getX(d))
+      .attr("x", (d: GraphValue<BandX>) => this.getX(d))
       .attr("width", this.getWidth())
       .attr("y", this.yScaler(0))
       .attr("height", 0);
@@ -71,13 +71,13 @@ export default class GraphBar {
       .interrupt()
       .transition()
       .duration(this.showDuration)
-      .attr("x", (d: GraphValue<string>) => this.getX(d))
+      .attr("x", (d: GraphValue<BandX>) => this.getX(d))
       .attr("width", this.getWidth())
-      .attr("y", (d: GraphValue<string>) => this.getY(d))
-      .attr("height", (d: GraphValue<string>) => this.getHeight(d));
+      .attr("y", (d: GraphValue<BandX>) => this.getY(d))
+      .attr("height", (d: GraphValue<BandX>) => this.getHeight(d));
   }
 
-  private getX(d: GraphValue<string>): number {
+  private getX(d: GraphValue<BandX>): number {
     const offset: number = (this.xScaler.bandwidth() - this.getWidth()) / 2;
     const baseX = this.xScaler(d.xValue) || 0;
 
@@ -97,7 +97,7 @@ export default class GraphBar {
     return Math.min(this.xScaler.bandwidth() / this.barsPerLabel, this.maxWidth);
   }
 
-  private getY(d: GraphValue<string>): number {
+  private getY(d: GraphValue<BandX>): number {
     var distance: number = Math.abs(this.yScaler(d.yValues[this.dataIndex]) - this.yScaler(0));
     if (distance <= this.floatY) {
       return this.yScaler(0);
@@ -110,7 +110,7 @@ export default class GraphBar {
     }
   }
 
-  private getHeight(d: GraphValue<string>): number {
+  private getHeight(d: GraphValue<BandX>): number {
     var distance: number = Math.abs(this.yScaler(d.yValues[this.dataIndex]) - this.yScaler(0));
     if (distance <= this.floatY) {
       return 0;
@@ -119,7 +119,7 @@ export default class GraphBar {
     }
   }
 
-  public update(dataset: GraphValue<string>[], xScaler: ScaleBand<string>, yScaler: ScaleLinear<any, any>): void {
+  public update(dataset: GraphValue<BandX>[], xScaler: ScaleBandX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;

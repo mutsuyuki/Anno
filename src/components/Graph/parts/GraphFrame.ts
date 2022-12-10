@@ -15,12 +15,12 @@ export default class GraphFrame {
 
   private root: Selection<SVGElement, string, null, undefined>;
 
-  private topLine: Selection<SVGPathElement, string, null, undefined> | null;
-  private bottomLine: Selection<SVGPathElement, string, null, undefined> | null;
-  private leftLine: Selection<SVGPathElement, string, null, undefined> | null;
-  private rightLine: Selection<SVGPathElement, string, null, undefined> | null;
+  private topLine: Selection<SVGPathElement, string, null, undefined> | null = null;
+  private bottomLine: Selection<SVGPathElement, string, null, undefined> | null = null;
+  private leftLine: Selection<SVGPathElement, string, null, undefined> | null = null;
+  private rightLine: Selection<SVGPathElement, string, null, undefined> | null = null;
 
-  private bounds: GraphBounds | null;
+  private bounds: GraphBounds | null = null;
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
     this.root = __parent.append('g');

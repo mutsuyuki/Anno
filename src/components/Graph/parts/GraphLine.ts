@@ -1,9 +1,8 @@
 import * as d3 from 'd3'
 import {Selection} from "d3-selection";
-import {CurveFactory,  Line} from "d3-shape";
-import {ScaleLinear} from "d3-scale";
+import {CurveFactory, Line} from "d3-shape";
 import GraphValue from "../core/GraphValue";
-import {XAxisType} from "../core/Types";
+import {LinearX, ScaleLinearX, ScaleY} from "../core/Types";
 
 export default class GraphLine {
 
@@ -11,20 +10,20 @@ export default class GraphLine {
   public color: string = "#888";
   public width: number = 1;
   public curveType: CurveFactory = d3.curveLinear;
-  public showDuration:number = 600;
-  public hideDuration:number = 500;
-  public moveDuration:number = 800;
+  public showDuration: number = 600;
+  public hideDuration: number = 500;
+  public moveDuration: number = 800;
 
   private root: Selection<SVGElement, string, null, undefined>;
 
   private line: any;
 
-  private zeroData: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
-  private dataset: GraphValue<XAxisType>[] = [new GraphValue("_", [0])];
+  private zeroData: GraphValue<LinearX>[] = [];
+  private dataset: GraphValue<LinearX>[] = [];
 
   private lineFunction: Line<any> = d3.line();
-  private xScaler: any = d3.scaleLinear();
-  private yScaler: ScaleLinear<any, any> = d3.scaleLinear();
+  private xScaler: ScaleLinearX = d3.scaleLinear();
+  private yScaler: ScaleY = d3.scaleLinear();
   private isLineMoving: boolean = false;
 
   constructor(__parent: Selection<SVGElement, string, null, undefined>) {
@@ -33,7 +32,7 @@ export default class GraphLine {
     this.line = this.root.append("path");
   }
 
-  public init(dataset: GraphValue<XAxisType>[], xScaler: ScaleLinear<any, any>, yScaler: ScaleLinear<any, any>): void {
+  public init(dataset: GraphValue<LinearX>[], xScaler: ScaleLinearX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;
@@ -48,10 +47,9 @@ export default class GraphLine {
   }
 
   private makeLineFunction(): void {
-    let offsetX: number = this.xScaler.hasOwnProperty("bandwidth") ? this.xScaler.bandwidth() / 2 : 0;
     this.lineFunction = d3.line()
       .curve(this.curveType)
-      .x((_, i) => this.xScaler(+this.dataset[i].xValue) + offsetX)
+      .x((_, i) => this.xScaler(this.dataset[i].xValue))
       .y((d: any) => this.yScaler(d));
   }
 
@@ -69,7 +67,7 @@ export default class GraphLine {
   }
 
   private initParts(): void {
-    let yValues: number[] = this.zeroData.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
+    let yValues: number[] = this.zeroData.map((d: GraphValue<LinearX>) => d.yValues[this.dataIndex]);
 
     this.line
       .attr('stroke', this.color)
@@ -83,8 +81,8 @@ export default class GraphLine {
     this.moveLine(this.showDuration);
   }
 
-  private moveLine(__duration:number): void {
-    let yValues: number[] = this.dataset.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
+  private moveLine(__duration: number): void {
+    let yValues: number[] = this.dataset.map((d: GraphValue<LinearX>) => d.yValues[this.dataIndex]);
 
     this.isLineMoving = true;
     this.line
@@ -100,7 +98,7 @@ export default class GraphLine {
     ;
   }
 
-  public update(dataset: GraphValue<XAxisType>[], xScaler: any, yScaler: ScaleLinear<any, any>): void {
+  public update(dataset: GraphValue<LinearX>[], xScaler: ScaleLinearX, yScaler: ScaleY): void {
     this.dataset = dataset;
     this.xScaler = xScaler;
     this.yScaler = yScaler;
@@ -141,7 +139,7 @@ export default class GraphLine {
   }
 
   public hide(): void {
-    var yValues: number[] = this.zeroData.map((d: GraphValue<XAxisType>) => d.yValues[this.dataIndex]);
+    var yValues: number[] = this.zeroData.map((d: GraphValue<LinearX>) => d.yValues[this.dataIndex]);
 
     this.line
       .interrupt()

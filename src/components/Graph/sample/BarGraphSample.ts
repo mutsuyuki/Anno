@@ -1,23 +1,25 @@
 import GraphBase from "../core/GraphBase";
 import ScaleFactory from "../core/ScaleFactory";
 import GraphValue from "../core/GraphValue";
-import {GraphBounds} from "../core/Types";
+import {GraphBounds, BandX, ScaleBandX, ScaleY} from "../core/Types";
 import AxisLabel from "../parts/AxisLabel";
 import AxisRuler from "../parts/AxisRuler";
 import {AxisDirection} from "../parts/AxisDirection";
 import GraphFrame from "@/components/Graph/parts/GraphFrame";
 import GraphBar from "@/components/Graph/parts/GraphBar";
 
-export default class BarGraphSample extends GraphBase<string> {
+export default class BarGraphSample extends GraphBase<BandX> {
 
   private leftLabel: AxisLabel;
   private bottomLabel: AxisLabel;
   private horizonRuler: AxisRuler;
   private verticalRuler: AxisRuler;
   private graphFrame: GraphFrame;
-  private bars:GraphBar[]
+  private bars: GraphBar[]
 
-  private dataset: GraphValue<string>[] = [];
+  private dataset: GraphValue<BandX>[] = [];
+
+  private isInit: boolean = false;
 
   private colors: string[] = [
     "rgba(255, 99, 100, 1)",
@@ -59,16 +61,34 @@ export default class BarGraphSample extends GraphBase<string> {
     this.bars = [];
   }
 
-  public show(dataset: GraphValue<string>[]) {
-    super.show(dataset);
+  public show(dataset: GraphValue<BandX>[] | null = null): void {
+    // データが渡されてない場合は、表示処理のみ行って終了
+    if (!dataset) {
+      if (this.isInit) {
+        this.showParts();
+      }
+      return;
+    }
+
+    // データを保存
+    this.dataset = dataset;
+
+    // 表示処理
+    if (!this.isInit) {
+      this.isInit = true;
+      this.initParts();
+    }
+    this.showParts();
+    this.updateParts();
   }
 
-  protected _init(dataset: GraphValue<string>[]): void {
-    super._init(dataset);
+  public hide(): void {
+    this.hideParts();
+  }
 
-    this.dataset = dataset;
+  private initParts(): void {
     const bounds = this.getGraphBounds();
-    const [xScaler, yScaler] = this.getScalers(dataset, bounds);
+    const [xScaler, yScaler] = this.getScalers(this.dataset, bounds);
 
     this.leftLabel.init(yScaler, bounds.left, 0);
     this.bottomLabel.init(xScaler, 0, bounds.bottom);
@@ -87,9 +107,7 @@ export default class BarGraphSample extends GraphBase<string> {
     }
   }
 
-  protected _show(): void {
-    super._show();
-
+  private showParts(): void {
     const bounds = this.getGraphBounds();
 
     this.leftLabel.show();
@@ -100,12 +118,9 @@ export default class BarGraphSample extends GraphBase<string> {
     this.bars.forEach(v => v.show());
   }
 
-  protected _update(dataset: GraphValue<string>[]): void {
-    super._update(dataset);
-
-    this.dataset = dataset;
+  private updateParts(): void {
     const bounds = this.getGraphBounds();
-    const [xScaler, yScaler] = this.getScalers(dataset, bounds);
+    const [xScaler, yScaler] = this.getScalers(this.dataset, bounds);
 
     this.leftLabel.update(yScaler);
     this.bottomLabel.update(xScaler);
@@ -115,7 +130,7 @@ export default class BarGraphSample extends GraphBase<string> {
     this.bars.forEach(v => v.update(this.dataset, xScaler, yScaler));
   }
 
-  protected _hide(): void {
+  protected hideParts(): void {
     this.leftLabel.hide();
     this.bottomLabel.hide();
     this.horizonRuler.hide();
@@ -125,16 +140,15 @@ export default class BarGraphSample extends GraphBase<string> {
     this.bars.forEach(v => v.hide());
   }
 
-  protected _resize(): void {
-    super._resize();
-    this._update(this.dataset);
-  }
-
-  private getScalers(dataset: GraphValue<string>[], bounds: GraphBounds) {
+  private getScalers(dataset: GraphValue<BandX>[], bounds: GraphBounds): [ScaleBandX, ScaleY] {
     const xScaler = ScaleFactory.newScaleBandX(dataset, bounds.left, bounds.right)
     const yScaler = ScaleFactory.newFixedScaleLinearY(0, 2, bounds.bottom, bounds.top)
 
     return [xScaler, yScaler];
   }
 
+  protected _resize(): void {
+    super._resize();
+    this.updateParts();
+  }
 };
