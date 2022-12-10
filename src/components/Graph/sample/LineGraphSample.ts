@@ -133,7 +133,7 @@ export default class LineGraphSample extends GraphBase<number> {
   private getScalers(dataset: GraphValue<number>[], bounds: GraphBounds) {
     const xScaler = ScaleFactory.newScaleLinearX(dataset, bounds.left, bounds.right)
     // const yScaler = ScaleFactory.newScaleLinearY(dataset, bounds.top, bounds.bottom)
-    const yScaler = ScaleFactory.newFixedScaleLinearY(-1, 1, bounds.top, bounds.bottom)
+    const yScaler = ScaleFactory.newFixedScaleLinearY(-1, 1, bounds.bottom, bounds.top)
 
     return [xScaler, yScaler];
   }

@@ -7,18 +7,15 @@ export default class GraphBar {
 
   public dataIndex: number = 0;     // datasetのyValuesのうち、どのデータを使うか
   public floatY: number = 0;        // x軸から浮かせる量
-  public edgeRadius: number = 0;    // 角丸の量
+  public edgeRadius: number = 2;    // 角丸の量
   public color: string = "#888";
   public maxWidth: number = Infinity;
   public showDuration: number = 600;
 
   //１項目あたりに複数のバーを建てる場合の設定
   public barsPerLabel: number = 1;  // バーの数
-  public barPadding: number = 0;   // バー間の距離
-
 
   private root: Selection<SVGElement, string, null, undefined>;
-
   private bars: any;
 
   private dataset: GraphValue<string>[] = [new GraphValue("_", [0])];
@@ -87,18 +84,17 @@ export default class GraphBar {
     if (this.barsPerLabel <= 1) {
       return baseX + offset;
     } else {
-      var unitWidth: number = this.getWidth() + this.barPadding;
+      const unitWidth: number = this.getWidth();
 
       return baseX + offset
         + this.getWidth() / 2
         + unitWidth * this.dataIndex
-        - unitWidth * (this.barsPerLabel / 2)
-        + this.barPadding / 2;
+        - unitWidth * (this.barsPerLabel / 2);
     }
   }
 
   private getWidth(): number {
-    return Math.min(this.xScaler.bandwidth(), this.maxWidth);
+    return Math.min(this.xScaler.bandwidth() / this.barsPerLabel, this.maxWidth);
   }
 
   private getY(d: GraphValue<string>): number {
