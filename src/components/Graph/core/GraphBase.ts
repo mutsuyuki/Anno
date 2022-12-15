@@ -10,19 +10,36 @@ export default class GraphBase<T extends LinearX | BandX> {
   public marginLeft: number = 0;
   public marginRight: number = 0;
 
+  protected parent: Selection<HTMLElement, string, null, undefined>;
   protected root: Selection<HTMLElement, string, null, undefined>;
   protected svg: Selection<SVGElement, string, null, undefined>;
+  protected html: Selection<HTMLElement, string, null, undefined>;
 
-  constructor(rootElement: HTMLElement) {
-    this.root = d3.select(rootElement);
+  constructor(parent: HTMLElement) {
+    this.parent = d3.select(parent);
+
+    this.root = this.parent.append("div")
+      .style("margin", 0)
+      .style("padding", 0)
+      .style("position", "relative")
+      .style("width", "100%")
+      .style("height", "100%");
 
     this.svg = this.root.append("svg")
       .style("margin", 0)
       .style("width", "100%")
-      .style("height", "100%");
+      .style("height", "100%")
+      .style("position", "absolute");
+
+    this.html = this.root.append("div")
+      .style("margin", 0)
+      .style("padding", 0)
+      .style("width", "100%")
+      .style("height", "100%")
+      .style("position", "absolute");
 
     //イベント登録
-    new (window as any).ResizeObserver(() => this._resize()).observe(rootElement);
+    new (window as any).ResizeObserver(() => this._resize()).observe(parent);
   }
 
   // please override

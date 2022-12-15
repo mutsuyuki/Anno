@@ -18,10 +18,3 @@ export type GraphBounds = {
   width: number,
   height: number
 };
-
-// 期間
-export type NumberRange = {
-  start: number,
-  end: number
-}
-

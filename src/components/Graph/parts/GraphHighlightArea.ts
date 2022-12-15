@@ -1,6 +1,12 @@
 import {Selection} from "d3-selection";
-import {GraphBounds, NumberRange, ScaleLinearX} from "@/components/Graph/core/Types";
+import {GraphBounds, ScaleLinearX} from "@/components/Graph/core/Types";
 import * as d3 from "d3";
+
+// 期間
+export type NumberRange = {
+  start: number,
+  end: number
+}
 
 
 export default class GraphHighlightArea {

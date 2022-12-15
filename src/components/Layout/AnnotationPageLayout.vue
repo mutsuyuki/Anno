@@ -37,7 +37,7 @@ import MediaSizeChecker from "@/components/Layout/MediaSizeChecker.vue";
 })
 export default class AnnotationPageLayout extends Vue {
 
-  @Prop({default: 40 + 40 + 80 + 40}) private sizeCheckerPadding!: number;
+  @Prop({default: 40 + 40 + 80 + 40 + 8}) private sizeCheckerPadding!: number;
 
   private fitWidth(width: number) {
     const editorPaneElement = this.$el.getElementsByClassName("editor_pane")[0] as HTMLElement;
