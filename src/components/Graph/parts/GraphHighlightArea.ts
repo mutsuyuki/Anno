@@ -46,9 +46,9 @@ export default class GraphHighlightArea {
   private initParts(newAreas: any, bounds: GraphBounds): void {
     newAreas
       .attr("fill", this.color)
-      .attr("x", (d: NumberRange) => this.xScaler(d.start))
+      .attr("x", (d: NumberRange) => this.xScaler(d.start) + 1)
       .attr("y", bounds.top)
-      .attr("width", (d: NumberRange) => this.xScaler(d.end) - this.xScaler(d.start))
+      .attr("width", (d: NumberRange) => this.xScaler(d.end) - this.xScaler(d.start) - 1)
       .attr("height", 0);
   }
 
@@ -62,9 +62,9 @@ export default class GraphHighlightArea {
       .interrupt()
       .transition()
       .duration(this.moveDuration)
-      .attr("x", (d: NumberRange) => this.xScaler(d.start))
+      .attr("x", (d: NumberRange) => this.xScaler(d.start) + 1)
       .attr("y", bounds.top)
-      .attr("width", (d: NumberRange) => this.xScaler(d.end) - this.xScaler(d.start))
+      .attr("width", (d: NumberRange) => this.xScaler(d.end) - this.xScaler(d.start) - 1)
       .attr("height", bounds.height);
   }
 

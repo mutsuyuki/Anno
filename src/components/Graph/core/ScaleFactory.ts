@@ -14,6 +14,16 @@ export default class ScaleFactory {
       .range([left, right]);
   }
 
+  public static newScaleLinearY(dataset: GraphValue<LinearX>[], bottom: number, top: number): ScaleY {
+    const yMin: number = d3.min(dataset, (d: GraphValue<LinearX>) => d3.min(d.yValues)) || 0;
+    const yMax: number = d3.max(dataset, (d: GraphValue<LinearX>) => d3.max(d.yValues)) || 1;
+
+    return d3.scaleLinear()
+      .domain([yMin, yMax])
+      .range([bottom, top]);
+  }
+
+
   public static newScaleBandX(dataset: GraphValue<BandX>[], left: number, right: number, paddingInner: number = 0.1, paddingOuter: number = 0.1): ScaleBandX {
     return d3.scaleBand()
       .domain(dataset.map((d: GraphValue<BandX>) => d.xValue))
@@ -23,13 +33,11 @@ export default class ScaleFactory {
       .align(0.5);
   }
 
-  public static newScaleLinearY(dataset: GraphValue<LinearX>[], bottom: number, top: number): ScaleY {
-    const yMin: number = d3.min(dataset, (d: GraphValue<LinearX>) => d3.min(d.yValues)) || 0;
-    const yMax: number = d3.max(dataset, (d: GraphValue<LinearX>) => d3.max(d.yValues)) || 1;
 
+  public static newFixedScaleLinearX(xMin: number, xMax: number, left: number, right: number): ScaleY {
     return d3.scaleLinear()
-      .domain([yMin, yMax])
-      .range([bottom, top]);
+      .domain([xMin, xMax])
+      .range([left, right]);
   }
 
   public static newFixedScaleLinearY(yMin: number, yMax: number, bottom: number, top: number): ScaleY {

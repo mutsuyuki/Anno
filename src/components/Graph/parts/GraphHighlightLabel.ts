@@ -36,11 +36,11 @@ export default class GraphHighlightLabel {
              overflow: hidden
            " 
       >
-        <div style="width: 1px; height:5px; background: darkgray"></div>
+        <div style="width: 1px; height:8px; background: darkgray"></div>
         <div style="height: 1px; flex:1; background: darkgray"></div>
-        <p style="font-size:10px; padding:0 5px; color:darkgray; white-space: nowrap;">text</p>
+        <p style="font-size:11px; padding:0 5px; color:darkgray; white-space: nowrap;">text</p>
         <div style="height: 1px; flex:1; background: darkgray"></div>
-        <div style="width: 1px; height:5px; background: darkgray"></div>
+        <div style="width: 1px; height:8px; background: darkgray"></div>
       </div>
     `;
   }
