@@ -2,7 +2,14 @@
  web based annotation tools for machine learning.
 
  ## Prepare
-- Install node environment. ( Tested on node version 16.13 )
+- Use docker environment.
+```bash
+bash DockerRun.sh
+```
+or install node environment on host directly. ( Tested on node version 16.13 )
+ 
+
+
 - exec commands below.
  ```bash
  cd THIS_REPOSITORY
@@ -12,8 +19,7 @@
  ## Run
  ```bash
  cd THIS_REPOSITORY
- npm run serve
-
+ npm run dev
  ```
  open http://localhost:8080 at Chrome browser
 
