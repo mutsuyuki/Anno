@@ -1,7 +1,7 @@
 <template>
   <label class="button">
     <div class="title">
-      <img :src="iconPath"/>
+      <img v-show="iconPath" :src="iconPath"/>
       <span>{{ text }}</span>
     </div>
     <input type="file" class="hidden"

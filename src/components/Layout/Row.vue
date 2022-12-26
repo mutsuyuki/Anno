@@ -19,6 +19,12 @@ export default class Row extends Vue {
 
 .row {
   margin-top: 8px;
+
+  & > * {
+    margin-top: 8px;
+  }
 }
+
+
 
 </style>
