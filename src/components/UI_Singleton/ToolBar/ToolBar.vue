@@ -36,6 +36,7 @@ import ScalableArea from "@/components/UI/Area/ScalableArea.vue";
 import InlineSvg from "@/common/utils/InlineSvg";
 import NormalizedScalableArea from "@/components/UI/Area/NormalizedScalableArea.vue";
 import HistoryStore from "@/store/HistoryStore";
+import ShortcutRegister from "@/common/utils/ShortcutRegister";
 
 @Component({
   components: {NormalizedScalableArea, InlineSvg, ScalableArea}
@@ -44,24 +45,27 @@ export default class ToolBar extends Vue {
   @Prop({default: 1}) private annotationOpacity!: number;
 
   private isControlDown: boolean = false;
+  private shortcut: ShortcutRegister = new ShortcutRegister();
 
   mounted() {
     document.addEventListener("keydown", this.onKeyDown);
     document.addEventListener("keyup", this.onKeyUp);
+
+    this.shortcut.register([
+      {key: "a", callback: () => this.$emit('annotationOpacity', 0)},
+      {key: "s", callback: () => this.$emit('annotationOpacity', 1)},
+    ]);
+
   }
 
   destroyed() {
     document.removeEventListener("keydown", this.onKeyDown);
     document.removeEventListener("keyup", this.onKeyUp);
+
+    this.shortcut.unregister();
   }
 
   private onKeyDown(e: KeyboardEvent) {
-    if (e.key == "a")
-      this.$emit('annotationOpacity', 0);
-
-    if (e.key == "s")
-      this.$emit('annotationOpacity', 1);
-
     if (e.key == "Control")
       this.isControlDown = true;
 

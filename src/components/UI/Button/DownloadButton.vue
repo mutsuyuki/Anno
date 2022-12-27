@@ -10,20 +10,20 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
+import ShortcutRegister from "@/common/utils/ShortcutRegister";
 
 @Component({})
 export default class DownloadButton extends Vue {
+  private shortcut: ShortcutRegister = new ShortcutRegister();
+
   created() {
-    document.addEventListener("keydown", this.onKeyDown);
+    this.shortcut.register([
+      {key: "d", callback: () => this.$emit('download')},
+    ]);
   }
 
   destroyed(){
-    document.removeEventListener("keydown", this.onKeyDown);
-  }
-
-  private onKeyDown(e: KeyboardEvent) {
-    if (e.key == "d")
-      this.$emit('download');
+    this.shortcut.unregister();
   }
 }
 </script>
