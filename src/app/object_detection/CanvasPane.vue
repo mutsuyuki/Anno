@@ -50,12 +50,14 @@
         @hover="onHover"
         @download="onDownload"
     >
-      <BoundingBoxOverlay
-          :boundingBoxModels="boundingBoxes"
-          :selectingObjectId="selectingObjectId"
-          :color="{r: 40, g: 80, b: 220, a: 1}"
-      />
-      <TextOverlay :labels="objectLabels"/>
+      <template v-slot:overlay>
+        <BoundingBoxOverlay
+            :boundingBoxModels="boundingBoxes"
+            :selectingObjectId="selectingObjectId"
+            :color="{r: 40, g: 80, b: 220, a: 1}"
+        />
+        <TextOverlay :labels="objectLabels"/>
+      </template>
     </ImagePlayer>
 
     <DownloadButton
@@ -82,7 +84,7 @@ import BoundingBoxOverlay from "@/components/Canvas/Overlay/BoundingBoxOverlay.v
 import {BoundingBoxByObjectId} from "@/common/model/BoundingBoxModel";
 import EditStateStore, {EditState} from "@/store/EditStateStore";
 import OperationStore from "@/app/object_detection/store/OperationStore";
-import AnnotationsStore, { AnnotationByObjectId} from "@/app/object_detection/store/AnnotationsStore";
+import AnnotationsStore, {AnnotationByObjectId} from "@/app/object_detection/store/AnnotationsStore";
 import ClassListStore from "@/app/object_detection/store/ClassListStore";
 import FileStore from "@/app/object_detection/store/FileStore";
 import BoundingBoxInteraction from "@/common/interaction/BoundingBoxInteraction";

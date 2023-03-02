@@ -27,6 +27,7 @@
         >
           <slot name="overlay"></slot>
         </div>
+        <slot name="above_overlay"></slot>
       </div>
     </NormalizedScalableArea>
 
