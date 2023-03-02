@@ -11,14 +11,16 @@ ENV DEBIAN_FRONTEND noninteractive
 SHELL ["/bin/bash", "-c"]
 
 # Time zone
-ENV TZ=Asia/Tokyo
+ARG TIMEZONE="Asia/Tokyo"
+RUN echo "timezone=${TIMEZONE}"
+ENV TZ=$TIMEZONE
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
 RUN echo $TZ > /etc/timezone
 
 
 # Set user name from argument
-ARG USERNAME=""
-RUN echo $USERNAME
+ARG USERNAME="root"
+RUN echo "user=${USERNAME}"
 
 
 # Prepare apt
@@ -27,20 +29,20 @@ RUN apt-get update && \
     apt-file update
 
 
-# Enable sudo 
+# Enable sudo
 RUN apt-get install -y sudo && \
-  mkdir -p /etc/sudoers.d && \
-  useradd -m $USERNAME && \
-  echo "$USERNAME:$USERNAME" | chpasswd && \
-  usermod --shell /bin/bash $USERNAME && \
-  usermod -aG sudo $USERNAME && \
-  usermod -aG video $USERNAME && \
-  usermod -aG audio $USERNAME && \
-  echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME && \
-  chmod 0440 /etc/sudoers.d/$USERNAME && \
-  # Replace 1000 with your user/group id
-  usermod  --uid 1000 $USERNAME && \
-  groupmod --gid 1000 $USERNAME
+    mkdir -p /etc/sudoers.d && \
+    useradd -m ${USERNAME} && \
+    echo "${USERNAME}:${USERNAME}" | chpasswd && \
+    usermod --shell /bin/bash ${USERNAME} && \
+    usermod -aG sudo ${USERNAME} && \
+    usermod -aG video ${USERNAME} && \
+    usermod -aG audio ${USERNAME} && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${USERNAME} && \
+    chmod 0440 /etc/sudoers.d/${USERNAME} && \
+    # Replace 1000 with your user/group id
+    usermod  --uid 1000 ${USERNAME} && \
+    groupmod --gid 1000 ${USERNAME}
 
 
 # Set env for user
@@ -60,22 +62,25 @@ RUN sudo apt-get update && \
       x11-apps
 
 
-# # Install network tools
+# Install network tools
 RUN sudo apt-get update && \
     sudo apt-get install -y \
       iputils-ping \
       net-tools \
       dnsutils \
-      iproute2 
+      iproute2
+
+# Install graphics tools
+RUN sudo apt-get update && \
+    sudo apt-get install -y libgtk-3-dev
 
 
-# Japanese environment 
+# Japanese environment
 ENV LANGUAGE ja_JP.UTF-8
 ENV LANG ja_JP.UTF-8
 RUN sudo apt-get install -y --no-install-recommends locales && \
     sudo locale-gen ja_JP.UTF-8 && \
     sudo apt-get install -y --no-install-recommends fonts-ipafont
-
 
 
 # Install node on nodev
