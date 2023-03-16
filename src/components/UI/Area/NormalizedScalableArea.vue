@@ -11,7 +11,13 @@
       @zoom="onZoom"
       @zoomend="onZoomEnd"
   >
-    <slot></slot>
+    <template v-slot:scalable_area>
+      <slot name="scalable_area"></slot>
+    </template>
+
+    <template v-slot:no_scale_area>
+      <slot name="no_scale_area"></slot>
+    </template>
   </ScalableArea>
 </template>
 

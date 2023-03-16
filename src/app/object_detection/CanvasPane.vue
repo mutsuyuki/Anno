@@ -28,12 +28,20 @@
         @download="onDownload"
         @prepareBlob="onPrepareBlob"
     >
-      <BoundingBoxOverlay
-          :boundingBoxModels="boundingBoxes"
-          :selectingObjectId="selectingObjectId"
-          :color="{r: 40, g: 80, b: 220, a: 1}"
-      />
-      <TextOverlay :labels="objectLabels"/>
+      <template v-slot:overlay>
+        <BoundingBoxOverlay
+            :boundingBoxModels="boundingBoxes"
+            :selectingObjectId="selectingObjectId"
+            :color="{r: 40, g: 80, b: 220, a: 1}"
+        />
+        <TextOverlay :labels="objectLabels"/>
+      </template>
+
+      <template v-slot:above_overlay>
+      </template>
+
+      <template v-slot:no_scale_area>
+      </template>
     </VideoPlayer>
 
     <ImagePlayer
@@ -57,6 +65,12 @@
             :color="{r: 40, g: 80, b: 220, a: 1}"
         />
         <TextOverlay :labels="objectLabels"/>
+      </template>
+
+      <template v-slot:above_overlay>
+      </template>
+
+      <template v-slot:no_scale_area>
       </template>
     </ImagePlayer>
 

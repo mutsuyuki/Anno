@@ -12,23 +12,31 @@
         @zoom="$emit('zoom', $event)"
         @zoomend="$emit('zoomend', $event)"
     >
-      <div class="video_area">
-        <video id="video_player"
-               :src="srcUrl"
-               :style="{
+      <template v-slot:scalable_area>
+        <div class="video_area">
+          <video id="video_player"
+                 :src="srcUrl"
+                 :style="{
                  opacity:videoOpacity,
                  padding:`${videoPadding * (video ? (video.videoHeight / video.videoWidth) : 1)}% ${videoPadding}%`
                }"
-        />
-        <div class="overlay_layer"
-             :style="{
+          />
+          <div class="overlay_layer"
+               :style="{
                opacity:overlayOpacity
              }"
-        >
-          <slot name="overlay"></slot>
+          >
+            <slot name="overlay"></slot>
+          </div>
+          <div class="above_overlay">
+            <slot name="above_overlay"></slot>
+          </div>
         </div>
-        <slot name="above_overlay"></slot>
-      </div>
+      </template>
+
+      <template v-slot:no_scale_area>
+        <slot name="no_scale_area"></slot>
+      </template>
     </NormalizedScalableArea>
 
     <div class="hidden_buffer_area">
@@ -310,7 +318,7 @@ export default class VideoPlayer extends Vue {
     visibility: hidden;
   }
 
-  .overlay_layer {
+  .overlay_layer, .above_overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -321,7 +329,7 @@ export default class VideoPlayer extends Vue {
   }
 }
 
-.hidden_buffer_area{
+.hidden_buffer_area {
   display: none;
 }
 

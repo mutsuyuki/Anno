@@ -1,5 +1,6 @@
 <template>
-  <div class="clip_area"
+  <div ref="container"
+       class="clip_area"
        @wheel="onWheel"
   >
     <div class="scale_area"
@@ -12,7 +13,7 @@
          }"
     >
 
-      <slot></slot>
+      <slot name="scalable_area"></slot>
 
       <div class="touch_area"
            @mousedown="onMouseDown_"
@@ -26,6 +27,9 @@
         </div>
       </div>
 
+    </div>
+    <div class="no_scale_area">
+      <slot name="no_scale_area"></slot>
     </div>
   </div>
 </template>
@@ -61,7 +65,7 @@ export default class ScalableArea extends Vue {
     document.addEventListener("keydown", this.onnKeyDown);
   }
 
-  destroyed(){
+  destroyed() {
     document.removeEventListener("keydown", this.onnKeyDown);
   }
 
@@ -212,8 +216,11 @@ export default class ScalableArea extends Vue {
   // -------------------
   //  ズーム
   // -------------------
+
+  private zoomStartPoint: Point = {x: 0, y: 0};
   private startZoom(x: number, y: number) {
     this.prevScale = this.scale_;
+    this.zoomStartPoint = {x: x, y: y};
     this.$emit("zoomstart", {x: x, y: y, scale: this.scale_})
   }
 
@@ -244,7 +251,12 @@ export default class ScalableArea extends Vue {
     this.isMoving = false;
 
     if (e.button == 0) {
-      this.startDrag(e.offsetX, e.offsetY);
+      const rect = (this.$refs.container as any).getBoundingClientRect();
+      this.startDrag(
+          (e.clientX - rect.left) / this.scale_ - this.translateX_,
+          (e.clientY - rect.top) / this.scale_ - this.translateY_
+      );
+      console.log(e.offsetX, e.clientX, e.clientX - rect.left)
     }
 
     if (e.button == 2) {
@@ -261,7 +273,11 @@ export default class ScalableArea extends Vue {
     e.preventDefault();
 
     if (this.isDragging) {
-      this.drag(e.offsetX, e.offsetY);
+      const rect = (this.$refs.container as any).getBoundingClientRect();
+      this.drag(
+          (e.clientX - rect.left) / this.scale_ - this.translateX_,
+          (e.clientY - rect.top) / this.scale_ - this.translateY_
+      );
     }
 
     if (this.isMoving) {
@@ -275,11 +291,15 @@ export default class ScalableArea extends Vue {
     e.preventDefault();
 
     if (this.isDragging) {
-      this.endDrag(e.offsetX, e.offsetY)
+      const rect = (this.$refs.container as any).getBoundingClientRect();
+      this.endDrag(
+          (e.clientX - rect.left) / this.scale_ - this.translateX_,
+          (e.clientY - rect.top) / this.scale_ - this.translateY_
+      )
     }
 
     if (this.isMoving) {
-      this.endMove(e.offsetX, e.offsetY)
+      this.endMove(e.clientX, e.clientY)
     }
 
     document.removeEventListener("mousemove", this.onMouseMoveForListen);
@@ -438,6 +458,8 @@ export default class ScalableArea extends Vue {
   margin: 0;
   padding: 0;
 
+  position: relative;
+
   .scale_area {
     width: 100%;
     height: 100%;
@@ -458,6 +480,20 @@ export default class ScalableArea extends Vue {
     &.fit_animation {
       transition: transform 0.3s ease;
     }
+  }
+
+  .no_scale_area {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    right: 0;
+
+    position: absolute;
+    transform-origin: top left;
+    pointer-events: none;
+    transform: translateY(-100%);
   }
 
   .debug {

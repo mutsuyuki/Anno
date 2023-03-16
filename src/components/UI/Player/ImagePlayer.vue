@@ -12,24 +12,32 @@
         @zoom="$emit('zoom', $event)"
         @zoomend="$emit('zoomend', $event)"
     >
-      <div class="image_area">
-        <img ref="image"
-             :src="currentUrl"
-             :style="{
+      <template v-slot:scalable_area>
+        <div class="image_area">
+          <img ref="image"
+               :src="currentUrl"
+               :style="{
                opacity:imageOpacity,
                padding:`${imagePadding * ($refs.image ? ($refs.image.height / $refs.image.width) : 1)}%  ${imagePadding}%`
              }"
-             @load="$forceUpdate()"
-        >
-        <div class="overlay_layer"
-             :style="{
+               @load="$forceUpdate()"
+          >
+          <div class="overlay_layer"
+               :style="{
                opacity:overlayOpacity
              }"
-        >
-          <slot name="overlay"></slot>
+          >
+            <slot name="overlay"></slot>
+          </div>
+          <div class="above_overlay">
+            <slot name="above_overlay"></slot>
+          </div>
         </div>
-        <slot name="above_overlay"></slot>
-      </div>
+      </template>
+
+      <template v-slot:no_scale_area>
+        <slot name="no_scale_area"></slot>
+      </template>
     </NormalizedScalableArea>
 
     <div class="selector_area">
@@ -79,7 +87,7 @@ import ListManager from "@/common/utils/ListManager";
 })
 export default class ImagePlayer extends Vue {
   @Prop({default: []}) private srcUrls!: string[];
-  @Prop({default: 0}) private seekIndex!: number;
+  @Prop({default: 0}) private seekFrame!: number;
   @Prop({default: []}) private markerTimes!: number[];  // 現状未使用
   @Prop({default: 1}) private imageOpacity!: number;
   @Prop({default: 0}) private imagePadding!: number;
@@ -101,9 +109,11 @@ export default class ImagePlayer extends Vue {
     );
 
     this.$watch(
-        () => this.seekIndex,
+        () => this.seekFrame,
         () => {
-          this.pageManager.setIndex(this.seekIndex);
+          if (this.seekFrame >= 0) {
+            this.pageManager.setIndex(this.seekFrame);
+          }
         }
     );
 
@@ -175,7 +185,7 @@ export default class ImagePlayer extends Vue {
     width: 100%;
   }
 
-  .overlay_layer {
+  .overlay_layer, .above_overlay {
     position: absolute;
     top: 0;
     left: 0;
